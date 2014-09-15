@@ -461,7 +461,7 @@ class DSKY(object):
                 for digit in self.control_registers["noun"].digits.itervalues():
                     digit.stop_blink()
                 print("Data load complete, calling {}({})".format(self.state["object_requesting_data"], self.state["input_data"]))
-                self.state["object_requesting_data"](self.state["input_data"])
+                self.state["object_requesting_data"].receive_data(self.state["input_data"])
                 self.state["input_data"] = ""
                 return
             # if the user as entered anything other than a numeric digit, 

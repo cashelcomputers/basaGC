@@ -58,6 +58,7 @@ INVALID_VERBS = [
     98,
 ]
 
+
 def format_output_data(data):
     
     output = []
