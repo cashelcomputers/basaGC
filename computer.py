@@ -32,8 +32,9 @@ class Computer(object):
         self.in_queue = mp.Queue()
         self.DSPTAB = display.init_DSPTAB()
         self.is_powered_on = False
-        self.memory = Memory()
+        self.memory = Memory(self)
         self.state_vector = lib.StateVector()
+        self.loop_items = []
 
         self.state = {
             #"is_powered_on": False,
@@ -98,7 +99,7 @@ class Computer(object):
             nouns.noun33,
             nouns.noun34,
             nouns.noun35,
-            nouns.noun36, # implemented!
+            nouns.noun36,  # implemented!
             nouns.noun37,
             nouns.noun38,
             nouns.noun39,
@@ -164,17 +165,17 @@ class Computer(object):
             nouns.noun99,
         ]
         self.verbs = [
-            None, #0
-            verbs.Verb1(), # implemented!
-            verbs.Verb2(), # implemented!
-            verbs.Verb3(), # implemented!
-            verbs.Verb4(), # implemented!
-            verbs.Verb5(), # implemented!
-            verbs.Verb6(), # implemented!
+            None,  # 0
+            verbs.Verb1(),  # implemented!
+            verbs.Verb2(),  # implemented!
+            verbs.Verb3(),  # implemented!
+            verbs.Verb4(),  # implemented!
+            verbs.Verb5(),  # implemented!
+            verbs.Verb6(),  # implemented!
             verbs.Verb7(),
-            None, #8
-            None, #9
-            None, #10
+            None,  # 8
+            None,  # 9
+            None,  # 10
             verbs.Verb11(),
             verbs.Verb12(),
             verbs.Verb13(),
@@ -182,9 +183,9 @@ class Computer(object):
             verbs.Verb15(),
             verbs.Verb16(),
             verbs.Verb17(),
-            None, #18
-            None, #19
-            None, #20
+            None,  # 18
+            None,  # 19
+            None,  # 20
             verbs.Verb21(),
             verbs.Verb22(),
             verbs.Verb23(),
@@ -192,18 +193,18 @@ class Computer(object):
             verbs.Verb25(),
             None,
             verbs.Verb27(),
-            None, #28
-            None, #29
+            None,  # 28
+            None,  # 29
             verbs.Verb30(),
             verbs.Verb31(),
-            verbs.Verb32(), # partially implemented
-            verbs.Verb33(), # partially implemented
-            verbs.Verb34(), # partially implemented
-            verbs.Verb35(), # implemented!
+            verbs.Verb32(),  # partially implemented
+            verbs.Verb33(),  # partially implemented
+            verbs.Verb34(),  # partially implemented
+            verbs.Verb35(),  # implemented!
             verbs.Verb36(),
             verbs.Verb37(),
-            None, #38
-            None, #39
+            None,  # 38
+            None,  # 39
             verbs.Verb40(),
             verbs.Verb41(),
             verbs.Verb42(),
@@ -232,7 +233,7 @@ class Computer(object):
             verbs.Verb65(),
             verbs.Verb66(),
             verbs.Verb67(),
-            None, #68
+            None,  # 68
             verbs.Verb69(),
             verbs.Verb70(),
             verbs.Verb71(),
@@ -240,15 +241,15 @@ class Computer(object):
             verbs.Verb73(),
             verbs.Verb74(),
             verbs.Verb75(),
-            None, #76
-            None, #77
+            None,  # 76
+            None,  # 77
             verbs.Verb78(),
-            None, #79
+            None,  # 79
             verbs.Verb80(),
             verbs.Verb81(),
             verbs.Verb82(),
             verbs.Verb83(),
-            None, #84
+            None, # 84
             verbs.Verb85(),
             verbs.Verb86(),
             verbs.Verb87(),
@@ -259,13 +260,14 @@ class Computer(object):
             verbs.Verb92(),
             verbs.Verb93(),
             verbs.Verb94(),
-            None, #95
+            None, # 95
             verbs.Verb96(),
             verbs.Verb97(),
-            None, #98
+            None, # 98
             verbs.Verb99(),
         ]
         self.programs = {
+            "01": programs.Program01(name="Prelaunch or Service - Initialization Program", number=01),
             "11": programs.Program11(name="Change Program (Major Mode)", number=11),
         }
         self.routines = {
@@ -285,15 +287,12 @@ class Computer(object):
         self.is_powered_on = True
         for display_item in self.dsky.static_display:
             display_item.on()
-        self.program_alarm(666, "program_alarm")
-
-    def breaker_break(self):
-
-        self.gui.breaker_break()
 
     def main_loop(self):
         if self.state["run_average_g_routine"]:
-            routines.average_g
+            routines.average_g()
+        for item in self.loop_items:
+            item()
     
     def reset_alarm_codes(self):
         self.state["alarm_codes"][2] = self.state["alarm_codes"][0]
@@ -328,13 +327,14 @@ class Memory(object):
     
     #memory_log = logging.getLogger("Memory")
 
-    def __init__(self):
+    def __init__(self, computer):
 
         """Constructor for the Memory object."""
         
         print("Init memory")
         self._init_storage()
         self._init_symbols()
+        self.computer = computer
 
     def _init_symbols(self):
         self.TEPHEM = 0
@@ -418,10 +418,8 @@ class Memory(object):
         try:
             raw_response = urllib2.urlopen(config.URL + query_string)
         except urllib2.URLError as e:
-            print(query_string)
             print("Unable to contact KSP, reason: {}".format(e.reason))
             raise KSPNotConnected
-            return
         json_response = json.load(raw_response)
         for key, value in json_response.iteritems():
             self._storage[key].set_value(value)
@@ -431,7 +429,11 @@ class Memory(object):
         
         """Gets the contents of memory as specified by data. data should be a
            list of storage locations"""
-        self.get_data_from_ksp(data)
+        try:
+            self.get_data_from_ksp(data)
+        except KSPNotConnected:
+            self.computer.program_alarm(300, "program_alarm")
+            return
         #return_data = {request: self._storage[request].get_value() for request in data}
         #return return_data
         return self._storage[data].value

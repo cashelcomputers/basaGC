@@ -24,6 +24,7 @@
 import logging
 
 import lib
+import timer
 
 computer = None
 dsky = None
@@ -36,6 +37,8 @@ class Program(object):
         self.number = number
     
     def execute(self):
+        dsky.flash_comp_acty(300)
+        dsky.control_registers["program"].display(str(self.number))
         computer.state["running_programs"].append(self.number)
     
     #def init_program(self):
@@ -72,6 +75,26 @@ class Program00(Program):
         log.debug("Program 00 executing...")
         dsky.control_registers["program"].display("00")
 
+class Program01(Program):
+    def __init__(self, name, number):
+        super(Program01, self).__init__(name, number)
+
+    def execute(self):
+        super(Program01, self).execute()
+        log.info("Program 01 executing")
+
+        # --> Command ISS zero CDU routine
+        # --> wait about 10 seconds
+        # nope
+
+        # --> turn on NO ATT annunciator
+        dsky.annunciators["no_att"].on()
+
+        # --> Command course align in ISS. Course align to desired platform orientation
+
+        # --. turn off NO ATT annunciator
+        # here we will simply wait 5 secs then turn it off
+
 class Program11(Program):
     def __init__(self, name, number):
         super(Program11, self).__init__(name, number)
@@ -94,9 +117,8 @@ class Program11(Program):
             computer.programs["02"].terminate()
         
         # --> compute initial state vector
-        func = computer.routines["average_g"]
-        func()
-        
+        computer.routines["average_g"]()
+
         # --> compute REFSMMAT
         # we already know our REFSMMAT, no need to calculate
         

@@ -13,8 +13,6 @@ class DSKY(object):
         """The constructor for the DSKY object."""
         
         self.computer = computer
-        global debug_computer
-        debug_computer = computer
         
         global frame
         frame = gui
@@ -585,6 +583,7 @@ class DSKY(object):
         #elif isinstance(__key, int):
             #self.keybuffer.append(__key)
     def flash_comp_acty(self, duration=50):
+        self.annunciators["comp_acty"].on()
         self.comp_acty_timer.Start(duration, oneShot=True)
     
     def set_noun(self, noun):

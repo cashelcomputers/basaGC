@@ -480,8 +480,8 @@ class Verb37(Verb):
         dsky.request_data(requesting_object=self, location=dsky.control_registers["noun"])
     
     def receive_data(self, data):
-        
-        computer.programs[int(data)].execute()
+
+        computer.programs[data].execute()
     
     def data_load_done(self):
         dsky.verb_noun_flash_off()
