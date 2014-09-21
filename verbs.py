@@ -662,7 +662,7 @@ class Verb81(Verb):
         
 class Verb82(Verb):
     def __init__(self):
-        super(Verb82, self).__init__(name="Request orbital paramters display (R30)", verb_number=82)
+        super(Verb82, self).__init__(name="Request orbital parameters display (R30)", verb_number=82)
     
     def execute(self):
         #super(Verb82, self).execute()
@@ -671,14 +671,14 @@ class Verb82(Verb):
         
 class Verb83(Verb):
     def __init__(self):
-        super(Verb83, self).__init__(name="Request rendezvous paramter display (R31)", verb_number=83)
+        super(Verb83, self).__init__(name="Request rendezvous parameter display (R31)", verb_number=83)
         
 
 #no verb 84
 
 class Verb85(Verb):
     def __init__(self):
-        super(Verb85, self).__init__(name="Request rendezvous paramter display no. 2 (R34)", verb_number=85)
+        super(Verb85, self).__init__(name="Request rendezvous parameter display no. 2 (R34)", verb_number=85)
         
 class Verb86(Verb):
     def __init__(self):

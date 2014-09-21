@@ -104,10 +104,6 @@ class Word(object):
         else:
             return int(self.contents)
 
-    
-    def get_list(self):
-        return self.contents.tolist()
-    
     def zero(self):
         self.contents.setall(False)
         

@@ -2,7 +2,10 @@
   <dictionary name="ttb">
     <words>
       <w>annunciators</w>
+      <w>downlink</w>
       <w>dsky</w>
+      <w>prelaunch</w>
+      <w>refsmmat</w>
     </words>
   </dictionary>
 </component>

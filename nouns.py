@@ -82,7 +82,6 @@ def noun02(calling_verb=None, data=None, base=8):
             }
         else:
             raise ValueError("Base must be either 8 or 10")
-            return
         print(return_data)
         return return_data
 
