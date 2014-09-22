@@ -21,14 +21,15 @@
 #
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>import wx
-
+import wx
 import logging
-import config
 
+import config
 import verbs
 
 dsky_log = logging.getLogger("DSKY")
 debug_computer = None
+
 class DSKY(object):
 
     def __init__(self, gui, computer):
