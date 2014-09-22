@@ -261,6 +261,7 @@ class Computer(object):
             None,  # 98
             verbs.Verb99(),
         ]
+        print(self.verbs[82])
         self.programs = {
             "01": programs.Program01(name="Prelaunch or Service - Initialization Program", number=01),
             "11": programs.Program11(name="Change Program (Major Mode)", number=11),
@@ -289,6 +290,12 @@ class Computer(object):
             routines.average_g()
         for item in self.loop_items:
             item()
+
+    def execute_verb(self, verb, noun=None):
+        if noun is not None:
+            self.dsky.set_noun(noun)
+        self.dsky.control_registers["verb"].display(str(verb))
+        self.verbs[verb].execute()
 
     def reset_alarm_codes(self):
         self.state["alarm_codes"][2] = self.state["alarm_codes"][0]
@@ -399,6 +406,8 @@ class Memory(object):
             "raw_roll": MemoryData("Raw Roll", 0.0, "n.rawroll"),
             "raw_yaw": MemoryData("Raw Yaw", 0.0, "n.rawheading"),
         }
+
+
 
     def get_data_from_ksp(self, data):
 

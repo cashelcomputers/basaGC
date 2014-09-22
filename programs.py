@@ -153,7 +153,13 @@ class Program11(Program):
         # --> terminatl error.
         # --> at 163.86 secs shut off routine to load ICDU DACs.
         # ignoring this part, not even sure what it means :)
-        
+
+        # --> Display on DSKY:
+        # --> V06 N62 (we are going to use V16N62 though, so we can have a updated display
+        # --> R1: Velocity
+        # --> R2: Rate of change of vehicle altitude
+        # --> R3: Vehicle altitude in km to nearest .1 km
+        gc.execute_verb(verb=16, noun=62)
         
 
 class ProgramNotImplementedError(Exception):
