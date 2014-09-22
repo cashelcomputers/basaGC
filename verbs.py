@@ -292,12 +292,12 @@ class Verb6(DisplayVerb):
             return
         else:
             noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
-            self.noun_data = noun_function(calling_verb=self, data=self.data, base=10)
-            output = format_output_data(self.noun_data)
-            computer.dsky.registers[1].display(output[0], output[1])
-            computer.dsky.registers[2].display(output[2], output[3])
-            computer.dsky.registers[3].display(output[4], output[5])
-            self.data = None
+            noun_data = noun_function()
+            output = format_output_data(noun_data)
+            computer.dsky.registers[1].display(sign=output[0], value=output[1])
+            computer.dsky.registers[2].display(sign=output[2], value=output[3])
+            computer.dsky.registers[3].display(sign=output[4], value=output[5])
+            #self.data = None
         
 class Verb7(DisplayVerb):
     def __init__(self):

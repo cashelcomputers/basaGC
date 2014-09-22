@@ -320,6 +320,8 @@ def noun61(calling_verb):
     raise NounNotImplementedError
 
 def noun62():
+
+    """Surface Velocity (m/s), Altitude rate (m/s), Altitude (km)"""
     log.info("Noun 62 requested")
     
     surface_velocity = str(round(computer.memory.get_memory("surface_velocity"), 1))
