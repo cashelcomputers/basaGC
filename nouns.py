@@ -1,7 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
 
-#  Copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
+#  This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
+#  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
@@ -38,11 +39,11 @@ def octal(value):
     return int(oct(value))
 
 class NounNotImplementedError(Exception):
-    
+
     """ This exception should be raised when a selected noun is not implemented
         yet
     """
-    
+
     pass
 
 #-----------------------BEGIN NORMAL NOUNS--------------------------------------
@@ -153,9 +154,9 @@ def noun21(calling_verb):
     """PIPA'S"""
     #inputs = computer.
     #data = {
-        #1: 
-        #2: 
-        #3: 
+        #1:
+        #2:
+        #3:
         #"description": "PIPA pulse rate for X, Y, Z axis",
         #"is_octal": False,
         #"number": 21,
@@ -203,7 +204,7 @@ def noun35(calling_verb):
     raise NounNotImplementedError
 
 def noun36(*args, **kwargs):
-    
+
     telemetry = memory.get_memory(["met"])
     minutes, seconds = divmod(telemetry["met"], 60)
     hours, minutes = divmod(minutes, 60)
@@ -323,7 +324,7 @@ def noun62():
 
     """Surface Velocity (m/s), Altitude rate (m/s), Altitude (km)"""
     log.info("Noun 62 requested")
-    
+
     surface_velocity = str(round(computer.memory.get_memory("surface_velocity"), 1))
     altitude_rate = str(round(computer.memory.get_memory("vertical_speed"), 1))
     altitude = str(round(computer.memory.get_memory("asl") / 1000, 1))
@@ -331,9 +332,9 @@ def noun62():
     surface_velocity = surface_velocity.replace(".", "")
     altitude_rate = altitude_rate.replace(".", "")
     altitude = altitude.replace(".", "")
-    
+
     print(surface_velocity, altitude_rate, altitude)
-    
+
     data = {
         1: int(surface_velocity),
         2: int(altitude_rate),

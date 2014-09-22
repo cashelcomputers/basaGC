@@ -1,4 +1,27 @@
 #!/usr/bin/env python2
+# -*- coding: UTF-8 -*-
+
+#  This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
+#  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#  MA 02110-1301, USA.
+#
+#
+#  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
+#  by Ronald S. Burkey <info@sandroid.org>
+
 import wx
 import logging
 
@@ -7,10 +30,10 @@ import config
 
 
 logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                    datefmt='%d/%m/%y %H:%M',
-                    filename='gc.log',
-                    filemode='w')
+    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+    datefmt='%d/%m/%y %H:%M',
+    filename='gc.log',
+    filemode='w')
 
 console = logging.StreamHandler()
 console.setLevel(logging.DEBUG)
@@ -19,56 +42,65 @@ formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
 console.setFormatter(formatter)
 logging.getLogger('').addHandler(console)
 
+
 class GUI(wx.Frame):
 
     computer = None
     dsky = None
     keyboard = None
     annunciators = None
-    
+
     def __init__(self, *args, **kwds):
 
         kwds["style"] = wx.CAPTION | wx.CLOSE_BOX | wx.MINIMIZE_BOX | wx.SYSTEM_MENU
         wx.Frame.__init__(self, *args, **kwds)
         self.panel_1 = wx.Panel(self, wx.ID_ANY)
-        
+
         GUI.computer = Computer.Computer(self)
         GUI.dsky = GUI.computer.dsky
         GUI.keyboard = GUI.computer.dsky.keyboard
         GUI.annunciators = GUI.computer.dsky.annunciators
-        
-        self.VerbButton =   GUI.keyboard["verb"].widget
-        self.NounButton =   GUI.keyboard["noun"].widget
-        self.PlusButton =   GUI.keyboard["plus"].widget
-        self.MinusButton =  GUI.keyboard["minus"].widget
-        self.ZeroButton =   GUI.keyboard[0].widget
-        self.SevenButton =  GUI.keyboard[7].widget
-        self.FourButton =   GUI.keyboard[4].widget
-        self.OneButton =    GUI.keyboard[1].widget
-        self.EightButton =  GUI.keyboard[8].widget
-        self.FiveButton =   GUI.keyboard[5].widget
-        self.TwoButton =    GUI.keyboard[2].widget
-        self.NineButton =   GUI.keyboard[9].widget
-        self.SixButton =    GUI.keyboard[6].widget
-        self.ThreeButton =  GUI.keyboard[3].widget
-        self.ClrButton =    GUI.keyboard["clear"].widget
-        self.ProButton =    GUI.keyboard["proceed"].widget
+
+        self.VerbButton = GUI.keyboard["verb"].widget
+        self.NounButton = GUI.keyboard["noun"].widget
+        self.PlusButton = GUI.keyboard["plus"].widget
+        self.MinusButton = GUI.keyboard["minus"].widget
+        self.ZeroButton = GUI.keyboard[0].widget
+        self.SevenButton = GUI.keyboard[7].widget
+        self.FourButton = GUI.keyboard[4].widget
+        self.OneButton = GUI.keyboard[1].widget
+        self.EightButton = GUI.keyboard[8].widget
+        self.FiveButton = GUI.keyboard[5].widget
+        self.TwoButton = GUI.keyboard[2].widget
+        self.NineButton = GUI.keyboard[9].widget
+        self.SixButton = GUI.keyboard[6].widget
+        self.ThreeButton = GUI.keyboard[3].widget
+        self.ClrButton = GUI.keyboard["clear"].widget
+        self.ProButton = GUI.keyboard["proceed"].widget
         self.KeyRelButton = GUI.keyboard["key_release"].widget
-        self.EntrButton =   GUI.keyboard["enter"].widget
-        self.RsetButton =   GUI.keyboard["reset"].widget
-        
-        self.bitmap_5 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg", wx.BITMAP_TYPE_ANY))
-        self.bitmap_6_copy = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg", wx.BITMAP_TYPE_ANY))
-        self.bitmap_6 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg", wx.BITMAP_TYPE_ANY))
-        self.bitmap_5_copy = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg", wx.BITMAP_TYPE_ANY))
-        self.bitmap_5_copy_1 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg", wx.BITMAP_TYPE_ANY))
-        self.bitmap_6_copy_copy = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg", wx.BITMAP_TYPE_ANY))
-        self.bitmap_6_copy_copy_copy = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg", wx.BITMAP_TYPE_ANY))
-        self.bitmap_5_copy_2 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg", wx.BITMAP_TYPE_ANY))
-        
+        self.EntrButton = GUI.keyboard["enter"].widget
+        self.RsetButton = GUI.keyboard["reset"].widget
+
+        self.bitmap_5 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg",
+            wx.BITMAP_TYPE_ANY))
+        self.bitmap_6_copy = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg",
+            wx.BITMAP_TYPE_ANY))
+        self.bitmap_6 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg",
+            wx.BITMAP_TYPE_ANY))
+        self.bitmap_5_copy = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg",
+            wx.BITMAP_TYPE_ANY))
+        self.bitmap_5_copy_1 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg",
+            wx.BITMAP_TYPE_ANY))
+        self.bitmap_6_copy_copy = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg",
+            wx.BITMAP_TYPE_ANY))
+        self.bitmap_6_copy_copy_copy = wx.StaticBitmap(self, wx.ID_ANY,
+            wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg", wx.BITMAP_TYPE_ANY))
+        self.bitmap_5_copy_2 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg",
+            wx.BITMAP_TYPE_ANY))
+
         self.__set_properties()
         self.__do_layout()
-        
+
         self.Bind(wx.EVT_BUTTON, GUI.keyboard["verb"].press, id=config.ID_VERBBUTTON)
         self.Bind(wx.EVT_BUTTON, GUI.keyboard["noun"].press, id=config.ID_NOUNBUTTON)
         self.Bind(wx.EVT_BUTTON, GUI.keyboard["plus"].press, id=config.ID_PLUSBUTTON)
@@ -88,7 +120,7 @@ class GUI(wx.Frame):
         self.Bind(wx.EVT_BUTTON, GUI.keyboard["key_release"].press, id=config.ID_KEYRELBUTTON)
         self.Bind(wx.EVT_BUTTON, GUI.keyboard["enter"].press, id=config.ID_ENTRBUTTON)
         self.Bind(wx.EVT_BUTTON, GUI.keyboard["reset"].press, id=config.ID_RSETBUTTON)
-    
+
     def __set_properties(self):
 
         self.SetTitle("pyDSKY")
@@ -117,7 +149,7 @@ class GUI(wx.Frame):
         self.RsetButton.SetMinSize((75, 75))
 
     def __do_layout(self):
-        
+
         sizer_1 = wx.BoxSizer(wx.VERTICAL)
         sizer_3 = wx.BoxSizer(wx.HORIZONTAL)
         sizer_4_copy = wx.BoxSizer(wx.VERTICAL)
@@ -150,9 +182,12 @@ class GUI(wx.Frame):
         sizer_12.Add(self.bitmap_5, 0, 0, 0)
         sizer_13.Add(self.bitmap_6_copy, 0, 0, 0)
         sizer_13.Add((20, 5), 0, 0, 0)
-        grid_sizer_1_copy.Add(GUI.annunciators["uplink_acty"].widget, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
-        grid_sizer_1_copy.Add(GUI.annunciators["temp"].widget, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
-        grid_sizer_1_copy.Add(GUI.annunciators["no_att"].widget, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
+        grid_sizer_1_copy.Add(GUI.annunciators["uplink_acty"].widget, 0,
+            wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
+        grid_sizer_1_copy.Add(GUI.annunciators["temp"].widget, 0,
+            wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
+        grid_sizer_1_copy.Add(GUI.annunciators["no_att"].widget, 0,
+            wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
         grid_sizer_1_copy.Add(GUI.annunciators["gimbal_lock"].widget, 0, 0, 0)
         grid_sizer_1_copy.Add(GUI.annunciators["stby"].widget, 0, 0, 0)
         grid_sizer_1_copy.Add(GUI.annunciators["prog"].widget, 0, 0, 0)
@@ -283,27 +318,26 @@ class GUI(wx.Frame):
         self.SetSizer(sizer_1)
         sizer_1.Fit(self)
         self.Layout()
-        
-    def breaker_break(self):
-        print("DEBUG")
+
     def start_verb_noun_flash(self):
         GUI.dsky.control_registers["verb"].start_blink()
         GUI.dsky.control_registers["noun"].start_blink()
-    
+
     def stop_verb_noun_flash(self):
         GUI.dsky.control_registers["verb"].stop_blink()
         GUI.dsky.control_registers["noun"].stop_blink()
-    
+
     def on(self):
         print("DSKY on")
         for item in GUI.dsky.static_display:
             item.on()
-    
+
     def off(self):
         print("DSKY off")
         for item in GUI.dsky.static_display:
             item.off()
-            
+
+
 class pyDSKYApp(wx.App):
     def OnInit(self):
         wx.InitAllImageHandlers()
