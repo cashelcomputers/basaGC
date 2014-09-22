@@ -185,9 +185,10 @@ class DSKY(object):
             self.digit_8 = wx.Image(config.IMAGES_DIR + "7Seg-8.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             self.digit_9 = wx.Image(config.IMAGES_DIR + "7Seg-9.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             self.blank_digit = wx.Image(config.IMAGES_DIR + "7SegOff.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            self.value = None
+            self.current_value = None
             self.blink_state = False
             self.blink_value = None
+            self.last_value = None
 
             
             # setup blink timers
@@ -203,7 +204,8 @@ class DSKY(object):
             if value:
                 self.blink_value = value
             else:
-                self.blink_value = self.value
+                self.blink_value = self.current_value
+            self.blink_state = True
             
             self.blink_timer.Start(500)
         
@@ -221,7 +223,8 @@ class DSKY(object):
             self.blink_value = None
             
         def blank(self):
-            self.widget.SetBitmap(self.blank_digit)
+            self.last_value = self.current_value
+            self.display("blank")
             
         def display(self, new_value):
             if new_value == 0:
@@ -245,8 +248,8 @@ class DSKY(object):
             elif new_value == 9:
                 self.widget.SetBitmap(self.digit_9)
             elif new_value == "blank":
-                self.widget.SetBitmap(self.blank_digit)
-            self.value = new_value
+                self.blank()
+            self.current_value = new_value
             if self.blink_state:
                 if new_value != "blank":
                     self.blink_value = new_value
@@ -278,6 +281,7 @@ class DSKY(object):
     class SignDigit(Digit):
         
         def __init__(self, dsky, panel=None):
+            super(SignDigit, self).__init__(dsky)
             self.dsky = dsky
             #super(DSKY.SignDigit, self).__init__(self.dsky)
             self.image_plus = wx.Image(config.IMAGES_DIR + "PlusOn.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()

@@ -1,6 +1,6 @@
 VERSION = "0.3.0a"
-ROOT_DIR = "/home/ttb/PycharmProjects/pygc/"
-IMAGES_DIR = ROOT_DIR + "images/"
+#ROOT_DIR = "/home/ttb/PycharmProjects/pygc/"
+IMAGES_DIR = "./images/"
 IP = "http://127.0.0.1:8085"
 URL = IP + "/telemachus/datalink?"
 PORT = 26000

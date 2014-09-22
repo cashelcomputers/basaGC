@@ -1,19 +1,14 @@
 #!/usr/bin/env python2
 
 import multiprocessing as mp
-import socket
-import time
 import logging
 import urllib2
 import json
-
-import simplevector
 
 import config
 import timer
 import display
 import dsky
-import gui
 import verbs
 import nouns
 import programs
@@ -22,8 +17,8 @@ import routines
 
 memory_log = logging.getLogger("MEMORY")
 
+
 class Computer(object):
-    
     def __init__(self, gui):
         self.gui = gui
         self.dsky = dsky.DSKY(self.gui, self)
@@ -37,8 +32,8 @@ class Computer(object):
         self.loop_items = []
 
         self.state = {
-            #"is_powered_on": False,
-            #"is_verb": False,
+            # "is_powered_on": False,
+            # "is_verb": False,
             #"is_noun": False,
             #"display_lock": None,
             #"is_noun_table_initialised": False,
@@ -48,7 +43,7 @@ class Computer(object):
             "running_programs": [],
             #"running_verb": None,
             "run_average_g_routine": False,
-            }
+        }
 
         verbs.memory = self.memory
         verbs.computer = self
@@ -61,7 +56,7 @@ class Computer(object):
         programs.computer = self
         programs.dsky = self.dsky
         routines.computer = self
-        
+
         self.nouns = [
             None,
             nouns.noun01,
@@ -249,7 +244,7 @@ class Computer(object):
             verbs.Verb81(),
             verbs.Verb82(),
             verbs.Verb83(),
-            None, # 84
+            None,  # 84
             verbs.Verb85(),
             verbs.Verb86(),
             verbs.Verb87(),
@@ -260,10 +255,10 @@ class Computer(object):
             verbs.Verb92(),
             verbs.Verb93(),
             verbs.Verb94(),
-            None, # 95
+            None,  # 95
             verbs.Verb96(),
             verbs.Verb97(),
-            None, # 98
+            None,  # 98
             verbs.Verb99(),
         ]
         self.programs = {
@@ -282,6 +277,7 @@ class Computer(object):
             "00007": "",
             "00024": "",
         }
+
     def on(self):
         self.loop_timer.start()
         self.is_powered_on = True
@@ -293,14 +289,14 @@ class Computer(object):
             routines.average_g()
         for item in self.loop_items:
             item()
-    
+
     def reset_alarm_codes(self):
         self.state["alarm_codes"][2] = self.state["alarm_codes"][0]
         self.state["alarm_codes"][0] = 0
         self.state["alarm_codes"][1] = 0
 
     def program_alarm(self, alarm_code, required_action):
-        
+
         """ sets the program alarm codes in memory and turns the PROG
             annunciator on
             alarm_code should be a 3 or 4 digit octal int
@@ -308,7 +304,7 @@ class Computer(object):
         if required_action == "program_alarm":
             if self.state["alarm_codes"][0] != 0:
                 self.state["alarm_codes"][1] = self.state["alarm_codes"][0]
-            self.state["alarm_codes"][0] = 1000 + alarm_code            
+            self.state["alarm_codes"][0] = 1000 + alarm_code
             self.state["alarm_codes"][2] = self.state["alarm_codes"][0]
             self.dsky.annunciators["prog"].on()
         elif required_action == "P00DOO":
@@ -321,16 +317,16 @@ class Computer(object):
             # insert computer reboot
             self.fresh_start()
 
+
 class Memory(object):
-    
     """This object represents the guidance computer's memory."""
-    
-    #memory_log = logging.getLogger("Memory")
+
+    # memory_log = logging.getLogger("Memory")
 
     def __init__(self, computer):
 
         """Constructor for the Memory object."""
-        
+
         print("Init memory")
         self._init_storage()
         self._init_symbols()
@@ -338,20 +334,20 @@ class Memory(object):
 
     def _init_symbols(self):
         self.TEPHEM = 0
-    
+
     def reset(self):
-        
+
         """ Resets the contents of memory """
-        
+
         print("Resetting memory contents...")
         self._init_storage()
-    
+
     def _init_storage(self):
-        
+
         """ Initialises memory storage """
-        
+
         self.REFSMMAT_flag = False
-        
+
         self._storage = {
             "is_paused": MemoryData("Paused", False, "p.paused"),
             "is_rcs": MemoryData("RCS", False, "v.rcsValue"),
@@ -404,15 +400,13 @@ class Memory(object):
             "raw_roll": MemoryData("Raw Roll", 0.0, "n.rawroll"),
             "raw_yaw": MemoryData("Raw Yaw", 0.0, "n.rawheading"),
         }
-        
-        
+
     def get_data_from_ksp(self, data):
-        
+
         """ Contacts KSP for the requested data. Saves the data to storage """
-        
-        query_string = ""
-        #for item in data:
-            #query_string += item + "=" + self._storage[item].query_string + "&"
+
+        # for item in data:
+        #query_string += item + "=" + self._storage[item].query_string + "&"
         #query_string = query_string[:-1]
         query_string = data + "=" + self._storage[data].query_string
         try:
@@ -424,9 +418,9 @@ class Memory(object):
         for key, value in json_response.iteritems():
             self._storage[key].set_value(value)
         return json_response
-        
+
     def get_memory(self, data):
-        
+
         """Gets the contents of memory as specified by data. data should be a
            list of storage locations"""
         try:
@@ -434,36 +428,33 @@ class Memory(object):
         except KSPNotConnected:
             self.computer.program_alarm(300, "program_alarm")
             return
-        #return_data = {request: self._storage[request].get_value() for request in data}
+        # return_data = {request: self._storage[request].get_value() for request in data}
         #return return_data
         return self._storage[data].value
 
+
 class MemoryData(object):
-    
     """ This class represents a individual memory item in computer memory """
-    
+
     def __init__(self, name, value, query_string):
-        
         """ Class constructor """
-        
+
         self.name = name
         self.value = value
         self.query_string = query_string
-    
+
     def set_value(self, new_value):
-        
         """ Memory data setter """
-        
+
         self.value = new_value
-    
+
     def get_value(self):
-        
         """ Memory data getter """
-        
+
         return self.value
 
+
 class KSPNotConnected(Exception):
-    
     """ This exception should be raised when there is not connection to KSP """
     pass
 
