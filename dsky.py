@@ -248,7 +248,7 @@ class DSKY(object):
             elif new_value == 9:
                 self.widget.SetBitmap(self.digit_9)
             elif new_value == "blank":
-                self.blank()
+                self.widget.SetBitmap(self.blank_digit)
             self.current_value = new_value
             if self.blink_state:
                 if new_value != "blank":
@@ -492,7 +492,7 @@ class DSKY(object):
             if __key == "P":
                 self.computer.on()
             else:
-                print("Key {} ignored because computer is off".format(__key))
+                print("Key {} ignored because gc is off".format(__key))
                 return
         
         # if a number of the + or - keys are received without a control key first,

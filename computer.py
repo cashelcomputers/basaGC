@@ -53,7 +53,7 @@ class Computer(object):
         nouns.computer = self
         nouns.dsky = self.dsky
         nouns.frame = self.gui
-        programs.computer = self
+        programs.gc = self
         programs.dsky = self.dsky
         routines.computer = self
 
@@ -426,14 +426,14 @@ class Memory(object):
             self.get_data_from_ksp(data)
         except KSPNotConnected:
             self.computer.program_alarm(300, "program_alarm")
-            return
+            raise
         # return_data = {request: self._storage[request].get_value() for request in data}
         #return return_data
         return self._storage[data].value
 
 
 class MemoryData(object):
-    """ This class represents a individual memory item in computer memory """
+    """ This class represents a individual memory item in gc memory """
 
     def __init__(self, name, value, query_string):
         """ Class constructor """

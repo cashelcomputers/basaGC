@@ -642,7 +642,10 @@ class Verb74(Verb):
 class Verb75(Verb):
     def __init__(self):
         super(Verb75, self).__init__(name="Backup liftoff", verb_number=75)
-        
+
+    def execute(self):
+        computer.programs["11"].execute()
+
 #no verb 76
 #no verb 77
         

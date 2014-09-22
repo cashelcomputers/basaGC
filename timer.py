@@ -4,7 +4,7 @@ import threading
 
 class Timer(object):
         
-    """ A timer for the guidance computer """
+    """ A timer for the guidance gc """
     
     def __init__(self, interval, function, enable=False, *args, **kwargs):
         self._timer = None

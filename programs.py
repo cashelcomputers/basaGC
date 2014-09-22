@@ -24,9 +24,9 @@
 import logging
 
 import lib
-import timer
+import computer
 
-computer = None
+gc = None
 dsky = None
 log = logging.getLogger("Programs")
 
@@ -39,7 +39,11 @@ class Program(object):
     def execute(self):
         dsky.flash_comp_acty(300)
         dsky.control_registers["program"].display(str(self.number))
-        computer.state["running_programs"].append(self.number)
+        gc.state["running_programs"].append(self.number)
+
+    def terminate(self):
+        while self.number in gc.state["running_programs"]: gc.state["running_programs"].remove(self.number)
+
     
     #def init_program(self):
         #computer.state["running_program"] = self
@@ -102,35 +106,41 @@ class Program11(Program):
     def execute(self):
         super(Program11, self).execute()
         log.info("Program 11 executing")
-        
+
+        # test if KSP is connected
+        try:
+            gc.memory.get_memory("ut")
+        except computer.KSPNotConnected:
+            self.terminate()
+            return
         # --> zero CMC clock
         # the KSP clock only starts at liftoff, so nothing to be done
         
         # --> update TEPHEM with liftoff time
-        computer.memory.TEPHEM = computer.memory.get_memory("ut")
+        gc.memory.TEPHEM = gc.memory.get_memory("ut")
         
         # --> call average G integration with delta V integration
-        computer.state["run_average_g_routine"] = True
+        gc.state["run_average_g_routine"] = True
         
         # --> terminate gyrocompassing
-        if "02" in computer.state["running_programs"]:
-            computer.programs["02"].terminate()
+        if "02" in gc.state["running_programs"]:
+            gc.programs["02"].terminate()
         
         # --> compute initial state vector
-        computer.routines["average_g"]()
+        gc.routines["average_g"]()
 
         # --> compute REFSMMAT
         # we already know our REFSMMAT, no need to calculate
         
         # --> set REFSMMAT flag
-        computer.memory.REFSMMAT_flag = True
+        gc.memory.REFSMMAT_flag = True
         
         # --> store liftoff attitude
-        
-        pitch = computer.memory.get_memory("pitch")
-        roll = computer.memory.get_memory("roll")
-        yaw = computer.memory.get_memory("yaw")
-        computer.memory.liftoff_attitude = lib.Attitude(pitch, roll, yaw)
+        pitch = gc.memory.get_memory("pitch")
+        roll = gc.memory.get_memory("roll")
+        yaw = gc.memory.get_memory("yaw")
+
+        gc.memory.liftoff_attitude = lib.Attitude(pitch, roll, yaw)
         
         # --> call routine to load ICDU DACs with pitch, roll and yaw attitude
         # --> errors derived from present attitude and stored liftoff attitude
