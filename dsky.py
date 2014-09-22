@@ -7,13 +7,13 @@ import verbs
 dsky_log = logging.getLogger("DSKY")
 debug_computer = None
 class DSKY(object):
-    
+
     def __init__(self, gui, computer):
-        
+
         """The constructor for the DSKY object."""
-        
+
         self.computer = computer
-        
+
         global frame
         frame = gui
 
@@ -22,12 +22,12 @@ class DSKY(object):
         self.comp_acty_timer = wx.Timer(frame)
         frame.Bind(wx.EVT_TIMER, self.stop_comp_acty_flash, self.comp_acty_timer)
         #self.keybuffer = []
-        
-        
+
+
         self._init_state()
-        
+
         self.static_display = [
-            
+
             DSKY.Annunciator(self, image_on="rProgOn.jpg", image_off="rProgOff.jpg", panel=frame.panel_1),
             DSKY.Annunciator(self, image_on="VerbOn.jpg", image_off="VerbOff.jpg", panel=frame.panel_1),
             DSKY.Annunciator(self, image_on="NounOn.jpg", image_off="NounOff.jpg", panel=frame.panel_1),
@@ -84,12 +84,12 @@ class DSKY(object):
             "reset": DSKY.KeyButton(config.ID_RSETBUTTON, "RsetUp.jpg", self),
         }
     def operator_error(self, message=None):
-        
+
         """Called when the astronaut has entered invalid keyboard input."""
         if message:
             print(message)
         self.annunciators["opr_err"].blink_timer.Start(500)
-        
+
     def _init_state(self):
         self.state = {
             "is_verb_being_loaded": False,
@@ -112,10 +112,10 @@ class DSKY(object):
             "display_location_to_load": None,
             "data_load_index": None,
         }
-    
+
     def stop_comp_acty_flash(self, event):
         self.annunciators["comp_acty"].off()
-    
+
     def request_data(self, requesting_object, location):
         print("{} requesting data".format(requesting_object))
         self.verb_noun_flash_on()
@@ -123,9 +123,9 @@ class DSKY(object):
         self.state["is_expecting_data"] = True
         self.state["display_location_to_load"] = location
         location.blank()
-        
+
     def verb_noun_flash_on(self):
-        
+
         self.control_registers["verb"].digits[1].start_blink()
         self.control_registers["verb"].digits[2].start_blink()
         self.control_registers["noun"].digits[1].start_blink()
@@ -136,17 +136,17 @@ class DSKY(object):
         #for digit in self.control_registers["noun"].digits.itervalues():
             ##digit.blink_value = digit.value
             #digit.start_blink(digit.value)
-    
+
     def verb_noun_flash_off(self):
         for digit in self.control_registers["verb"].digits.itervalues():
             digit.stop_blink()
         for digit in self.control_registers["noun"].digits.itervalues():
             digit.stop_blink()
-            
+
     class Digit(object):
-    
+
         def __init__(self, dsky):
-            
+
             self.dsky = dsky
             global frame
             self.state = None
@@ -160,17 +160,17 @@ class DSKY(object):
             self.image_on = wx.Image(config.IMAGES_DIR + "SeparatorOn.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             self.image_off = wx.Image(config.IMAGES_DIR + "Separator.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             self.widget = wx.StaticBitmap(panel, wx.ID_ANY, self.image_off)
-        
+
         def on(self):
             self.widget.SetBitmap(self.image_on)
             self.state = True
-        
+
         def off(self):
             self.widget.SetBitmap(self.image_off)
             self.state = False
-    
+
     class NumericDigit(Digit):
-    
+
         def __init__(self, dsky, panel=None):
             self.dsky = dsky
             super(DSKY.NumericDigit, self).__init__(self.dsky)
@@ -190,25 +190,25 @@ class DSKY(object):
             self.blink_value = None
             self.last_value = None
 
-            
+
             # setup blink timers
             self.blink_timer = wx.Timer(frame)
             frame.Bind(wx.EVT_TIMER, self._blink, self.blink_timer)
-            
+
             if panel:
                 self.widget = wx.StaticBitmap(panel, wx.ID_ANY, self.blank_digit)
             else:
                 self.widget = wx.StaticBitmap(frame, wx.ID_ANY, self.blank_digit)
-        
+
         def start_blink(self, value=None):
             if value:
                 self.blink_value = value
             else:
                 self.blink_value = self.current_value
             self.blink_state = True
-            
+
             self.blink_timer.Start(500)
-        
+
         def _blink(self, event):
             if self.blink_state:
                 self.display("blank")
@@ -216,16 +216,16 @@ class DSKY(object):
             else:
                 self.display(self.blink_value)
                 self.blink_state = True
-        
+
         def stop_blink(self):
             self.blink_timer.Stop()
             self.display(self.blink_value)
             self.blink_value = None
-            
+
         def blank(self):
             self.last_value = self.current_value
             self.display("blank")
-            
+
         def display(self, new_value):
             if new_value == 0:
                 self.widget.SetBitmap(self.digit_0)
@@ -253,7 +253,7 @@ class DSKY(object):
             if self.blink_state:
                 if new_value != "blank":
                     self.blink_value = new_value
-            
+
             #if new_value == 0:
                 #self.dsky.display_update_queue.appendleft(self.widget.SetBitmap, self.digit_0)
             #elif new_value == 1:
@@ -276,10 +276,10 @@ class DSKY(object):
                 #self.dsky.display_update_queue.appendleft(self.widget.SetBitmap(self.digit_9))
             #elif new_value == "blank":
                 #self.dsky.display_update_queue.appendleft(self.widget.SetBitmap(self.blank))
-            
-    
+
+
     class SignDigit(Digit):
-        
+
         def __init__(self, dsky, panel=None):
             self.dsky = dsky
             #super(DSKY.SignDigit, self).__init__(self.dsky)
@@ -290,23 +290,23 @@ class DSKY(object):
                 self.widget = wx.StaticBitmap(panel, wx.ID_ANY, self.blank)
             else:
                 self.widget = wx.StaticBitmap(frame, wx.ID_ANY, self.blank)
-        
+
         def display(self, value):
             if value == "blank":
                 self.widget.SetBitmap(self.blank)
-        
+
         def plus(self):
             self.widget.SetBitmap(self.image_plus)
-        
+
         def minus(self):
             self.widget.SetBitmap(self.image_minus)
-        
+
         def blank(self):
             self.widget.SetBitmap(self.blank)
-    
+
     class Annunciator(object):
         def __init__(self, dsky, image_on, image_off, image_orange=None, panel=None, name=None):
-            
+
             self.dsky = dsky
             self.name = name
             self.image_on = wx.Image(config.IMAGES_DIR + image_on, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
@@ -316,22 +316,22 @@ class DSKY(object):
             self.is_lit = False
             self.requested_state = False
             #self.old_state = None
-            
+
             # setup blink timer
             self.blink_timer = wx.Timer(frame)
             frame.Bind(wx.EVT_TIMER, self.blink, self.blink_timer)
-            
+
             if panel:
                 self.widget = wx.StaticBitmap(panel, wx.ID_ANY, self.image_off)
             else:
                 self.widget = wx.StaticBitmap(frame, wx.ID_ANY, self.image_off)
-        
+
         def start_blink(self, interval=500):
             self.blink_timer.Start(interval)
-        
+
         def stop_blink(self):
             self.blink_timer.Stop()
-        
+
         def blink(self, event):
             """ Blinks indicator """
 
@@ -339,23 +339,23 @@ class DSKY(object):
                 self.off()
             else:
                 self.on()
-        
+
         def on(self):
             self.widget.SetBitmap(self.image_on)
             self.is_lit = True
-        
+
         def off(self):
             self.widget.SetBitmap(self.image_off)
             self.is_lit = False
-        
+
         #def _on(self):
             #self.widget.SetBitmap(self.image_on)
             #self.is_lit = True
-            
+
         #def _off(self):
             #self.widget.SetBitmap(self.image_off)
             #self.is_lit = False
-            
+
     class DataRegister(object):
         def __init__(self, dsky):
             self.dsky = dsky
@@ -367,7 +367,7 @@ class DSKY(object):
                 DSKY.NumericDigit(dsky, panel=frame.panel_1),
                 DSKY.NumericDigit(dsky, panel=frame.panel_1),
             ]
-        
+
         def display(self, value, sign=""):
             print(value)
             if sign == "-":
@@ -378,12 +378,12 @@ class DSKY(object):
                 self.sign.widget.SetBitmap(self.sign.blank)
             for index, digit in enumerate(value):
                 self.digits[index].display(int(digit))
-        
+
         def blank(self):
             self.sign.display("blank")
             for digit in self.digits:
                 digit.display("blank")
-        
+
     class ControlRegister(object):
         def __init__(self, dsky, name, image_on, image_off):
             self.dsky = dsky
@@ -394,12 +394,12 @@ class DSKY(object):
                 1: DSKY.NumericDigit(dsky, panel=frame.panel_1),
                 2: DSKY.NumericDigit(dsky, panel=frame.panel_1),
             }
-        
+
         def display(self, value):
-            
+
             if len(value) == 1:
                 self.digits[1].display(int(value))
-            else:  
+            else:
                 self.digits[1].display(int(value[0]))
                 self.digits[2].display(int(value[1]))
 
@@ -415,32 +415,32 @@ class DSKY(object):
                 digit.display("blank")
 
     class KeyButton(object):
-        
+
         def __init__(self, wxid, image, dsky):
             self.dsky = dsky
             self.image = wx.Bitmap(config.IMAGES_DIR + image, wx.BITMAP_TYPE_ANY)
             self.widget = wx.BitmapButton(frame, wxid, self.image)
-            
+
         def press(self, event):
-            
+
             """Called when a keypress event has been received."""
             __key = event.GetId()
-            
+
             # set up the correct key codes for non-numeric keys
             if __key in config.KEY_IDS:
                 __key = config.KEY_IDS[__key]
-                
+
             print("Keypress: {}".format(__key))
             # call the actual handler
             self.dsky.CHARIN(__key)
             return
-            
+
     def CHARIN(self, __key):
-        
-        
-        
+
+
+
         # check if the computer is requesting the astronaut enter data
-        
+
         if self.state["is_expecting_data"]:
             # PROCEED without inputs
             if __key == "P":
@@ -453,10 +453,10 @@ class DSKY(object):
                 self.state["object_requesting_data"]("proceed")
                 self.state["input_data"] = ""
                 return
-            # if we receive ENTER, the load is complete and we will call the 
+            # if we receive ENTER, the load is complete and we will call the
             # program or verb requesting the data load
             if __key == "E":
-                
+
                 self.state["is_expecting_data"] = False
                 for digit in self.control_registers["verb"].digits.itervalues():
                     digit.stop_blink()
@@ -466,7 +466,7 @@ class DSKY(object):
                 self.state["object_requesting_data"].receive_data(self.state["input_data"])
                 self.state["input_data"] = ""
                 return
-            # if the user as entered anything other than a numeric digit, 
+            # if the user as entered anything other than a numeric digit,
             #trigger a OPR ERR and recycle program
             elif __key > 9:
                 # if a program is running, recycle it
@@ -478,16 +478,16 @@ class DSKY(object):
                 self.operator_error("Expecting numeric input")
                 return
             else:
-                
+
                 self.state["input_data"] += str(__key)
-                
+
                 if isinstance(self.state["display_location_to_load"], DSKY.DataRegister):
                     self.state["display_location_to_load"].display(sign="", value=self.state["input_data"])
                 else:
                     self.state["display_location_to_load"].display(value=self.state["input_data"])
                 #self.state["is_noun_being_loaded"] = True
                 return
-        # if the computer is off, we only want to accept the PRO key input, 
+        # if the computer is off, we only want to accept the PRO key input,
         # all other keys are ignored
         if self.computer.is_powered_on == False:
             if __key == "P":
@@ -495,7 +495,7 @@ class DSKY(object):
             else:
                 print("Key {} ignored because gc is off".format(__key))
                 return
-        
+
         # if a number of the + or - keys are received without a control key first,
         # we simply ignore the key
         if (self.state["is_noun_being_loaded"] == False) and (self.state["is_verb_being_loaded"] == False) and (self.state["is_data_being_loaded"] == False):
@@ -506,10 +506,10 @@ class DSKY(object):
             self.annunciators["key_rel"].off()
             self.state["backgrounded_update"].resume()
             return
-        # if a verb has the display lock, background it 
+        # if a verb has the display lock, background it
         if self.state["display_lock"] is not None:
             self.state["display_lock"].background()
-        
+
         # check if astronaut is entering a verb
         if self.state["is_verb_being_loaded"]:
             #user is entering a verb
@@ -526,7 +526,7 @@ class DSKY(object):
                 self.control_registers["verb"].digits[2].display(__key)
                 self.state["requested_verb"] += __key
                 self.state["verb_position"] = 0
-        
+
         # check if astronaut is entering a noun
         if self.state["is_noun_being_loaded"]:
             if __key == "V" or __key == "E":
@@ -542,7 +542,7 @@ class DSKY(object):
                 self.control_registers["noun"].digits[2].display(__key)
                 self.state["requested_noun"] += __key
                 self.state["noun_position"] = 0
-        
+
         if __key == "E":
             if self.state["requested_verb"] in verbs.INVALID_VERBS:
                 self.operator_error("Verb {} does not exist, please try a different verb".format(self.state["requested_verb"]))
@@ -563,17 +563,17 @@ class DSKY(object):
             self.state["is_verb_being_loaded"] = True
             self.state["requested_verb"] = 0
             self.control_registers["verb"].blank()
-        
+
         if __key == "N":
             self.state["is_noun_being_loaded"] = True
             self.state["requested_noun"] = 0
             self.control_registers["noun"].blank()
-        
+
         # CLEAR
         if __key == "C":
             self.flush_keybuffer()
             self.clear()
-            
+
         # RESET
         if __key == "R":
             self.computer.reset_alarm_codes()
@@ -581,16 +581,16 @@ class DSKY(object):
                 if annunciator.blink_timer.IsRunning():
                     annunciator.stop_blink()
                 annunciator.off()
-            
-        
+
+
         # PROCEED
-        
+
         #elif isinstance(__key, int):
             #self.keybuffer.append(__key)
     def flash_comp_acty(self, duration=50):
         self.annunciators["comp_acty"].on()
         self.comp_acty_timer.Start(duration, oneShot=True)
-    
+
     def set_noun(self, noun):
         self.state["requested_noun"] = noun
         self.control_registers["noun"].display(str(noun))
