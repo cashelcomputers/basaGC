@@ -149,9 +149,9 @@ class MonitorVerb(DisplayVerb):
             raise
             return
         output = format_output_data(data)
-        computer.dsky.registers[1].display(output[0], output[1])
-        computer.dsky.registers[2].display(output[2], output[3])
-        computer.dsky.registers[3].display(output[4], output[5])
+        computer.dsky.registers[1].display(sign=output[0], value=output[1])
+        computer.dsky.registers[2].display(sign=output[2], value=output[3])
+        computer.dsky.registers[3].display(sign=output[4], value=output[5])
         dsky.flash_comp_acty()
         
     def start_monitor(self):
@@ -669,7 +669,8 @@ class Verb82(Verb):
     
     def execute(self):
         #super(Verb82, self).execute()
-        computer.routines[30]()
+        #computer.routines[30]()
+        computer.execute_verb(verb=16, noun=44)
         
         
 class Verb83(Verb):

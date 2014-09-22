@@ -244,8 +244,30 @@ def noun42(calling_verb):
 def noun43(calling_verb):
     raise NounNotImplementedError
 
-def noun44(calling_verb):
-    raise NounNotImplementedError
+def noun44(calling_verb=None):
+
+    apoapsis = str(round(computer.memory.get_memory("apoapsis") / 100, 1))
+    periapsis = str(round(computer.memory.get_memory("periapsis") / 100, 1))
+    tff = int(computer.memory.get_memory("orbital_period"))
+
+    apoapsis = apoapsis.replace(".", "")
+    periapsis = periapsis.replace(".", "")
+
+    tff_minutes, tff_seconds = divmod(tff, 60)
+    tff_hours, tff_minutes = divmod(tff_minutes, 60)
+
+    tff = str(tff_hours) + str(tff_minutes) + str(tff_seconds)
+    print(tff)
+
+    data = {
+        1: int(apoapsis),
+        2: int(periapsis),
+        3: int(tff),
+        # "description": "Orbital Parameter Display",
+        "is_octal": False,
+        "number": 44,
+    }
+    return data
 
 def noun45(calling_verb):
     raise NounNotImplementedError
@@ -302,20 +324,18 @@ def noun62():
     
     surface_velocity = str(round(computer.memory.get_memory("surface_velocity"), 1))
     altitude_rate = str(round(computer.memory.get_memory("vertical_speed"), 1))
-    altitude_above_pad = str(round(computer.memory.get_memory("agl") / 1000, 1))
-    
-    print(surface_velocity, altitude_rate, altitude_above_pad)
-    
+    altitude = str(round(computer.memory.get_memory("asl") / 1000, 1))
+
     surface_velocity = surface_velocity.replace(".", "")
     altitude_rate = altitude_rate.replace(".", "")
-    altitude_above_pad = altitude_above_pad.replace(".", "")
+    altitude = altitude.replace(".", "")
     
-    print(surface_velocity, altitude_rate, altitude_above_pad)
+    print(surface_velocity, altitude_rate, altitude)
     
     data = {
         1: int(surface_velocity),
         2: int(altitude_rate),
-        3: int(altitude_above_pad),
+        3: int(altitude),
         #"description": "Alarm codes (first, second, last)",
         "is_octal": False,
         "number": 62,

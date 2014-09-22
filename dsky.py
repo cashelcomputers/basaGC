@@ -368,7 +368,8 @@ class DSKY(object):
                 DSKY.NumericDigit(dsky, panel=frame.panel_1),
             ]
         
-        def display(self, sign="", value="88888"):
+        def display(self, value, sign=""):
+            print(value)
             if sign == "-":
                 self.sign.minus()
             elif sign == "+":
@@ -547,14 +548,15 @@ class DSKY(object):
                 self.operator_error("Verb {} does not exist, please try a different verb".format(self.state["requested_verb"]))
                 return
             try:
-                self.computer.verbs[self.state["requested_verb"]].execute()
+                self.computer.verbs[int(self.state["requested_verb"])].execute()
             except NotImplementedError:
                 self.operator_error("Verb {} is not implemented yet. Sorry about that...".format(self.state["requested_verb"]))
             except verbs.NounNotAcceptableError:
                 self.operator_error("Noun {} can't be used with verb {}".format(self.state["requested_noun"], self.state["requested_verb"]))
-            except IndexError:
-                print("Verb {} not in verb list".format(self.state["requested_verb"]))
-                self.operator_error("Requested verb {} does not exist in list of verbs :(".format(self.state["requested_verb"]))
+            # except IndexError:
+            #     print(type(self.state["requested_verb"]))
+            #     print("Verb {} not in verb list".format(self.state["requested_verb"]))
+            #     self.operator_error("Requested verb {} does not exist in list of verbs :(".format(self.state["requested_verb"]))
             return
         # VERB
         if __key == "V":
