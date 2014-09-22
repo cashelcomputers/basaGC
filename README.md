@@ -17,11 +17,16 @@ To run basaGC, unzip the download to a folder of your choice. On Linux in a term
 For Windows users, you can get wxPython from here:
 <a href=http://downloads.sourceforge.net/project/wxpython/wxPython/2.8.12.0/wxPython2.8-win32-unicode-2.8.12.0-py27.exe?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fwxpython%2Ffiles%2FwxPython%2F2.8.12.0%2F&ts=1391681128&use_mirror=hivelocity>link</a>
 
-Please Note! This is a work in progress. Only a few functions of the AGC are implemented. Some buttons and warning lamps dont work.
+Please Note! This is a work in progress. Only a few functions of the AGC are implemented. Some buttons and warning lamps don't work.
 
 Historical note: I have attempted to follow, as closely as possible 
 and with the documentation available to me, the real life AGC. 
 However, some things have to be changed for KSP, for a number of 
 reasons.
 
-Prouldy bought to you by Buchanan and Son Avionics (a division of Buchanan and Son Aerospace).
+Known issues:
+------------
+- Verb/noun flash doesn't work properly
+
+
+Proudly bought to you by Buchanan and Son Avionics (a division of Buchanan and Son Aerospace).
