@@ -281,7 +281,6 @@ class DSKY(object):
     class SignDigit(Digit):
         
         def __init__(self, dsky, panel=None):
-            super(SignDigit, self).__init__(dsky)
             self.dsky = dsky
             #super(DSKY.SignDigit, self).__init__(self.dsky)
             self.image_plus = wx.Image(config.IMAGES_DIR + "PlusOn.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()

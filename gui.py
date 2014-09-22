@@ -1,8 +1,6 @@
 #!/usr/bin/env python2
 import wx
-import socket
 import logging
-import time
 
 import computer as Computer
 import config

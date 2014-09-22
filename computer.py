@@ -315,9 +315,8 @@ class Computer(object):
             print("Program fresh start not implemented yet... watch this space...")
         elif required_action == "computer_restart":
             # insert computer reboot
-            self.fresh_start()
-
-
+            #self.fresh_start()
+            pass
 class Memory(object):
     """This object represents the guidance computer's memory."""
 
