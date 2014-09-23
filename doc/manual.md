@@ -11,9 +11,7 @@ You can enter the noun first if you so wish ie N44V16E is equivalent to V16N44E.
 
 In this manual, I shall abbreviate the keypresses as follows:
 V16N44E means key in [VERB]16[NOUN]44[ENTR].
-Currently implemented programs:
-Program 00: Idle
-Program 11: Launch Monitor
+
 
 Currently implemented verbs:
 ---------------------------
