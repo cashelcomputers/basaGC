@@ -43,6 +43,7 @@ Currently implemented nouns:
 Currently implemented programs (major modes):
 ---------------------------------------------
 
+- Program 00: AGC idling (called POO by mission control :)
 - Program 11: Earth orbit insertion monitor
 
 Detailed Program 11 listing:
