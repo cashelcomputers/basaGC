@@ -1,51 +1,49 @@
 Intro to the display:
 =====================
 
-Astronauts interact with the computer by entering verb and noun pairs
-(or sometimes just verbs, e.g. V35). By pressing [VERB], the astronaut indicated
-to the computer that the next two digits are a command to do
-something, e.g. entering [VERB]16 tells the computer we want to
-display data in the three data display registers (from the top down,
-R1, R2 and R3). The VERB indicator will flash to tell the astronaut
-the computer is expecting a verb. Next the astronaut would enter the
-data to act on, e.g. [NOUN]44 tells the computer we want to act
-on apoapsis, periapsis and time to apoapsis. The NOUN indicator will
-flash to tell the astronaut we are entering a noun. Finally the
-astronaut hits [ENTR] to tell the computer to execute the request. So
-for example entering [VERB]16[NOUN]44[ENTR] tells the computer we
-want to display apoapsis, periapis and time to apoapsis in the three
-data registers.
-If there is either a + or - sign in the data registers, the data
-displayed is in decimal, if the sign is absent then the data displayed
-is in octal.
-New in 0.1: You can now enter the noun first if you so wish ie V16N44E
-is equivalent to N44V16E.
-New in 0.1: Hover over the data registers or the noun, verb and
-program displays to get a tooltip with what that display is currently showing.
+Astronauts interact with the computer by entering verb and noun pairs (or sometimes just verbs, e.g. V35). By pressing [VERB], the astronaut indicated to the computer that the next two digits are a command to do something, e.g. entering [VERB]16 tells the computer we want to monitor data in the three data display registers (from the top down,
+R1, R2 and R3). Next the astronaut would enter the data to act on, e.g. [NOUN]44 tells the computer we want to act
+on apoapsis, periapsis and time to apoapsis. Finally the astronaut hits [ENTR] to tell the computer to execute the request. So for example entering [VERB]16[NOUN]44[ENTR] tells the computer we want to display apoapsis, periapis and time to apoapsis in the three data registers.
+
+If there is either a + or - sign in the data registers, the data displayed is in decimal, if the sign is absent then the data displayed is in octal.
+
+You can enter the noun first if you so wish ie N44V16E is equivalent to V16N44E.
+
 In this manual, I shall abbreviate the keypresses as follows:
 V16N44E means key in [VERB]16[NOUN]44[ENTR].
 Currently implemented programs:
 Program 00: Idle
 Program 11: Launch Monitor
-Program 30: Hohmann Transfer
+
 Currently implemented verbs:
-Verb 01: Display Octal component in R1
-Verb 05: Display octal data in R1, R2, R3
-Verb 16: Monitor decimal in R1, R2, R3
-Verb 35: Lamp Test (this verb is a bit different, to run it we simply
-key in V35E.
+---------------------------
+
+Verb 01: Display Octal component 1 in R1
+Verb 02: Display Octal component 2 in R1
+Verb 03: Display Octal component 3 in R1
+Verb 04: Display Octal component 1 and 2 in R1 and R2
+Verb 05: Display Octal component 1, 2 and 3 in R1, R2 and R3
+Verb 06: Display decimal in R1 or R1, R2 or R1, R2, R3
+
+Verb 11: Monitor Octal component 1 in R1
+Verb 12: Monitor Octal component 2 in R1
+Verb 13: Monitor Octal component 3 in R1
+Verb 14: Monitor Octal component 1 and 2 in R1 and R2
+Verb 15: Monitor Octal component 1, 2 and 3 in R1, R2 and R3
+Verb 16: Monitor decimal in R1 or R1, R2 or R1, R2, R3
+
+Verb 35: Lamp Test (this verb is a bit different, to run it we simply key in V35E).
 Verb 37: Run program as specified by noun eg V37N11E executes Program 11.
+
 Currently implemented nouns:
+----------------------------
+
 Noun 09: Alarm codes
-Noun 17: Attitude roll, pitch, yaw in degrees
-Noun 21: Hohmann Transfer: Phase angle, Ejection angle, Ejection Velocity
-Noun 22: Hohmann Transfer: Phase angle difference, Ejection angle difference,
-Delta V
-Noun 30: Target
-Noun 36: Time of computer clock (real-life time)
 Noun 44: Apoapsis as XXXX.X, periapsis as XXXX.X, time to apoapsis in
 seconds
 Noun 62: Surface speed, altitude ASL in meters, Vertical speed
+
+
 Detailed Program 11 (Launch Monitor) listing:
 This program is intended to be executed before launch, although you
 can execute it at any time. P11 will first display noun 62. When
