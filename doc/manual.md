@@ -37,7 +37,7 @@ Currently implemented nouns:
 ----------------------------
 
 - Noun 09: Alarm codes
-- Noun 44: Apoapsis as XXXX.X, periapsis as XXXX.X, time to apoapsis in seconds
+- Noun 44: Apoapsis as XXXX.X, periapsis as XXXX.X, time to apoapsis in HMMSS
 - Noun 62: Surface speed, altitude ASL in meters, Vertical speed
 
 Currently implemented programs (major modes):
@@ -53,6 +53,8 @@ IRL, P11 would be triggered automatically by receiving the liftoff discrete sign
 At any time during ascent, the user can run V82 to bring up the orbit insertion display. Apoapsis and periapsis should be read as XXXX.X km, and time to apoapsis should be read in HMMSS. The original AGC didnt't have decimal places in the display registers, so we don't have them here.
 
 Alarm codes:
+------------
+
 When there is an program alarm, the PROG indicator will illuminate.
 Keying in V05N09E will display the alarm codes, with R1 displaying the
 most recent alarm code, R2 the previous alarm code, and R3 displaying the last alarm code, regardless if the alarm codes have been reset or not. Alarm codes are displayed in octal. Alarm codes currently inplemented are listed below:
