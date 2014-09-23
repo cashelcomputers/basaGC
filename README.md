@@ -3,6 +3,8 @@ basaGC
 
 Apollo Guidance Computer for Kerbal Space Program
 
+Thanks to Ron Burkey (<info@sandroid.org>) for VirtualAGC!
+
 This is my reimplementation of the Apollo Guidance Computer (AGC) and Display/Keyboard (DSKY) for Kerbal Space Program.
 
 Prerequisites:
