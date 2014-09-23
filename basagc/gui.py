@@ -338,7 +338,7 @@ class GUI(wx.Frame):
             item.off()
 
 
-class pyDSKYApp(wx.App):
+class basaGCApp(wx.App):
     def OnInit(self):
         wx.InitAllImageHandlers()
         dsky = GUI(None, wx.ID_ANY, "")
@@ -346,7 +346,7 @@ class pyDSKYApp(wx.App):
         dsky.Show()
         return 1
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
 
-    pydsky = pyDSKYApp(0)
-    pydsky.MainLoop()
+    #pydsky = pyDSKYApp(0)
+    #pydsky.MainLoop()

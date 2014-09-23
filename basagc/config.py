@@ -23,8 +23,7 @@
 #  by Ronald S. Burkey <info@sandroid.org>VERSION = "0.3.1a"
 
 
-#ROOT_DIR = "/home/ttb/PycharmProjects/basaGC/"
-IMAGES_DIR = "../images/"
+IMAGES_DIR = "./images/"
 IP = "http://127.0.0.1:8085"
 URL = IP + "/telemachus/datalink?"
 PORT = 26000
