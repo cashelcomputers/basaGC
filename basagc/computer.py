@@ -283,15 +283,18 @@ class Computer(object):
             None,  # 98
             verbs.Verb99(),
         ]
-        print(self.verbs[82])
+
         self.programs = {
             "01": programs.Program01(name="Prelaunch or Service - Initialization Program", number=01),
             "11": programs.Program11(name="Change Program (Major Mode)", number=11),
+            "15": programs.Program15(name="TMI initiate/cutoff", number=15),
         }
+
         self.routines = {
             "average_g": routines.average_g,
             30: routines.routine_30,
         }
+
         self.option_codes = {
             "00001": "",
             "00002": "",
@@ -427,6 +430,12 @@ class Memory(object):
             "raw_pitch": MemoryData("Raw Pitch", 0.0, "n.rawpitch"),
             "raw_roll": MemoryData("Raw Roll", 0.0, "n.rawroll"),
             "raw_yaw": MemoryData("Raw Yaw", 0.0, "n.rawheading"),
+            "target_name": MemoryData("Target Name", "", "tar.name"),
+            "target_semi_major_axis": MemoryData("Target Semi-major axis", 0.0, "tar.o.sma"),
+            "body_semi_major_axis": MemoryData("Body semi-major axis", 0.0, "b.o.sma"),
+            "body_gravitational_parameter": MemoryData("Body gravitational parameter", 0.0, "b.o.gravParameter"),
+            "body_radius": MemoryData("Body radius", 0, "b.radius"),
+            "body_phase_angle": MemoryData("Body Phase Angle", 0.0, "b.o.phaseAngle"),
         }
 
 

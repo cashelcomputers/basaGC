@@ -26,6 +26,7 @@ import logging
 
 import lib
 import computer
+import maneuvers
 
 gc = None
 dsky = None
@@ -161,6 +162,16 @@ class Program11(Program):
         # --> R2: Rate of change of vehicle altitude
         # --> R3: Vehicle altitude in km to nearest .1 km
         gc.execute_verb(verb=16, noun=62)
+
+
+class Program15(Program):
+
+    def __init__(self, name, number):
+        super(Program15, self).__init__(name, number)
+
+    def execute(self):
+        this_maneuver = maneuvers.HohmannTransfer(gc)
+        this_maneuver.execute()
 
 
 class ProgramNotImplementedError(Exception):
