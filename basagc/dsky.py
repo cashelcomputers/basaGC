@@ -47,7 +47,6 @@ class DSKY(object):
         frame.Bind(wx.EVT_TIMER, self.stop_comp_acty_flash, self.comp_acty_timer)
         #self.keybuffer = []
 
-
         self._init_state()
 
         self.static_display = [
@@ -82,9 +81,9 @@ class DSKY(object):
             3: DSKY.DataRegister(self),
         }
         self.control_registers = {
-            "program":  DSKY.ControlRegister(self, "program", "rProgOn.jpg", "rProgOff.jpg"),
-            "verb":     DSKY.ControlRegister(self, "verb", "VerbOn.jpg", "VerbOff.jpg"),
-            "noun":     DSKY.ControlRegister(self, "noun", "NounOn.jpg", "NounOff.jpg"),
+            "program": DSKY.ControlRegister(self, "program", "rProgOn.jpg", "rProgOff.jpg"),
+            "verb": DSKY.ControlRegister(self, "verb", "VerbOn.jpg", "VerbOff.jpg"),
+            "noun": DSKY.ControlRegister(self, "noun", "NounOn.jpg", "NounOff.jpg"),
         }
         self.keyboard = {
             "verb": DSKY.KeyButton(config.ID_VERBBUTTON, "VerbUp.jpg", self),
@@ -359,7 +358,7 @@ class DSKY(object):
         def blink(self, event):
             """ Blinks indicator """
 
-            if self.is_lit == True:
+            if self.is_lit:
                 self.off()
             else:
                 self.on()
