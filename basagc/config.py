@@ -1,6 +1,8 @@
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
-
+"""
+    This file contains config information common to the whole package
+"""
 #  This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
 #  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
 #  This program is free software; you can redistribute it and/or modify
@@ -19,16 +21,18 @@
 #  MA 02110-1301, USA.
 #
 #
-#  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
-#  by Ronald S. Burkey <info@sandroid.org>VERSION = "0.3.1a"
+#  Includes code and images from the Virtual AGC Project
+# (http://www.ibiblio.org/apollo/index.html) by Ronald S. Burkey
+# <info@sandroid.org>
 
-
+VERSION = "0.3.1a"
 IMAGES_DIR = "./images/"
 IP = "http://127.0.0.1:8085"
 URL = IP + "/telemachus/datalink?"
 PORT = 26000
-DISPLAY_UPDATE_INTERVAL = 500
+DISPLAY_UPDATE_INTERVAL = 1000
 HOST = "127.0.0.1"
+COMP_ACTY_FLASH_DURATION = 50
 
 ID_VERBBUTTON = 10
 ID_NOUNBUTTON = 11
@@ -60,45 +64,50 @@ KEY_IDS = {
     16: "K",
     17: "E",
     18: "R",
-    }
-
-DSKY_KEYCODES = {
-    "0": "10000",
-    "1": "00001",
-    "2": "00010",
-    "3": "00011",
-    "4": "00100",
-    "5": "00101",
-    "6": "00110",
-    "7": "00111",
-    "8": "01000",
-    "9": "01001",
-    "verb": "10001",
-    "reset": "10010",
-    "key_release": "11001",
-    "+": "11010",
-    "-": "11011",
-    "enter": "11100",
-    "clear": "11110",
-    "noun": "11111",
-    "proceed": "10101",
 }
 
-COMPUTER_KEYCODES = {value:key for key, value in DSKY_KEYCODES.items()}
-DSKY_POLL_INTERVAL = 1000
+# DSKY_KEYCODES = {
+#     "0": "10000",
+#     "1": "00001",
+#     "2": "00010",
+#     "3": "00011",
+#     "4": "00100",
+#     "5": "00101",
+#     "6": "00110",
+#     "7": "00111",
+#     "8": "01000",
+#     "9": "01001",
+#     "verb": "10001",
+#     "reset": "10010",
+#     "key_release": "11001",
+#     "+": "11010",
+#     "-": "11011",
+#     "enter": "11100",
+#     "clear": "11110",
+#     "noun": "11111",
+#     "proceed": "10101",
+# }
+#
+# COMPUTER_KEYCODES = {value:key for key, value in DSKY_KEYCODES.items()}
+# DSKY_POLL_INTERVAL = 1000
+#
+# OUT_CODES = {
+#     "blank": "00000",
+#     "0": "10101",
+#     "1": "00011",
+#     "2": "11001",
+#     "3": "11011",
+#     "4": "01111",
+#     "5": "11110",
+#     "6": "11100",
+#     "7": "10011",
+#     "8": "11101",
+#     "9": "11111",
+# }
+# IN_CODES = {value:key for key, value in OUT_CODES.items()}
 
-OUT_CODES = {
-    "blank": "00000",
-    "0": "10101",
-    "1": "00011",
-    "2": "11001",
-    "3": "11011",
-    "4": "01111",
-    "5": "11110",
-    "6": "11100",
-    "7": "10011",
-    "8": "11101",
-    "9": "11111",
+BODIES = {
+    "Kerbin": "1",
+    "Mun": "2",
+    "Minmus": "3",
 }
-IN_CODES = {value:key for key, value in OUT_CODES.items()}
-

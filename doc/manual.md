@@ -33,10 +33,16 @@ Currently implemented verbs:
 - Verb 35: Lamp Test (this verb is a bit different, to run it we simply key in V35E).
 - Verb 37: Change program (major mode)
 
+- Verb 75: Backup Liftoff Discrete
+- Verb 82: Request orbital parameters display
+
 Currently implemented nouns:
 ----------------------------
 
 - Noun 09: Alarm codes
+- Noun 17: Spacecraft altitude
+- Noun 36: Mission Elapsed Time
+- Noun 43: Geographic Position
 - Noun 44: Apoapsis as XXXX.X, periapsis as XXXX.X, time to apoapsis in HMMSS
 - Noun 62: Surface speed, altitude ASL in meters, Vertical speed
 
@@ -45,6 +51,7 @@ Currently implemented programs (major modes):
 
 - Program 00: AGC idling (called POO by mission control :)
 - Program 11: Earth orbit insertion monitor
+- Program 15: TMI initiate/cutoff
 
 Detailed Program 11 listing:
 ----------------------------

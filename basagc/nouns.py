@@ -22,11 +22,10 @@
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>
 
-import wx
-import datetime
 import logging
 import math
-import config
+
+from telemachus import get_telemetry
 
 log = logging.getLogger("Nouns")
 
@@ -70,7 +69,6 @@ def noun02(calling_verb=None, data=None, base=8):
                 3: memory.memory[data + 2].get_oct(),
                 "description": "Data in location",
                 "is_octal": True,
-                "number": 2,
             }
         elif base == 10:
             return_data = {
@@ -79,7 +77,6 @@ def noun02(calling_verb=None, data=None, base=8):
                 3: memory.memory[data + 2].get_int,
                 "description": "Data in location",
                 "is_octal": False,
-                "number": 2,
             }
         else:
             raise ValueError("Base must be either 8 or 10")
@@ -106,14 +103,13 @@ def noun08(calling_verb):
 
 def noun09(calling_verb):
     log.info("Noun 09 requested")
-    alarm_codes = computer.state["alarm_codes"]
+    alarm_codes = computer.alarm_codes
     data = {
         1: alarm_codes[0],
         2: alarm_codes[1],
         3: alarm_codes[2],
         "description": "Alarm codes (first, second, last)",
         "is_octal": True,
-        "number": 9,
     }
     return data
 
@@ -138,8 +134,24 @@ def noun15(calling_verb):
 def noun16(calling_verb):
     raise NounNotImplementedError
 
-def noun17(calling_verb):
-    raise NounNotImplementedError
+def noun17(calling_verb=None):
+
+    roll = str(round(get_telemetry("roll"), 2))
+    pitch = str(round(get_telemetry("pitch"), 2))
+    yaw = str(round(get_telemetry("yaw"), 2))
+
+    roll = roll.replace(".", "")
+    pitch = pitch.replace(".", "")
+    yaw = yaw.replace(".", "")
+
+    data = {
+        1: int(roll),
+        2: int(pitch),
+        3: int(yaw),
+        "description": "Attitude",
+        "is_octal": False,
+    }
+    return data
 
 def noun18(calling_verb):
     raise NounNotImplementedError
@@ -159,7 +171,6 @@ def noun21(calling_verb):
         #3:
         #"description": "PIPA pulse rate for X, Y, Z axis",
         #"is_octal": False,
-        #"number": 21,
     #}
     #return data
 
@@ -205,20 +216,23 @@ def noun35(calling_verb):
 
 def noun36(*args, **kwargs):
 
-    telemetry = memory.get_memory(["met"])
-    minutes, seconds = divmod(telemetry["met"], 60)
+    telemetry = get_telemetry("met")
+    print(telemetry)
+    minutes, seconds = divmod(telemetry, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
     milliseconds, seconds = math.modf(seconds)
     milliseconds = milliseconds * 100
-    print(days, hours, minutes, seconds, milliseconds)
     data = {
         1: (int(days) * 100) + int(hours),
         2: int(minutes),
-        3: (int(seconds)  * 100) + int(milliseconds),
-        "description": "Time of AGC clock",
+        3: (int(seconds) * 100) + int(milliseconds),
+        "tooltips": [
+            "Mission Elapsed Time (dddhh)",
+            "Mission Elapsed Time (bbbmm)",
+            "Mission Elapsed Time (bss.ss)",
+        ],
         "is_octal": False,
-        "number": 36,
     }
     return data
 
@@ -242,14 +256,26 @@ def noun41(calling_verb):
 def noun42(calling_verb):
     raise NounNotImplementedError
 
-def noun43(calling_verb):
-    raise NounNotImplementedError
+def noun43(calling_verb=None):
+
+    latitude = str(round(get_telemetry("latitude"), 2)).replace(".", "")
+    longitude = str(round(get_telemetry("longitude"), 2)).replace(".", "")
+    altitude = str(round(get_telemetry("asl") / 1000, 1)).replace(".", "")
+
+    data = {
+        1: int(latitude),
+        2: int(longitude),
+        3: int(altitude),
+        # "description": "Geographic Position",
+        "is_octal": False,
+    }
+    return data
 
 def noun44(calling_verb=None):
 
-    apoapsis = str(round(computer.memory.get_memory("apoapsis") / 100, 1))
-    periapsis = str(round(computer.memory.get_memory("periapsis") / 100, 1))
-    tff = int(computer.memory.get_memory("orbital_period"))
+    apoapsis = str(round(get_telemetry("apoapsis") / 100, 1))
+    periapsis = str(round(get_telemetry("periapsis") / 100, 1))
+    tff = int(get_telemetry("time_to_apoapsis"))
 
     apoapsis = apoapsis.replace(".", "")
     periapsis = periapsis.replace(".", "")
@@ -257,16 +283,20 @@ def noun44(calling_verb=None):
     tff_minutes, tff_seconds = divmod(tff, 60)
     tff_hours, tff_minutes = divmod(tff_minutes, 60)
 
-    tff = str(tff_hours) + str(tff_minutes) + str(tff_seconds)
-    print(tff)
+
+
+    tff = str(tff_hours).zfill(2) + str(tff_minutes).zfill(2) + str(tff_seconds).zfill(2)
 
     data = {
         1: int(apoapsis),
         2: int(periapsis),
         3: int(tff),
-        # "description": "Orbital Parameter Display",
+        "tooltips": [
+            "Apoapsis Altitude (xxx.xx km)",
+            "Periapsis Altitude (xxx.xx km)",
+            "Time to Apoapsis (hmmss)"
+        ],
         "is_octal": False,
-        "number": 44,
     }
     return data
 
@@ -285,8 +315,25 @@ def noun48(calling_verb):
 def noun49(calling_verb):
     raise NounNotImplementedError
 
-def noun50(calling_verb):
-    raise NounNotImplementedError
+def noun50(calling_verb=None):
+
+    surface_velocity_x = str(round(get_telemetry("surface_velocity_x"))).replace(".", "")
+    surface_velocity_y = str(round(get_telemetry("surface_velocity_y"))).replace(".", "")
+    surface_velocity_z = str(round(get_telemetry("surface_velocity_z"))).replace(".", "")
+
+    data = {
+        1: int(surface_velocity_x),
+        2: int(surface_velocity_y),
+        3: int(surface_velocity_z),
+        "tooltips": [
+            "Surface Velocity X (xxxx.x m/s)",
+            "Surface Velocity Y (xxxx.x m/s)",
+            "Surface Velocity Z (xxxx.x m/s)"
+        ],
+        "description": "Surface Velocity Display",
+        "is_octal": False,
+    }
+    return data
 
 def noun51(calling_verb):
     raise NounNotImplementedError
@@ -323,25 +370,22 @@ def noun61(calling_verb):
 def noun62():
 
     """Surface Velocity (m/s), Altitude rate (m/s), Altitude (km)"""
-    log.info("Noun 62 requested")
 
-    surface_velocity = str(round(computer.memory.get_memory("surface_velocity"), 1))
-    altitude_rate = str(round(computer.memory.get_memory("vertical_speed"), 1))
-    altitude = str(round(computer.memory.get_memory("asl") / 1000, 1))
+    surface_velocity = str(round(get_telemetry("surface_velocity"), 1))
+    altitude_rate = str(round(get_telemetry("vertical_speed"), 1))
+    altitude = str(round(get_telemetry("asl") / 1000, 1))
 
     surface_velocity = surface_velocity.replace(".", "")
     altitude_rate = altitude_rate.replace(".", "")
     altitude = altitude.replace(".", "")
 
-    print(surface_velocity, altitude_rate, altitude)
 
     data = {
         1: int(surface_velocity),
         2: int(altitude_rate),
         3: int(altitude),
-        #"description": "Alarm codes (first, second, last)",
+        #"description": "",
         "is_octal": False,
-        "number": 62,
     }
     return data
 

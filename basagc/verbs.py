@@ -22,14 +22,16 @@
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org> (thanks Ronald!)
 
-import wx
 import logging
+
+import wx
 
 import nouns
 import config
 import computer as Computer
+from telemachus import KSPNotConnected
 
-memory = None
+telemetry = None
 computer = None
 dsky = None
 frame = None
@@ -143,13 +145,19 @@ class MonitorVerb(DisplayVerb):
             dsky.operator_error("Noun {} not implemented yet. Sorry about that...".format(dsky.state["requested_noun"]))
             self.terminate()
             return
-        except Computer.KSPNotConnected:
+        except KSPNotConnected:
             print("KSP not connected, terminating V{}".format(self.number))
             computer.program_alarm(110, required_action="program_alarm")
             self.terminate()
             raise
             return
         output = format_output_data(data)
+        try:
+            computer.dsky.registers[1].set_tooltip(data["tooltips"][0])
+            computer.dsky.registers[2].set_tooltip(data["tooltips"][1])
+            computer.dsky.registers[3].set_tooltip(data["tooltips"][2])
+        except KeyError:
+            pass
         computer.dsky.registers[1].display(sign=output[0], value=output[1])
         computer.dsky.registers[2].display(sign=output[2], value=output[3])
         computer.dsky.registers[3].display(sign=output[4], value=output[5])
@@ -163,7 +171,7 @@ class MonitorVerb(DisplayVerb):
 
         try:
             self._send_output()
-        except Computer.KSPNotConnected:
+        except KSPNotConnected:
             return
 
         self.timer.Start(config.DISPLAY_UPDATE_INTERVAL)
@@ -371,7 +379,7 @@ class Verb25(LoadVerb):
 
 class Verb27(LoadVerb):
     def __init__(self):
-        super(Verb27, self).__init__(name="Display fixed memory", verb_number=27, components=(1,), registers=(1,))
+        super(Verb27, self).__init__(name="Display fixed telemetry", verb_number=27, components=(1,), registers=(1,))
 
 # no verb 28
 
@@ -477,7 +485,6 @@ class Verb37(Verb):
 
     def execute(self):
         dsky.state["object_requesting_data"] = self
-        dsky.control_registers["noun"].blank()
         dsky.request_data(requesting_object=self, location=dsky.control_registers["noun"])
 
     def receive_data(self, data):

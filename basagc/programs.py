@@ -27,6 +27,8 @@ import logging
 import lib
 import computer
 import maneuvers
+import config
+from telemachus import get_telemetry, KSPNotConnected
 
 gc = None
 dsky = None
@@ -41,10 +43,10 @@ class Program(object):
     def execute(self):
         dsky.flash_comp_acty(300)
         dsky.control_registers["program"].display(str(self.number))
-        gc.state["running_programs"].append(self.number)
+        gc.running_programs.append(self.number)
 
     def terminate(self):
-        while self.number in gc.state["running_programs"]: gc.state["running_programs"].remove(self.number)
+        while self.number in gc.running_programs: gc.running_programs.remove(self.number)
 
 
     #def init_program(self):
@@ -111,50 +113,22 @@ class Program11(Program):
 
         # test if KSP is connected
         try:
-            gc.memory.get_memory("ut")
-        except computer.KSPNotConnected:
+            get_telemetry("ut")
+        except KSPNotConnected:
             self.terminate()
             return
-        # --> zero CMC clock
-        # the KSP clock only starts at liftoff, so nothing to be done
 
-        # --> update TEPHEM with liftoff time
-        gc.memory.TEPHEM = gc.memory.get_memory("ut")
 
         # --> call average G integration with delta V integration
-        gc.state["run_average_g_routine"] = True
+        gc.run_average_g_routine = True
 
         # --> terminate gyrocompassing
-        if "02" in gc.state["running_programs"]:
+        if "02" in gc.running_programs:
             gc.programs["02"].terminate()
 
         # --> compute initial state vector
-        gc.routines["average_g"]()
+        # gc.routines["average_g"]()
 
-        # --> compute REFSMMAT
-        # we already know our REFSMMAT, no need to calculate
-
-        # --> set REFSMMAT flag
-        gc.memory.REFSMMAT_flag = True
-
-        # --> store liftoff attitude
-        pitch = gc.memory.get_memory("pitch")
-        roll = gc.memory.get_memory("roll")
-        yaw = gc.memory.get_memory("yaw")
-
-        gc.memory.liftoff_attitude = lib.Attitude(pitch, roll, yaw)
-
-        # --> call routine to load ICDU DACs with pitch, roll and yaw attitude
-        # --> errors derived from present attitude and stored liftoff attitude
-        # --> until present time equals TE1 (stored in erasable memory) at which
-        # --> time the stored liftoff attitude is replaced by the solution to
-        # --> the stored 6th order boost polynomial.
-        # -->
-        # --> At time TE1 + TE2 (TE2 is stored in erasable memory) shut off
-        # --> boost polynomial and hold attitude error needles constant at
-        # --> terminatl error.
-        # --> at 163.86 secs shut off routine to load ICDU DACs.
-        # ignoring this part, not even sure what it means :)
 
         # --> Display on DSKY:
         # --> V06 N62 (we are going to use V16N62 though, so we can have a updated display
@@ -170,8 +144,11 @@ class Program15(Program):
         super(Program15, self).__init__(name, number)
 
     def execute(self):
-        this_maneuver = maneuvers.HohmannTransfer(gc)
-        this_maneuver.execute()
+        destination_orbit_radius = 13500000.0
+        departure_orbit_radius = get_telemetry("asl")
+        grav_param = get_telemetry("body_gravitational_parameter", body_number=config.BODIES["Kerbin"])
+        print(maneuvers.phase_angle(destination_orbit_radius, departure_orbit_radius, grav_param))
+
 
 
 class ProgramNotImplementedError(Exception):

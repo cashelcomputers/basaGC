@@ -22,8 +22,9 @@
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>
 
-import wx
 import logging
+
+import wx
 
 import computer as Computer
 import config

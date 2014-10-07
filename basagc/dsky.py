@@ -21,11 +21,13 @@
 #
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>import wx
-import wx
 import logging
+
+import wx
 
 import config
 import verbs
+
 
 dsky_log = logging.getLogger("DSKY")
 debug_computer = None
@@ -45,7 +47,8 @@ class DSKY(object):
         #frame.Bind(wx.EVT_TIMER, self.display_update, self.display_update_timer)
         self.comp_acty_timer = wx.Timer(frame)
         frame.Bind(wx.EVT_TIMER, self.stop_comp_acty_flash, self.comp_acty_timer)
-        #self.keybuffer = []
+        self.input_data_buffer = ""
+        self.register_index = 0
 
         self._init_state()
 
@@ -131,7 +134,6 @@ class DSKY(object):
             "is_display_released": True,
             "is_expecting_data": False,
             "object_requesting_data": None,
-            "input_data": "",
             "display_location_to_load": None,
             "data_load_index": None,
         }
@@ -178,6 +180,8 @@ class DSKY(object):
             #self.widget.SetBitmap(self.blank)
             #pass
 
+
+
     class Seperator(object):
         def __init__(self, panel):
             self.image_on = wx.Image(config.IMAGES_DIR + "SeparatorOn.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
@@ -222,6 +226,9 @@ class DSKY(object):
                 self.widget = wx.StaticBitmap(panel, wx.ID_ANY, self.blank_digit)
             else:
                 self.widget = wx.StaticBitmap(frame, wx.ID_ANY, self.blank_digit)
+
+        def set_tooltip(self, tooltip):
+            self.widget.SetToolTipString(tooltip)
 
         def start_blink(self, value=None):
             if value:
@@ -314,6 +321,9 @@ class DSKY(object):
             else:
                 self.widget = wx.StaticBitmap(frame, wx.ID_ANY, self.blank)
 
+        def set_tooltip(self, tooltip):
+            self.widget.SetToolTipString(tooltip)
+
         def display(self, value):
             if value == "blank":
                 self.widget.SetBitmap(self.blank)
@@ -392,7 +402,6 @@ class DSKY(object):
             ]
 
         def display(self, value, sign=""):
-            print(value)
             if sign == "-":
                 self.sign.minus()
             elif sign == "+":
@@ -406,6 +415,10 @@ class DSKY(object):
             self.sign.display("blank")
             for digit in self.digits:
                 digit.display("blank")
+
+        def set_tooltip(self, tooltip):
+            for digit in self.digits:
+                digit.widget.SetToolTipString(tooltip)
 
     class ControlRegister(object):
         def __init__(self, dsky, name, image_on, image_off):
@@ -446,173 +459,226 @@ class DSKY(object):
 
         def press(self, event):
 
-            """Called when a keypress event has been received."""
-            __key = event.GetId()
+            """Called when a keypress event has been received.
+            :param event: wx event
+            """
+            keypress = event.GetId()
 
             # set up the correct key codes for non-numeric keys
-            if __key in config.KEY_IDS:
-                __key = config.KEY_IDS[__key]
+            if keypress in config.KEY_IDS:
+                keypress = config.KEY_IDS[keypress]
 
-            print("Keypress: {}".format(__key))
             # call the actual handler
-            self.dsky.CHARIN(__key)
+            self.dsky.charin(keypress)
             return
 
-    def CHARIN(self, __key):
+    def charin(self, keypress):
+        """
+        Handles key input from DSKY keyboard.
+        :param keypress: holds the key code
+        """
 
+        def stop_blink():
+            self.state['is_expecting_data'] = False
+            for d in self.control_registers["verb"].digits.itervalues():
+                d.stop_blink()
+            for d in self.control_registers["noun"].digits.itervalues():
+                d.stop_blink()
 
-
-        # check if the computer is requesting the astronaut enter data
-
-        if self.state["is_expecting_data"]:
-            # PROCEED without inputs
-            if __key == "P":
-                self.state["is_expecting_data"] = False
-                for digit in self.control_registers["verb"].digits.itervalues():
-                    digit.stop_blink()
-                for digit in self.control_registers["noun"].digits.itervalues():
-                    digit.stop_blink()
-                print("Proceeding without input, calling {}(proceed)".format(self.state["object_requesting_data"]))
-                self.state["object_requesting_data"]("proceed")
-                self.state["input_data"] = ""
+        def handle_data_register_load():
+            pass
+        def handle_control_register_load():
+            # we are expecting a numeric digit as input
+            if keypress > 9:
+                self.operator_error("Expecting numeric input")
                 return
+            # otherwise, add the input to buffer
+            elif self.register_index == 0:
+                self.state["display_location_to_load"].digits[1].display(keypress)
+                self.register_index += 1
+            elif self.register_index == 1:
+                self.state["display_location_to_load"].digits[2].display(keypress)
+                self.register_index = 0
+            self.input_data_buffer += str(keypress)
+
+        def handle_expected_data():
+
+            if keypress == "P":
+                stop_blink()
+                print("Proceeding without input, calling {}(proceed)".format(
+                    self.state["object_requesting_data"]))
+                self.state["object_requesting_data"]("proceed")
+                self.input_data_buffer = ""
+                return
+
             # if we receive ENTER, the load is complete and we will call the
             # program or verb requesting the data load
-            if __key == "E":
-
-                self.state["is_expecting_data"] = False
-                for digit in self.control_registers["verb"].digits.itervalues():
-                    digit.stop_blink()
-                for digit in self.control_registers["noun"].digits.itervalues():
-                    digit.stop_blink()
-                print("Data load complete, calling {}({})".format(self.state["object_requesting_data"], self.state["input_data"]))
-                self.state["object_requesting_data"].receive_data(self.state["input_data"])
-                self.state["input_data"] = ""
+            elif keypress == "E":
+                stop_blink()
+                print("Data load complete, calling {}({})".format(
+                    self.state["object_requesting_data"],
+                    self.input_data_buffer))
+                self.state["object_requesting_data"].receive_data(
+                    self.input_data_buffer)
+                self.input_data_buffer = ""
                 return
-            # if the user as entered anything other than a numeric digit,
-            #trigger a OPR ERR and recycle program
-            elif __key > 9:
+
+            if isinstance(self.state["display_location_to_load"], DSKY.DataRegister):
+                handle_data_register_load()
+
+            elif isinstance(self.state["display_location_to_load"], DSKY.ControlRegister):
+                handle_control_register_load()
+
+            # if the user as entered anything other than a numeric d,
+            # trigger a OPR ERR and recycle program
+            elif keypress > 9:
                 # if a program is running, recycle it
                 # INSERT TRY HERE!!!
                 #computer.get_state("running_program").terminate()
-                # INSERT EXCEPT HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                # INSERT EXCEPT HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 # if a verb is running, recycle it
                 #computer.get_state("running_verb").terminate()
                 self.operator_error("Expecting numeric input")
                 return
             else:
 
-                self.state["input_data"] += str(__key)
+                self.input_data_buffer += str(keypress)
 
-                if isinstance(self.state["display_location_to_load"], DSKY.DataRegister):
-                    self.state["display_location_to_load"].display(sign="", value=self.state["input_data"])
+                if isinstance(self.state["display_location_to_load"],
+                              DSKY.DataRegister):
+                    self.state["display_location_to_load"].display(
+                        sign="", value=self.input_data_buffer)
                 else:
-                    self.state["display_location_to_load"].display(value=self.state["input_data"])
+                    self.state["display_location_to_load"].display(
+                        value=self.input_data_buffer)
                 #self.state["is_noun_being_loaded"] = True
                 return
-        # if the computer is off, we only want to accept the PRO key input,
-        # all other keys are ignored
-        if self.computer.is_powered_on == False:
-            if __key == "P":
-                self.computer.on()
-            else:
-                print("Key {} ignored because gc is off".format(__key))
+
+        def handle_verb_entry():
+
+            if keypress == "C": # user has pushed CLEAR
+                self.state["verb_position"] = 0
+                self.state["requested_verb"] = 0
+                self.control_registers["verb"].digits[1].display("blank")
+                self.control_registers["verb"].digits[2].display("blank")
                 return
 
-        # if a number of the + or - keys are received without a control key first,
-        # we simply ignore the key
-        if (self.state["is_noun_being_loaded"] == False) and (self.state["is_verb_being_loaded"] == False) and (self.state["is_data_being_loaded"] == False):
-            if (__key >= 0) and (__key < 10) or (__key == 12) or (__key == 13):
-                return
-        # if "K" is received, hand display over to running task
-        if __key == "K" and self.state["backgrounded_update"] is not None:
-            self.annunciators["key_rel"].off()
-            self.state["backgrounded_update"].resume()
-            return
-        # if a verb has the display lock, background it
-        if self.state["display_lock"] is not None:
-            self.state["display_lock"].background()
-
-        # check if astronaut is entering a verb
-        if self.state["is_verb_being_loaded"]:
-            #user is entering a verb
-            if __key == "N" or __key == "E":        #user has finished entering verb
+            if keypress == "N" or keypress == "E":  # user has finished entering verb
                 self.state["is_verb_being_loaded"] = False
-            elif __key >= 10:
+            elif keypress >= 10:
                 self.operator_error("Expected a number for verb choice")
                 return
             elif self.state["verb_position"] == 0:
-                self.control_registers["verb"].digits[1].display(__key)
-                self.state["requested_verb"] = __key * 10
+                self.control_registers["verb"].digits[1].display(keypress)
+                self.state["requested_verb"] = keypress * 10
                 self.state["verb_position"] = 1
             elif self.state["verb_position"] == 1:
-                self.control_registers["verb"].digits[2].display(__key)
-                self.state["requested_verb"] += __key
+                self.control_registers["verb"].digits[2].display(keypress)
+                self.state["requested_verb"] += keypress
                 self.state["verb_position"] = 0
 
-        # check if astronaut is entering a noun
-        if self.state["is_noun_being_loaded"]:
-            if __key == "V" or __key == "E":
+        def handle_noun_entry():
+
+            if keypress == "C":  # user has pushed CLEAR
+                self.state["noun_position"] = 0
+                self.state["requested_noun"] = 0
+                self.control_registers["noun"].digits[1].display("blank")
+                self.control_registers["noun"].digits[2].display("blank")
+                return
+
+            if keypress == "V" or keypress == "E":
                 self.state["is_noun_being_loaded"] = False
-            elif __key >= 10:
+            elif keypress >= 10:
                 self.operator_error("Expected a number for noun choice")
                 return
             elif self.state["noun_position"] == 0:
-                self.control_registers["noun"].digits[1].display(__key)
-                self.state["requested_noun"] = __key * 10
+                self.control_registers["noun"].digits[1].display(keypress)
+                self.state["requested_noun"] = keypress * 10
                 self.state["noun_position"] = 1
             elif self.state["noun_position"] == 1:
-                self.control_registers["noun"].digits[2].display(__key)
-                self.state["requested_noun"] += __key
+                self.control_registers["noun"].digits[2].display(keypress)
+                self.state["requested_noun"] += keypress
                 self.state["noun_position"] = 0
 
-        if __key == "E":
+        def handle_entr_keypress():
             if self.state["requested_verb"] in verbs.INVALID_VERBS:
-                self.operator_error("Verb {} does not exist, please try a different verb".format(self.state["requested_verb"]))
+                self.operator_error(
+                    "Verb {} does not exist, please try a different verb".format(
+                        self.state["requested_verb"]))
                 return
             try:
                 self.computer.verbs[int(self.state["requested_verb"])].execute()
             except NotImplementedError:
-                self.operator_error("Verb {} is not implemented yet. Sorry about that...".format(self.state["requested_verb"]))
+                self.operator_error(
+                    "Verb {} is not implemented yet. Sorry about that...".format(
+                        self.state["requested_verb"]))
             except verbs.NounNotAcceptableError:
-                self.operator_error("Noun {} can't be used with verb {}".format(self.state["requested_noun"], self.state["requested_verb"]))
+                self.operator_error(
+                    "Noun {} can't be used with verb {}".format(
+                        self.state["requested_noun"],
+                        self.state["requested_verb"]))
             # except IndexError:
-            #     print(type(self.state["requested_verb"]))
+            # print(type(self.state["requested_verb"]))
             #     print("Verb {} not in verb list".format(self.state["requested_verb"]))
             #     self.operator_error("Requested verb {} does not exist in list of verbs :(".format(self.state["requested_verb"]))
             return
-        # VERB
-        if __key == "V":
-            self.state["is_verb_being_loaded"] = True
-            self.state["requested_verb"] = 0
-            self.control_registers["verb"].blank()
 
-        if __key == "N":
-            self.state["is_noun_being_loaded"] = True
-            self.state["requested_noun"] = 0
-            self.control_registers["noun"].blank()
-
-        # CLEAR
-        if __key == "C":
-            self.flush_keybuffer()
-            self.clear()
-
-        # RESET
-        if __key == "R":
+        def handle_reset_keypress():
             self.computer.reset_alarm_codes()
             for annunciator in self.annunciators.itervalues():
                 if annunciator.blink_timer.IsRunning():
                     annunciator.stop_blink()
                 annunciator.off()
 
+        def handle_noun_keypress():
+            self.state["is_noun_being_loaded"] = True
+            self.state["requested_noun"] = 0
+            self.control_registers["noun"].blank()
 
-        # PROCEED
+        def handle_verb_keypress():
+            self.state["is_verb_being_loaded"] = True
+            self.state["requested_verb"] = 0
+            self.control_registers["verb"].blank()
 
-        #elif isinstance(__key, int):
-            #self.keybuffer.append(__key)
-    def flash_comp_acty(self, duration=50):
+        def handle_key_release_keypress():
+            if self.state["backgrounded_update"] is not None:
+                self.annunciators["key_rel"].off()
+                self.state["backgrounded_update"].resume()
+
+        # if the computer is off, we only want to accept the PRO key input,
+        # all other keys are ignored
+        if self.computer.is_powered_on is False:
+            if keypress == "P":
+                self.computer.on()
+            else:
+                print("Key {} ignored because gc is off".format(keypress))
+            return
+
+        if self.state["is_expecting_data"]:
+            handle_expected_data()
+        elif keypress == "E":
+            handle_entr_keypress()
+        elif keypress == "V":
+            handle_verb_keypress()
+        elif keypress == "N":
+            handle_noun_keypress()
+        elif self.state["is_verb_being_loaded"]:
+            handle_verb_entry()
+        elif self.state["is_noun_being_loaded"]:
+            handle_noun_entry()
+        elif keypress == "K":
+            handle_key_release_keypress()
+        elif keypress == "C":
+            pass  # TODO
+        elif keypress == "R":
+            handle_reset_keypress()
+
+        # # if a verb has the display lock, background it
+        # if self.state["display_lock"] is not None:
+        #     self.state["display_lock"].background()
+    def flash_comp_acty(self):
         self.annunciators["comp_acty"].on()
-        self.comp_acty_timer.Start(duration, oneShot=True)
+        self.comp_acty_timer.Start(config.COMP_ACTY_FLASH_DURATION, oneShot=True)
 
     def set_noun(self, noun):
         self.state["requested_noun"] = noun
