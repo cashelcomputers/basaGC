@@ -25,7 +25,7 @@
 # (http://www.ibiblio.org/apollo/index.html) by Ronald S. Burkey
 # <info@sandroid.org>
 
-VERSION = "0.3.1a"
+VERSION = "0.3.2a"
 IMAGES_DIR = "./images/"
 IP = "http://127.0.0.1:8085"
 URL = IP + "/telemachus/datalink?"
