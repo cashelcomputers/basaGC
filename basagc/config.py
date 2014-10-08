@@ -25,6 +25,7 @@
 # (http://www.ibiblio.org/apollo/index.html) by Ronald S. Burkey
 # <info@sandroid.org>
 
+TEST_STRING = "Foobar"
 VERSION = "0.3.2a"
 IMAGES_DIR = "./images/"
 IP = "http://127.0.0.1:8085"
