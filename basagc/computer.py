@@ -70,7 +70,16 @@ class Computer(object):
         self.alarm_codes = [0, 0, 0]
         self.running_programs = []
         self.run_average_g_routine = False
+        self.target = ""
+        self.loaded_data = {
+            "verb": 0,
+            "noun": 0,
+            1: 0,
+            2: 0,
+            3: 0,
+        }
 
+        telemachus.gc = self
         verbs.telemetry = telemachus.telemetry
         verbs.computer = self
         verbs.dsky = self.dsky
@@ -344,28 +353,35 @@ class Computer(object):
         self.alarm_codes[0] = 0
         self.alarm_codes[1] = 0
 
-    def program_alarm(self, alarm_code, required_action):
+    def program_alarm(self, alarm_code):
 
         """ sets the program alarm codes in memory and turns the PROG
             annunciator on
             alarm_code should be a 3 or 4 digit octal int
         """
-        if required_action == "program_alarm":
-            if self.alarm_codes[0] != 0:
-                self.alarm_codes[1] = self.alarm_codes[0]
-            self.alarm_codes[0] = 1000 + alarm_code
-            self.alarm_codes[2] = self.alarm_codes[0]
-            self.dsky.annunciators["prog"].on()
-        elif required_action == "P00DOO":
-            # insert terminate program and goto P00
-            print("P00D00 program abort not implemented yet... watch this"
-                  "space...")
-        elif required_action == "program_restart":
-            # insert terminate and restart program
-            print("Program fresh start not implemented yet... watch this"
-                  "space...")
-        elif required_action == "computer_restart":
-            # insert computer reboot
-            #self.fresh_start()
-            pass
+        if self.alarm_codes[0] != 0:
+            self.alarm_codes[1] = self.alarm_codes[0]
+        self.alarm_codes[0] = 1000 + alarm_code
+        self.alarm_codes[2] = self.alarm_codes[0]
+        self.dsky.annunciators["prog"].on()
 
+    def poodoo_abort(self, alarm_code):
+
+        if self.alarm_codes[0] != 0:
+            self.alarm_codes[1] = self.alarm_codes[0]
+        self.alarm_codes[0] = 2000 + alarm_code
+        self.alarm_codes[2] = self.alarm_codes[0]
+        self.dsky.annunciators["prog"].on()
+        for program in self.running_programs:
+            program.terminate()
+        self.programs["00"].execute()
+
+    def program_restart(self, alarm_code):
+        # insert terminate and restart program
+        print("Program fresh start not implemented yet... watch this"
+              "space...")
+
+    def computer_restart(self, alarm_code):
+        # insert computer reboot
+        # self.fresh_start()
+        pass

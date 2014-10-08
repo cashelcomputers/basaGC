@@ -359,21 +359,47 @@ class Verb21(LoadVerb):
     def __init__(self):
         super(Verb21, self).__init__(name="Load component 1 into R1", verb_number=21, components=(1,), registers=(1,))
 
+    def execute(self):
+        #dsky.request_data(self.accept_data, dsky.registers[3])
+        pass
+
+    def accept_data(self, data):
+        print(data)
+
 class Verb22(LoadVerb):
     def __init__(self):
         super(Verb22, self).__init__(name="Load component 2 into R2", verb_number=22, components=(2,), registers=(2,))
+
+    def execute(self):
+        pass
 
 class Verb23(LoadVerb):
     def __init__(self):
         super(Verb23, self).__init__(name="Load component 3 into R3", verb_number=23, components=(3,), registers=(3,))
 
+    def execute(self):
+        computer.dsky.request_data(requesting_object=self.accept_input, location=dsky.registers[3])
+
+    def accept_input(self, input):
+        computer.loaded_data["verb"] = self.number
+        computer.loaded_data["noun"] = dsky.state["current_noun"]
+        computer.loaded_data[3] = input
+        if computer.object_requesting_data:
+            computer.object_requesting_data(input)
+
 class Verb24(LoadVerb):
     def __init__(self):
         super(Verb24, self).__init__(name="Load component 1, 2 into R1, R2", verb_number=24, components=(1, 2), registers=(1, 2))
 
+    def execute(self):
+        pass
+
 class Verb25(LoadVerb):
     def __init__(self):
         super(Verb25, self).__init__(name="Load component 1, 2, 3 into R1, R2, R3", verb_number=25, components=(1, 2, 3), registers=(1, 2, 3))
+
+    def execute(self):
+        pass
 
 # no verb 26
 
@@ -484,8 +510,8 @@ class Verb37(Verb):
         #self.data.append("")
 
     def execute(self):
-        dsky.state["object_requesting_data"] = self
-        dsky.request_data(requesting_object=self, location=dsky.control_registers["noun"])
+
+        dsky.request_data(requesting_object=self.receive_data, location=dsky.control_registers["noun"])
 
     def receive_data(self, data):
 
@@ -508,14 +534,14 @@ class Verb40(Verb):
         super(Verb40, self).__init__(name="Zero CDUs", verb_number=40)
 
     def execute(self):
-        computer.program_alarm(666, required_action=config.PROGRAM_ALARM)
+        pass
 
 class Verb41(Verb):
     def __init__(self):
         super(Verb41, self).__init__(name="Coarse align CDUs", verb_number=41)
 
     def execute(self):
-        computer.program_alarm(69, required_action=config.COMPUTER_FRESH_START)
+        pass
 
 class Verb42(Verb):
     def __init__(self):

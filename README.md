@@ -28,7 +28,7 @@ reasons.
 
 Known issues:
 ------------
-- Verb/noun flash doesn't work properly
+- Not finished yet
 
 
 Proudly bought to you by Buchanan and Son Avionics (a division of Buchanan and Son Aerospace).

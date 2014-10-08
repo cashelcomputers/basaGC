@@ -41,7 +41,7 @@ class Program(object):
         self.number = number
 
     def execute(self):
-        dsky.flash_comp_acty(300)
+        dsky.flash_comp_acty()
         dsky.control_registers["program"].display(str(self.number))
         gc.running_programs.append(self.number)
 
@@ -142,14 +142,40 @@ class Program15(Program):
 
     def __init__(self, name, number):
         super(Program15, self).__init__(name, number)
+        self.delta_v_required = 0
+        self.time_to_transfer = 0
+        self.orbiting_body = None
+        self.phase_angle = 0
 
     def execute(self):
-        destination_orbit_radius = 13500000.0
-        departure_orbit_radius = get_telemetry("asl")
-        grav_param = get_telemetry("body_gravitational_parameter", body_number=config.BODIES["Kerbin"])
-        print(maneuvers.phase_angle(destination_orbit_radius, departure_orbit_radius, grav_param))
+        #dsky.request_data(requesting_object=self.set_target, location=dsky.registers[3])
+        # departure_altitude = get_telemetry("asl")
+        # destination_altitude = 12250000
+        # print(maneuvers.hohmann(departure_altitude, destination_altitude))
+        self.orbiting_body = get_telemetry("orbiting_body_name")
+        if get_telemetry("eccentricity") > 0.001:
+            gc.program_alarm(224)
+            return
+        gc.execute_verb(verb=23, noun=30)
+        gc.object_requesting_data = self.select_target
 
-
+    def select_target(self, target):
+        if target[0] == ("+" or "-"):
+            gc.program_alarm(222)
+            return
+        elif int(target) not in config.OCTAL_BODIES:
+            gc.program_alarm(223)
+            return
+        target = config.OCTAL_BODIES[int(target)]
+        destination_altitude = 0
+        if target == "Mun":
+            destination_altitude = 12250000
+        departure_altitude = get_telemetry("asl")
+        self.delta_v_required = maneuvers.hohmann(departure_altitude, destination_altitude)
+        grav_param = get_telemetry("body_gravitational_parameter", body_number=config.BODIES[self.orbiting_body])
+        self.time_to_transfer = maneuvers.time_to_transfer(departure_altitude, destination_altitude, grav_param)
+        self.phase_angle = maneuvers.phase_angle(departure_altitude, destination_altitude, grav_param)
+        print(self.phase_angle)
 
 class ProgramNotImplementedError(Exception):
     pass

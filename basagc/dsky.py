@@ -147,6 +147,7 @@ class DSKY(object):
         self.state["object_requesting_data"] = requesting_object
         self.state["is_expecting_data"] = True
         self.state["display_location_to_load"] = location
+        print(self.state["display_location_to_load"])
         location.blank()
 
     def verb_noun_flash_on(self):
@@ -213,7 +214,8 @@ class DSKY(object):
             self.digit_9 = wx.Image(config.IMAGES_DIR + "7Seg-9.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             self.blank_digit = wx.Image(config.IMAGES_DIR + "7SegOff.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             self.current_value = None
-            self.blink_state = False
+            self.is_blinking = False
+            self.is_blinking_lit = True
             self.blink_value = None
             self.last_value = None
 
@@ -226,6 +228,7 @@ class DSKY(object):
                 self.widget = wx.StaticBitmap(panel, wx.ID_ANY, self.blank_digit)
             else:
                 self.widget = wx.StaticBitmap(frame, wx.ID_ANY, self.blank_digit)
+            self.current_value = "blank"
 
         def set_tooltip(self, tooltip):
             self.widget.SetToolTipString(tooltip)
@@ -235,17 +238,17 @@ class DSKY(object):
                 self.blink_value = value
             else:
                 self.blink_value = self.current_value
-            self.blink_state = True
+            self.is_blinking = True
 
             self.blink_timer.Start(500)
 
         def _blink(self, event):
-            if self.blink_state:
+            if self.is_blinking_lit:
                 self.display("blank")
-                self.blink_state = False
+                self.is_blinking_lit = False
             else:
                 self.display(self.blink_value)
-                self.blink_state = True
+                self.is_blinking_lit = True
 
         def stop_blink(self):
             self.blink_timer.Stop()
@@ -280,7 +283,7 @@ class DSKY(object):
             elif new_value == "blank":
                 self.widget.SetBitmap(self.blank_digit)
             self.current_value = new_value
-            if self.blink_state:
+            if self.is_blinking:
                 if new_value != "blank":
                     self.blink_value = new_value
 
@@ -486,7 +489,23 @@ class DSKY(object):
                 d.stop_blink()
 
         def handle_data_register_load():
-            pass
+            if self.register_index == 0:
+                if keypress == "+":
+                    self.state["display_location_to_load"].sign.plus()
+                elif keypress == "-":
+                    self.state["display_location_to_load"].sign.minus()
+                else:
+                    self.state["display_location_to_load"].digits[0].display(keypress)
+                    self.register_index += 1
+            elif self.register_index >= 1 <= 5:
+                self.state["display_location_to_load"].digits[self.register_index].display(keypress)
+                if self.register_index >= 4:
+                    self.register_index = 0
+                else:
+                    self.register_index += 1
+            self.input_data_buffer += str(keypress)
+
+
         def handle_control_register_load():
             # we are expecting a numeric digit as input
             if keypress > 9:
@@ -518,8 +537,7 @@ class DSKY(object):
                 print("Data load complete, calling {}({})".format(
                     self.state["object_requesting_data"],
                     self.input_data_buffer))
-                self.state["object_requesting_data"].receive_data(
-                    self.input_data_buffer)
+                self.state["object_requesting_data"](self.input_data_buffer)
                 self.input_data_buffer = ""
                 return
 
@@ -563,7 +581,10 @@ class DSKY(object):
                 self.control_registers["verb"].digits[2].display("blank")
                 return
 
-            if keypress == "N" or keypress == "E":  # user has finished entering verb
+            if keypress == "N":  # user has finished entering verb
+                self.state["is_verb_being_loaded"] = False
+                self.state["is_noun_being_loaded"] = True
+            elif keypress == "E":
                 self.state["is_verb_being_loaded"] = False
             elif keypress >= 10:
                 self.operator_error("Expected a number for verb choice")
@@ -601,6 +622,8 @@ class DSKY(object):
                 self.state["noun_position"] = 0
 
         def handle_entr_keypress():
+            self.state["is_verb_being_loaded"] = False
+            self.state["is_noun_being_loaded"] = False
             if self.state["requested_verb"] in verbs.INVALID_VERBS:
                 self.operator_error(
                     "Verb {} does not exist, please try a different verb".format(
@@ -631,11 +654,13 @@ class DSKY(object):
                 annunciator.off()
 
         def handle_noun_keypress():
+            self.state["is_verb_being_loaded"] = False
             self.state["is_noun_being_loaded"] = True
             self.state["requested_noun"] = 0
             self.control_registers["noun"].blank()
 
         def handle_verb_keypress():
+            self.state["is_noun_being_loaded"] = False
             self.state["is_verb_being_loaded"] = True
             self.state["requested_verb"] = 0
             self.control_registers["verb"].blank()

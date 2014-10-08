@@ -39,3 +39,10 @@ class Attitude(object):
         self.pitch = pitch
         self.roll = roll
         self.yaw = yaw
+
+def seconds_to_time(seconds):
+    minutes, seconds = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    days, hours = divmod(hours, 24)
+    print("{} days, {} hours, {} minutes, {} seconds".format(days, hours, minutes, round(seconds, 2)))
+    return days, hours, minutes, seconds

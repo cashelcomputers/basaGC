@@ -196,7 +196,7 @@ def noun27(calling_verb):
 def noun29(calling_verb):
     raise NounNotImplementedError
 
-def noun30(calling_verb):
+def noun30(calling_verb=None):
     raise NounNotImplementedError
 
 def noun31(calling_verb):

@@ -30,7 +30,10 @@ Currently implemented verbs:
 - Verb 15: Monitor Octal component 1, 2 and 3 in R1, R2 and R3
 - Verb 16: Monitor decimal in R1 or R1, R2 or R1, R2, R3
 
+- Verb 23: Load component 3 into R3
+
 - Verb 35: Lamp Test (this verb is a bit different, to run it we simply key in V35E).
+- Verb 36: Request fresh start
 - Verb 37: Change program (major mode)
 
 - Verb 75: Backup Liftoff Discrete

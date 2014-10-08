@@ -109,8 +109,8 @@ def get_telemetry(data, body_number=None):
         print(e)
         raise KSPNotConnected
     json_response = json.load(raw_response)
-    for key, value in json_response.iteritems():
-        telemetry[key][1] = value
+    return json_response[data]
+
 
 class KSPNotConnected(Exception):
     """ This exception should be raised when there is no connection to KSP """
