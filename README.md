@@ -28,7 +28,7 @@ reasons.
 
 Known issues:
 ------------
-- see <doc/known_issues.md>
+- see doc/known_issues.md
 
 
 
