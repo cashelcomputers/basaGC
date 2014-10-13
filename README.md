@@ -28,7 +28,7 @@ reasons.
 
 Known issues:
 ------------
-- Not finished yet
+- see doc/known_issues.md
 
-
+***
 Proudly bought to you by Buchanan and Son Avionics (a division of Buchanan and Son Aerospace).
