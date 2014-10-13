@@ -319,6 +319,7 @@ class Computer(object):
             "00007": "",
             "00024": "",
         }
+        self.on()
 
     def quit(self, event):
         if self.loop_timer.is_running:
