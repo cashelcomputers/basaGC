@@ -43,25 +43,26 @@ def average_g():
     # Note that in KSP, position vectors are relative to your current craft (I
     # think), so we are going to simulate a position vector using lat, long and
     # altitude above sea level
-    latitude = computer.memory.get_memory("latitude")
-    longitude = computer.memory.get_memory("longitude")
-    altitude = computer.memory.get_memory("asl")
-
-    velocity_x = computer.memory.get_memory("surface_velocity_x")
-    velocity_y = computer.memory.get_memory("surface_velocity_y")
-    velocity_z = computer.memory.get_memory("surface_velocity_z")
-
-    time_ = computer.memory.get_memory("ut")
-
-    computer.state_vector.position_vector["lat"] = latitude
-    computer.state_vector.position_vector["long"] = longitude
-    computer.state_vector.position_vector["alt"] = altitude
-
-    computer.state_vector.velocity_vector.x = velocity_x
-    computer.state_vector.velocity_vector.y = velocity_y
-    computer.state_vector.velocity_vector.z = velocity_z
-
-    computer.state_vector.time = time_
+    # latitude = computer.memory.get_memory("latitude")
+    # longitude = computer.memory.get_memory("longitude")
+    # altitude = computer.memory.get_memory("asl")
+    #
+    # velocity_x = computer.memory.get_memory("surface_velocity_x")
+    # velocity_y = computer.memory.get_memory("surface_velocity_y")
+    # velocity_z = computer.memory.get_memory("surface_velocity_z")
+    #
+    # time_ = computer.memory.get_memory("ut")
+    #
+    # computer.state_vector.position_vector["lat"] = latitude
+    # computer.state_vector.position_vector["long"] = longitude
+    # computer.state_vector.position_vector["alt"] = altitude
+    #
+    # computer.state_vector.velocity_vector.x = velocity_x
+    # computer.state_vector.velocity_vector.y = velocity_y
+    # computer.state_vector.velocity_vector.z = velocity_z
+    #
+    # computer.state_vector.time = time_
+    pass
 
 def routine_30():
 

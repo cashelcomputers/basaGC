@@ -82,12 +82,15 @@ telemetry = {
     'raw_yaw': ("Raw Yaw", 0.0, "n.rawheading"),
     'target_name': ("Target Name", "", "tar.name"),
     'target_semi_major_axis': ("Target Semi-major axis", 0.0, "tar.o.sma"),
+    'target_eccentricity': ("Target Eccentricity", 0.0, "tar.o.eccentricity"),
+    'target_inclination': ("Target Inclination", 0.0, "tar.o.inclination"),
     'body_semi_major_axis': ("Body semi-major axis", 0.0, "b.o.sma"),
     'body_gravitational_parameter': ("Body gravitational parameter", 0.0, 'b.o.gravParameter'),
     'body_radius': ("Body radius", 0, "b.radius"),
     'body_phase_angle': ("Body Phase Angle", 0.0, "b.o.phaseAngle"),
     'body_soi': ("Body Sphere of Influence", 0.0, "b.soi"),
-    'body_apoapsis': ("Body Apoapsis", 0.0, "b.o.ApA")
+    'body_apoapsis': ("Body Apoapsis", 0.0, "b.o.ApA"),
+    'body_orbital_period': ("Body Orbital Period", 0.0, "b.o.period")
 }
 
 def get_telemetry(data, body_number=None):

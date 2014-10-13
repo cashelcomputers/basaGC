@@ -113,7 +113,7 @@ class DSKY(object):
 
         """Called when the astronaut has entered invalid keyboard input."""
         if message:
-            print(message)
+            print("OPERATOR ERROR: " + message)
         self.annunciators["opr_err"].blink_timer.Start(500)
 
     def _init_state(self):
@@ -147,8 +147,11 @@ class DSKY(object):
         self.state["object_requesting_data"] = requesting_object
         self.state["is_expecting_data"] = True
         self.state["display_location_to_load"] = location
-        print(self.state["display_location_to_load"])
-        location.blank()
+        if isinstance(location, DSKY.DataRegister):
+            for register in self.registers.itervalues():
+                register.blank()
+        else:
+            location.blank()
 
     def verb_noun_flash_on(self):
 
@@ -679,7 +682,9 @@ class DSKY(object):
                 print("Key {} ignored because gc is off".format(keypress))
             return
 
-        if self.state["is_expecting_data"]:
+        if keypress == "R":
+            handle_reset_keypress()
+        elif self.state["is_expecting_data"]:
             handle_expected_data()
         elif keypress == "E":
             handle_entr_keypress()
@@ -695,8 +700,7 @@ class DSKY(object):
             handle_key_release_keypress()
         elif keypress == "C":
             pass  # TODO
-        elif keypress == "R":
-            handle_reset_keypress()
+
 
         # # if a verb has the display lock, background it
         # if self.state["display_lock"] is not None:
