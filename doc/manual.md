@@ -87,6 +87,7 @@ its memory and perform a hardware restart.
 
 Alarm codes currently implemented are listed below:
 
+- 0X110: Error contacting KSP
 - 0X223: Invalid target selected
 - 0X224: Orbit not circular
 - 0X225: Vessel and target orbits inclination too far apart
