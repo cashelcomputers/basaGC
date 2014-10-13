@@ -22,7 +22,6 @@
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>
 
-
 import math
 
 from telemachus import get_telemetry
@@ -35,8 +34,7 @@ def delta_v(departure_altitude, destination_altitude):
     transfer.
 
     departure_altitude and destination_altitude are in meters above the surface.
-    returns a pair (dV1, dV2) corresponding to the two burns required,
-        positive means prograde, negative means retrograde
+    returns a float of the burn delta-v required, positive means prograde, negative means retrograde
     """
     departure_planet_radius = get_telemetry("body_radius", body_number=BODIES["Kerbin"])
     r1 = departure_altitude + departure_planet_radius
@@ -47,11 +45,18 @@ def delta_v(departure_altitude, destination_altitude):
     sqrt_r2 = math.sqrt(r2)
     sqrt_2_sum = math.sqrt(2 / (r1 + r2))
     sqrt_mu = math.sqrt(mu)
-    dV1 = sqrt_mu / sqrt_r1 * (sqrt_r2 * sqrt_2_sum - 1)
-    return dV1
+    dv1 = sqrt_mu / sqrt_r1 * (sqrt_r2 * sqrt_2_sum - 1)
+    return dv1
+
 
 def time_to_transfer(departure_orbit, destination_orbit, grav_param):
-
+    """
+    Calculates the time to transfer from one orbit to another,
+    :param departure_orbit: departure orbit altitude
+    :param destination_orbit: destination orbit altitude
+    :param grav_param: orbiting body gravitational parameter
+    :return: a float in seconds of the time to transfer
+    """
     tH = math.pi * math.sqrt(math.pow(departure_orbit + destination_orbit, 3) / (8 * grav_param))
     return tH
 

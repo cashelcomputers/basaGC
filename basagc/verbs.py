@@ -147,7 +147,7 @@ class MonitorVerb(DisplayVerb):
             return
         except KSPNotConnected:
             print("KSP not connected, terminating V{}".format(self.number))
-            computer.program_alarm(110, required_action="program_alarm")
+            computer.poodoo_abort(110)
             self.terminate()
             raise
             return

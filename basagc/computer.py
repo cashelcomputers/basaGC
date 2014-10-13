@@ -39,7 +39,7 @@ from basagc import display
 from basagc import verbs
 from basagc import nouns
 from basagc import programs
-from basagc import lib
+from basagc import utils
 from basagc import routines
 
 # import config
@@ -64,7 +64,7 @@ class Computer(object):
         self.out_queue = mp.Queue()
         self.in_queue = mp.Queue()
         self.is_powered_on = False
-        self.state_vector = lib.StateVector()
+        self.state_vector = utils.StateVector()
         self.loop_items = []
         self.gui.Bind(wx.EVT_CLOSE, self.quit)
         self.alarm_codes = [0, 0, 0]

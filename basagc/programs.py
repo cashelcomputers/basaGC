@@ -24,7 +24,7 @@
 
 import logging
 
-import lib
+import utils
 import computer
 import maneuvers
 import config
@@ -162,7 +162,7 @@ class Program15(Program):
             self.execute()
             return
         elif int(target) not in config.OCTAL_BODIES:
-            gc.program_alarm(223)
+            gc.poodoo_abort(223)
             return
         target = config.OCTAL_BODIES[int(target)]
         destination_altitude = 0
@@ -181,10 +181,10 @@ class Program15(Program):
         print("-----------------")
         print("P15 calculations:")
         print("Phase angle: {}, delta-v for burn: {} m/s, time to transfer: {}".format(
-            round(self.phase_angle, 2), int(self.delta_v_required), lib.seconds_to_time(self.time_to_transfer)))
+            round(self.phase_angle, 2), int(self.delta_v_required), utils.seconds_to_time(self.time_to_transfer)))
         print("Current Phase Angle: {}, difference: {}".format(
             current_phase_angle, current_phase_angle - self.phase_angle))
-        delta_time = lib.seconds_to_time(delta_time_to_burn)
+        delta_time = utils.seconds_to_time(delta_time_to_burn)
         print("Time to burn: {} hours, {} minutes, {} seconds".format(delta_time[1], delta_time[2], delta_time[3]))
         print("-----------------")
 
