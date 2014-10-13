@@ -90,18 +90,8 @@ class Program01(Program):
     def execute(self):
         super(Program01, self).execute()
         log.info("Program 01 executing")
-
-        # --> Command ISS zero CDU routine
-        # --> wait about 10 seconds
-        # nope
-
-        # --> turn on NO ATT annunciator
         dsky.annunciators["no_att"].on()
 
-        # --> Command course align in ISS. Course align to desired platform orientation
-
-        # --. turn off NO ATT annunciator
-        # here we will simply wait 5 secs then turn it off
 
 class Program11(Program):
     def __init__(self, name, number):
@@ -148,20 +138,28 @@ class Program15(Program):
         self.phase_angle = 0
 
     def execute(self):
-        #dsky.request_data(requesting_object=self.set_target, location=dsky.registers[3])
-        # departure_altitude = get_telemetry("asl")
-        # destination_altitude = 12250000
-        # print(maneuvers.hohmann(departure_altitude, destination_altitude))
+
         self.orbiting_body = get_telemetry("orbiting_body_name")
+
+        # check if orbit is circular
         if get_telemetry("eccentricity") > 0.001:
             gc.program_alarm(224)
+            return
+
+        # check if orbit is excessively inclined
+        target_inclination = get_telemetry("target_inclination")
+        vessel_inclination = get_telemetry("inclination")
+        if vessel_inclination > (target_inclination - 0.5) and vessel_inclination > (target_inclination + 0.5):
+            gc.program_alarm(225)
             return
         gc.execute_verb(verb=23, noun=30)
         gc.object_requesting_data = self.select_target
 
-    def select_target(self, target):
+    def select_target(self):
+        target = gc.loaded_data[3]
         if target[0] == ("+" or "-"):
-            gc.program_alarm(222)
+            dsky.operator_error("Expected octal input, decimal input provided")
+            self.execute()
             return
         elif int(target) not in config.OCTAL_BODIES:
             gc.program_alarm(223)
@@ -171,11 +169,26 @@ class Program15(Program):
         if target == "Mun":
             destination_altitude = 12250000
         departure_altitude = get_telemetry("asl")
-        self.delta_v_required = maneuvers.hohmann(departure_altitude, destination_altitude)
+        orbital_period = get_telemetry("orbital_period")
+        departure_body_orbital_period = get_telemetry("body_orbital_period", body_number=config.BODIES["Kerbin"])
+        self.delta_v_required = maneuvers.delta_v(departure_altitude, destination_altitude)
         grav_param = get_telemetry("body_gravitational_parameter", body_number=config.BODIES[self.orbiting_body])
         self.time_to_transfer = maneuvers.time_to_transfer(departure_altitude, destination_altitude, grav_param)
         self.phase_angle = maneuvers.phase_angle(departure_altitude, destination_altitude, grav_param)
-        print(self.phase_angle)
+        current_phase_angle = get_telemetry("body_phase_angle", body_number=config.BODIES["Mun"])
+        delta_time_to_burn = (current_phase_angle - self.phase_angle) / (
+            (360 / orbital_period) - (360 / departure_body_orbital_period))
+        print("-----------------")
+        print("P15 calculations:")
+        print("Phase angle: {}, delta-v for burn: {} m/s, time to transfer: {}".format(
+            round(self.phase_angle, 2), int(self.delta_v_required), lib.seconds_to_time(self.time_to_transfer)))
+        print("Current Phase Angle: {}, difference: {}".format(
+            current_phase_angle, current_phase_angle - self.phase_angle))
+        delta_time = lib.seconds_to_time(delta_time_to_burn)
+        print("Time to burn: {} hours, {} minutes, {} seconds".format(delta_time[1], delta_time[2], delta_time[3]))
+        print("-----------------")
+
+
 
 class ProgramNotImplementedError(Exception):
     pass

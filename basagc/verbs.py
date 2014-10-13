@@ -213,7 +213,8 @@ class LoadVerb(DataVerb):
 
 class Verb1(DisplayVerb):
     def __init__(self):
-        super(Verb1, self).__init__(name="Display Octal component 1 in R1", verb_number=1, components=(1,), registers=(1,))
+        super(Verb1, self).__init__(name="Display Octal component 1 in R1", verb_number=1,
+                                    components=(1,), registers=(1,))
     #def execute(self):
         #super(Verb1, self).execute()
         #if self.data == None:
@@ -229,7 +230,8 @@ class Verb1(DisplayVerb):
 
 class Verb2(DisplayVerb):
     def __init__(self):
-        super(Verb2, self).__init__(name="Display Octal component 2 in R1", verb_number=2, components=(2,), registers=(1,))
+        super(Verb2, self).__init__(name="Display Octal component 2 in R1", verb_number=2,
+                                    components=(2,), registers=(1,))
 
     #def execute(self):
         #super(Verb2, self).execute()
@@ -246,7 +248,8 @@ class Verb2(DisplayVerb):
 
 class Verb3(DisplayVerb):
     def __init__(self):
-        super(Verb3, self).__init__(name="Display Octal component 3 in R1", verb_number=3, components=(3,), registers=(1,))
+        super(Verb3, self).__init__(name="Display Octal component 3 in R1", verb_number=3,
+                                    components=(3,), registers=(1,))
 
     #def execute(self):
         #super(Verb3, self).execute()
@@ -263,7 +266,8 @@ class Verb3(DisplayVerb):
 
 class Verb4(DisplayVerb):
     def __init__(self):
-        super(Verb4, self).__init__(name="Display Octal components 1, 2 in R1, R2", verb_number=4, components=(1, 2), registers=(1, 2))
+        super(Verb4, self).__init__(name="Display Octal components 1, 2 in R1, R2", verb_number=4,
+                                    components=(1, 2), registers=(1, 2))
 
     def execute(self):
 
@@ -276,7 +280,8 @@ class Verb4(DisplayVerb):
 
 class Verb5(DisplayVerb):
     def __init__(self):
-        super(Verb5, self).__init__(name="Display Octal components 1, 2, 3 in R1, R2, R3", verb_number=5, components=(1, 2, 3), registers=(1, 2, 3))
+        super(Verb5, self).__init__(name="Display Octal components 1, 2, 3 in R1, R2, R3", verb_number=5,
+                                    components=(1, 2, 3), registers=(1, 2, 3))
         self.illegal_nouns = []
     def execute(self):
         print("Executing V05")
@@ -290,7 +295,8 @@ class Verb5(DisplayVerb):
 
 class Verb6(DisplayVerb):
     def __init__(self):
-        super(Verb6, self).__init__(name="Display Decimal in R1 or in R1, R2 or in R1, R2, R3", verb_number=6, components=(1, 2, 3), registers=(1, 2, 3))
+        super(Verb6, self).__init__(name="Display Decimal in R1 or in R1, R2 or in R1, R2, R3", verb_number=6,
+                                    components=(1, 2, 3), registers=(1, 2, 3))
 
 
     def execute(self):
@@ -310,7 +316,8 @@ class Verb6(DisplayVerb):
 
 class Verb7(DisplayVerb):
     def __init__(self):
-        super(Verb7, self).__init__(name="Display Double Precision Decimal in R1, R2 (test only)", verb_number=7, components=(1,), registers=(1, 2), is_single_precision=False)
+        super(Verb7, self).__init__(name="Display Double Precision Decimal in R1, R2 (test only)", verb_number=7,
+                                    components=(1,), registers=(1, 2), is_single_precision=False)
 
 # no verb 8
 
@@ -320,34 +327,41 @@ class Verb7(DisplayVerb):
 
 class Verb11(MonitorVerb):
     def __init__(self):
-        super(Verb11, self).__init__(name="Monitor Octal component 1 in R1", verb_number=11, components=(1,), registers=(1,))
+        super(Verb11, self).__init__(name="Monitor Octal component 1 in R1", verb_number=11,
+                                     components=(1,), registers=(1,))
 
 class Verb12(MonitorVerb):
     def __init__(self):
-        super(Verb12, self).__init__(name="Monitor Octal component 2 in R1", verb_number=12, components=(2,), registers=(1,))
+        super(Verb12, self).__init__(name="Monitor Octal component 2 in R1", verb_number=12,
+                                     components=(2,), registers=(1,))
 
 class Verb13(MonitorVerb):
     def __init__(self):
-        super(Verb13, self).__init__(name="Monitor Octal component 3 in R1", verb_number=13, components=(3,), registers=(1,))
+        super(Verb13, self).__init__(name="Monitor Octal component 3 in R1", verb_number=13,
+                                     components=(3,), registers=(1,))
 
 class Verb14(MonitorVerb):
     def __init__(self):
-        super(Verb14, self).__init__(name="Monitor Octal components 1, 2 in R1, R2", verb_number=14, components=(1, 2), registers=(1, 2))
+        super(Verb14, self).__init__(name="Monitor Octal components 1, 2 in R1, R2", verb_number=14,
+                                     components=(1, 2), registers=(1, 2))
 
 class Verb15(MonitorVerb):
     def __init__(self):
-        super(Verb15, self).__init__(name="Monitor Octal components 1, 2, 3 in R1, R2, R3", verb_number=15, components=(1, 2, 3), registers=(1, 2, 3))
+        super(Verb15, self).__init__(name="Monitor Octal components 1, 2, 3 in R1, R2, R3", verb_number=15,
+                                     components=(1, 2, 3), registers=(1, 2, 3))
 
 class Verb16(MonitorVerb): # implemented, needs testing
     def __init__(self):
-        super(Verb16, self).__init__(name="Monitor Decimal in R1 or in R1, R2 or in R1, R2, R3", verb_number=16, components=(1, 2, 3), registers=(1, 2, 3))
+        super(Verb16, self).__init__(name="Monitor Decimal in R1 or in R1, R2 or in R1, R2, R3", verb_number=16,
+                                     components=(1, 2, 3), registers=(1, 2, 3))
 
     def execute(self):
         self.start_monitor()
 
 class Verb17(MonitorVerb):
     def __init__(self):
-        super(Verb17, self).__init__(name="Monitor Double Precision Decimal in R1, R2 (test only)", verb_number=17, components=(1,), registers=(1, 2), is_single_precision=False)
+        super(Verb17, self).__init__(name="Monitor Double Precision Decimal in R1, R2 (test only)", verb_number=17,
+                                     components=(1,), registers=(1, 2), is_single_precision=False)
 
 # no verb 18
 
@@ -385,18 +399,20 @@ class Verb23(LoadVerb):
         computer.loaded_data["noun"] = dsky.state["current_noun"]
         computer.loaded_data[3] = input
         if computer.object_requesting_data:
-            computer.object_requesting_data(input)
+            computer.object_requesting_data()
 
 class Verb24(LoadVerb):
     def __init__(self):
-        super(Verb24, self).__init__(name="Load component 1, 2 into R1, R2", verb_number=24, components=(1, 2), registers=(1, 2))
+        super(Verb24, self).__init__(name="Load component 1, 2 into R1, R2", verb_number=24,
+                                     components=(1, 2), registers=(1, 2))
 
     def execute(self):
         pass
 
 class Verb25(LoadVerb):
     def __init__(self):
-        super(Verb25, self).__init__(name="Load component 1, 2, 3 into R1, R2, R3", verb_number=25, components=(1, 2, 3), registers=(1, 2, 3))
+        super(Verb25, self).__init__(name="Load component 1, 2, 3 into R1, R2, R3", verb_number=25,
+                                     components=(1, 2, 3), registers=(1, 2, 3))
 
     def execute(self):
         pass

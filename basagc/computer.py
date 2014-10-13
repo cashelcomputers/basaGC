@@ -74,10 +74,11 @@ class Computer(object):
         self.loaded_data = {
             "verb": 0,
             "noun": 0,
-            1: 0,
-            2: 0,
-            3: 0,
+            1: "",
+            2: "",
+            3: "",
         }
+        self.target = ""
 
         telemachus.gc = self
         verbs.telemetry = telemachus.telemetry
