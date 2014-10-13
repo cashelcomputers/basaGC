@@ -25,7 +25,7 @@
 # (http://www.ibiblio.org/apollo/index.html) by Ronald S. Burkey
 # <info@sandroid.org>
 
-VERSION = "0.3.2a"
+VERSION = "0.4.0"
 IMAGES_DIR = "./images/"
 IP = "http://127.0.0.1:8085"
 URL = IP + "/telemachus/datalink?"
@@ -65,46 +65,6 @@ KEY_IDS = {
     17: "E",
     18: "R",
 }
-
-# DSKY_KEYCODES = {
-#     "0": "10000",
-#     "1": "00001",
-#     "2": "00010",
-#     "3": "00011",
-#     "4": "00100",
-#     "5": "00101",
-#     "6": "00110",
-#     "7": "00111",
-#     "8": "01000",
-#     "9": "01001",
-#     "verb": "10001",
-#     "reset": "10010",
-#     "key_release": "11001",
-#     "+": "11010",
-#     "-": "11011",
-#     "enter": "11100",
-#     "clear": "11110",
-#     "noun": "11111",
-#     "proceed": "10101",
-# }
-#
-# COMPUTER_KEYCODES = {value:key for key, value in DSKY_KEYCODES.items()}
-# DSKY_POLL_INTERVAL = 1000
-#
-# OUT_CODES = {
-#     "blank": "00000",
-#     "0": "10101",
-#     "1": "00011",
-#     "2": "11001",
-#     "3": "11011",
-#     "4": "01111",
-#     "5": "11110",
-#     "6": "11100",
-#     "7": "10011",
-#     "8": "11101",
-#     "9": "11111",
-# }
-# IN_CODES = {value:key for key, value in OUT_CODES.items()}
 
 BODIES = {
     "Kerbol": "0",
