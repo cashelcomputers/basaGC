@@ -649,7 +649,7 @@ class Verb63(Verb):
 
 class Verb64(Verb):
     def __init__(self):
-        super(Verb64, self).__init__(name="Request S-Band antenna routine", verb_number=64)
+        super(Verb64, self).__init__(name="Enable Autopilot", verb_number=64) # TODO
 
 class Verb65(Verb):
     def __init__(self):
