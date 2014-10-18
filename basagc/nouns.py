@@ -49,57 +49,56 @@ class NounNotImplementedError(Exception):
 
 # no noun 00
 
-def noun01(calling_verb):
-    description = "Specify address and display in fractional format"
-    raise NounNotImplementedError
+# def noun01(calling_verb):
+#     description = "Specify address and display in fractional format"
+#     raise NounNotImplementedError
 
-def noun02(calling_verb=None, data=None, base=8):
-    description = "Specify address and display as whole number"
-    if data == None:
-        dsky.request_data(calling_verb, 3)
-        return "need data"
-    else:
-        data = int(data)
-        data = octal(data)
-        print("BASE: {}".format(base))
-        if base == 8:
-            return_data = {
-                1: memory.memory[data].get_oct(),
-                2: memory.memory[data + 1].get_oct(),
-                3: memory.memory[data + 2].get_oct(),
-                "description": "Data in location",
-                "is_octal": True,
-            }
-        elif base == 10:
-            return_data = {
-                1: memory.memory[data].get_int,
-                2: memory.memory[data + 1].get_int,
-                3: memory.memory[data + 2].get_int,
-                "description": "Data in location",
-                "is_octal": False,
-            }
-        else:
-            raise ValueError("Base must be either 8 or 10")
-        print(return_data)
-        return return_data
+# def noun02(calling_verb=None, data=None, base=8):
+#
+#     if data == None:
+#         dsky.request_data(calling_verb, 3)
+#         return "need data"
+#     else:
+#         data = int(data)
+#         data = octal(data)
+#         print("BASE: {}".format(base))
+#         if base == 8:
+#             return_data = {
+#                 1: memory.memory[data].get_oct(),
+#                 2: memory.memory[data + 1].get_oct(),
+#                 3: memory.memory[data + 2].get_oct(),
+#                 "description": "Data in location",
+#                 "is_octal": True,
+#             }
+#         elif base == 10:
+#             return_data = {
+#                 1: memory.memory[data].get_int,
+#                 2: memory.memory[data + 1].get_int,
+#                 3: memory.memory[data + 2].get_int,
+#                 "description": "Data in location",
+#                 "is_octal": False,
+#             }
+#         else:
+#             raise ValueError("Base must be either 8 or 10")
+#         return return_data
 
-def noun03(calling_verb):
-    description = "Specify address and display as degrees"
-    raise NounNotImplementedError
+# def noun03(calling_verb):
+#     description = "Specify address and display as degrees"
+#     raise NounNotImplementedError
 
 # no noun 04
 
-def noun05(calling_verb):
-    raise NounNotImplementedError
-
-def noun06(calling_verb):
-    raise NounNotImplementedError
-
-def noun07(calling_verb):
-    raise NounNotImplementedError
-
-def noun08(calling_verb):
-    raise NounNotImplementedError
+# def noun05(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun06(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun07(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun08(calling_verb):
+#     raise NounNotImplementedError
 
 def noun09(calling_verb):
     log.info("Noun 09 requested")
@@ -113,32 +112,32 @@ def noun09(calling_verb):
     }
     return data
 
-def noun10(calling_verb):
-    raise NounNotImplementedError
-
-def noun11(calling_verb):
-    raise NounNotImplementedError
-
-def noun12(calling_verb):
-    raise NounNotImplementedError
-
-def noun13(calling_verb):
-    raise NounNotImplementedError
-
-def noun14(calling_verb):
-    raise NounNotImplementedError
-
-def noun15(calling_verb):
-    raise NounNotImplementedError
-
-def noun16(calling_verb):
-    raise NounNotImplementedError
+# def noun10(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun11(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun12(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun13(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun14(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun15(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun16(calling_verb):
+#     raise NounNotImplementedError
 
 def noun17(calling_verb=None):
 
     roll = str(round(get_telemetry("roll"), 2))
     pitch = str(round(get_telemetry("pitch"), 2))
-    yaw = str(round(get_telemetry("yaw"), 2))
+    yaw = str(round(get_telemetry("heading"), 2))
 
     roll = roll.replace(".", "")
     pitch = pitch.replace(".", "")
@@ -153,76 +152,77 @@ def noun17(calling_verb=None):
     }
     return data
 
-def noun18(calling_verb):
-    raise NounNotImplementedError
-
-# no noun 19
-
-def noun20(calling_verb):
-    raise NounNotImplementedError
-
-def noun21(calling_verb):
-    raise NounNotImplementedError
-    """PIPA'S"""
-    #inputs = computer.
-    #data = {
-        #1:
-        #2:
-        #3:
-        #"description": "PIPA pulse rate for X, Y, Z axis",
-        #"is_octal": False,
-    #}
-    #return data
-
-def noun22(calling_verb):
-    raise NounNotImplementedError
-
-# no noun 23
-
-def noun24(calling_verb):
-    raise NounNotImplementedError
-
-def noun25(calling_verb):
-    raise NounNotImplementedError
-
-def noun26(calling_verb):
-    raise NounNotImplementedError
-
-def noun27(calling_verb):
-    raise NounNotImplementedError
-
-# no noun 28
-
-def noun29(calling_verb):
-    raise NounNotImplementedError
-
-def noun30(calling_verb=None):
-    raise NounNotImplementedError
-
-def noun31(calling_verb):
-    raise NounNotImplementedError
-
-def noun32(calling_verb):
-    raise NounNotImplementedError
-
-def noun33(calling_verb):
-    raise NounNotImplementedError
-
-def noun34(calling_verb):
-    raise NounNotImplementedError
-
-def noun35(calling_verb):
-    raise NounNotImplementedError
+# def noun18(calling_verb):
+#     raise NounNotImplementedError
+#
+# # no noun 19
+#
+# def noun20(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun21(calling_verb):
+#     raise NounNotImplementedError
+#     """PIPA'S"""
+#     #inputs = computer.
+#     #data = {
+#         #1:
+#         #2:
+#         #3:
+#         #"description": "PIPA pulse rate for X, Y, Z axis",
+#         #"is_octal": False,
+#     #}
+#     #return data
+#
+# def noun22(calling_verb):
+#     raise NounNotImplementedError
+#
+# # no noun 23
+#
+# def noun24(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun25(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun26(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun27(calling_verb):
+#     raise NounNotImplementedError
+#
+# # no noun 28
+#
+# def noun29(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun30(calling_verb=None):
+#     raise NounNotImplementedError
+#
+# def noun31(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun32(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun33(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun34(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun35(calling_verb):
+#     raise NounNotImplementedError
 
 def noun36(*args, **kwargs):
 
-    telemetry = get_telemetry("met")
+    telemetry = get_telemetry("missionTime")
     print(telemetry)
     minutes, seconds = divmod(telemetry, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
     milliseconds, seconds = math.modf(seconds)
-    milliseconds = milliseconds * 100
+    milliseconds *= 100
+
     data = {
         1: (int(days) * 100) + int(hours),
         2: int(minutes),
@@ -236,31 +236,31 @@ def noun36(*args, **kwargs):
     }
     return data
 
-def noun37(calling_verb):
-    raise NounNotImplementedError
-
-def noun38(calling_verb):
-    raise NounNotImplementedError
-
-def noun39(calling_verb):
-    raise NounNotImplementedError
+# def noun37(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun38(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun39(calling_verb):
+#     raise NounNotImplementedError
 
 #-----------------------BEGIN MIXED NOUNS--------------------------------------
 
-def noun40(calling_verb):
-    raise NounNotImplementedError
-
-def noun41(calling_verb):
-    raise NounNotImplementedError
-
-def noun42(calling_verb):
-    raise NounNotImplementedError
+# def noun40(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun41(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun42(calling_verb):
+#     raise NounNotImplementedError
 
 def noun43(calling_verb=None):
 
-    latitude = str(round(get_telemetry("latitude"), 2)).replace(".", "")
-    longitude = str(round(get_telemetry("longitude"), 2)).replace(".", "")
-    altitude = str(round(get_telemetry("asl") / 1000, 1)).replace(".", "")
+    latitude = str(round(get_telemetry("lat"), 2)).replace(".", "")
+    longitude = str(round(get_telemetry("long"), 2)).replace(".", "")
+    altitude = str(round(get_telemetry("altitude") / 1000, 1)).replace(".", "")
 
     data = {
         1: int(latitude),
@@ -273,17 +273,15 @@ def noun43(calling_verb=None):
 
 def noun44(calling_verb=None):
 
-    apoapsis = str(round(get_telemetry("apoapsis") / 100, 1))
-    periapsis = str(round(get_telemetry("periapsis") / 100, 1))
-    tff = int(get_telemetry("time_to_apoapsis"))
+    apoapsis = str(round(get_telemetry("ApA") / 100, 1))
+    periapsis = str(round(get_telemetry("PeA") / 100, 1))
+    tff = int(get_telemetry("timeToAp"))
 
     apoapsis = apoapsis.replace(".", "")
     periapsis = periapsis.replace(".", "")
 
     tff_minutes, tff_seconds = divmod(tff, 60)
     tff_hours, tff_minutes = divmod(tff_minutes, 60)
-
-
 
     tff = str(tff_hours).zfill(2) + str(tff_minutes).zfill(2) + str(tff_seconds).zfill(2)
 
@@ -300,31 +298,31 @@ def noun44(calling_verb=None):
     }
     return data
 
-def noun45(calling_verb):
-    raise NounNotImplementedError
-
-def noun46(calling_verb):
-    raise NounNotImplementedError
-
-def noun47(calling_verb):
-    raise NounNotImplementedError
-
-def noun48(calling_verb):
-    raise NounNotImplementedError
-
-def noun49(calling_verb):
-    raise NounNotImplementedError
+# def noun45(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun46(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun47(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun48(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun49(calling_verb):
+#     raise NounNotImplementedError
 
 def noun50(calling_verb=None):
 
-    surface_velocity_x = str(round(get_telemetry("surface_velocity_x"))).replace(".", "")
-    surface_velocity_y = str(round(get_telemetry("surface_velocity_y"))).replace(".", "")
-    surface_velocity_z = str(round(get_telemetry("surface_velocity_z"))).replace(".", "")
+    surfaceVelocity_x = str(round(get_telemetry("surfaceVelocityx"))).replace(".", "")
+    surfaceVelocity_y = str(round(get_telemetry("surfaceVelocityy"))).replace(".", "")
+    surfaceVelocity_z = str(round(get_telemetry("surfaceVelocityz"))).replace(".", "")
 
     data = {
-        1: int(surface_velocity_x),
-        2: int(surface_velocity_y),
-        3: int(surface_velocity_z),
+        1: int(surfaceVelocity_x),
+        2: int(surfaceVelocity_y),
+        3: int(surfaceVelocity_z),
         "tooltips": [
             "Surface Velocity X (xxxx.x m/s)",
             "Surface Velocity Y (xxxx.x m/s)",
@@ -335,53 +333,53 @@ def noun50(calling_verb=None):
     }
     return data
 
-def noun51(calling_verb):
-    raise NounNotImplementedError
-
-def noun52(calling_verb):
-    raise NounNotImplementedError
-
-def noun53(calling_verb):
-    raise NounNotImplementedError
-
-def noun54(calling_verb):
-    raise NounNotImplementedError
-
-def noun55(calling_verb):
-    raise NounNotImplementedError
-
-def noun56(calling_verb):
-    raise NounNotImplementedError
-
-# no noun 57
-
-def noun58(calling_verb):
-    raise NounNotImplementedError
-
-def noun59(calling_verb):
-    raise NounNotImplementedError
-
-def noun60(calling_verb):
-    raise NounNotImplementedError
-
-def noun61(calling_verb):
-    raise NounNotImplementedError
+# def noun51(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun52(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun53(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun54(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun55(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun56(calling_verb):
+#     raise NounNotImplementedError
+#
+# # no noun 57
+#
+# def noun58(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun59(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun60(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun61(calling_verb):
+#     raise NounNotImplementedError
 
 def noun62():
 
     """Surface Velocity (m/s), Altitude rate (m/s), Altitude (km)"""
 
-    surface_velocity = str(round(get_telemetry("surface_velocity"), 1))
-    altitude_rate = str(round(get_telemetry("vertical_speed"), 1))
-    altitude = str(round(get_telemetry("asl") / 1000, 1))
+    surfaceVelocity = str(round(get_telemetry("surfaceVelocity"), 1))
+    altitude_rate = str(round(get_telemetry("verticalSpeed"), 1))
+    altitude = str(round(get_telemetry("altitude") / 1000, 1))
 
-    surface_velocity = surface_velocity.replace(".", "")
+    surfaceVelocity = surfaceVelocity.replace(".", "")
     altitude_rate = altitude_rate.replace(".", "")
     altitude = altitude.replace(".", "")
 
 
     data = {
-        1: int(surface_velocity),
+        1: int(surfaceVelocity),
         2: int(altitude_rate),
         3: int(altitude),
         #"description": "",
@@ -389,112 +387,112 @@ def noun62():
     }
     return data
 
-def noun63(calling_verb):
-    raise NounNotImplementedError
-
-def noun64(calling_verb):
-    raise NounNotImplementedError
-
-def noun65(calling_verb):
-    raise NounNotImplementedError
-
-def noun66(calling_verb):
-    raise NounNotImplementedError
-
-def noun67(calling_verb):
-    raise NounNotImplementedError
-
-def noun68(calling_verb):
-    raise NounNotImplementedError
-
-def noun69(calling_verb):
-    raise NounNotImplementedError
-
-def noun70(calling_verb):
-    raise NounNotImplementedError
-
-def noun71(calling_verb):
-    raise NounNotImplementedError
-
-# no noun 72
-
-def noun73(calling_verb):
-    raise NounNotImplementedError
-
-def noun74(calling_verb):
-    raise NounNotImplementedError
-
-def noun75(calling_verb):
-    raise NounNotImplementedError
-
-# no noun 76
-
-# no noun 77
-
-def noun78(calling_verb):
-    raise NounNotImplementedError
-
-def noun79(calling_verb):
-    raise NounNotImplementedError
-
-def noun80(calling_verb):
-    raise NounNotImplementedError
-
-def noun81(calling_verb):
-    raise NounNotImplementedError
-
-def noun82(calling_verb):
-    raise NounNotImplementedError
-
-def noun83(calling_verb):
-    raise NounNotImplementedError
-
-def noun84(calling_verb):
-    raise NounNotImplementedError
-
-def noun85(calling_verb):
-    raise NounNotImplementedError
-
-def noun86(calling_verb):
-    raise NounNotImplementedError
-
-def noun87(calling_verb):
-    raise NounNotImplementedError
-
-def noun88(calling_verb):
-    raise NounNotImplementedError
-
-def noun89(calling_verb):
-    raise NounNotImplementedError
-
-def noun90(calling_verb):
-    raise NounNotImplementedError
-
-def noun91(calling_verb):
-    raise NounNotImplementedError
-
-def noun92(calling_verb):
-    raise NounNotImplementedError
-
-def noun93(calling_verb):
-    raise NounNotImplementedError
-
-def noun94(calling_verb):
-    raise NounNotImplementedError
-
-def noun95(calling_verb):
-    raise NounNotImplementedError
-
-def noun96(calling_verb):
-    raise NounNotImplementedError
-
-def noun97(calling_verb):
-    raise NounNotImplementedError
-
-def noun98(calling_verb):
-    raise NounNotImplementedError
-
-def noun99(calling_verb):
-    raise NounNotImplementedError
+# def noun63(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun64(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun65(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun66(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun67(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun68(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun69(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun70(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun71(calling_verb):
+#     raise NounNotImplementedError
+#
+# # no noun 72
+#
+# def noun73(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun74(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun75(calling_verb):
+#     raise NounNotImplementedError
+#
+# # no noun 76
+#
+# # no noun 77
+#
+# def noun78(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun79(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun80(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun81(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun82(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun83(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun84(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun85(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun86(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun87(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun88(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun89(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun90(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun91(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun92(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun93(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun94(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun95(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun96(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun97(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun98(calling_verb):
+#     raise NounNotImplementedError
+#
+# def noun99(calling_verb):
+#     raise NounNotImplementedError
 
 
