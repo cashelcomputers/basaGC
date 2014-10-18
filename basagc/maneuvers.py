@@ -39,7 +39,7 @@ def delta_v(departure_altitude, destination_altitude):
     departure_planet_radius = get_telemetry("body_radius", body_number=BODIES["Kerbin"])
     r1 = departure_altitude + departure_planet_radius
     r2 = destination_altitude + departure_planet_radius
-    mu = get_telemetry("body_gravitational_parameter", body_number=BODIES["Kerbin"])
+    mu = get_telemetry("body_gravParameter", body_number=BODIES["Kerbin"])
 
     sqrt_r1 = math.sqrt(r1)
     sqrt_r2 = math.sqrt(r2)

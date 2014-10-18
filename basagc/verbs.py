@@ -784,9 +784,9 @@ class Verb82(Verb):
 #
 # #no verb 98
 #
-# class Verb99(Verb):
-#     def __init__(self):
-#         super(Verb99, self).__init__(name="Please enable engine", verb_number=99)
+class Verb99(Verb):
+    def __init__(self):
+        super(Verb99, self).__init__(name="Please enable engine", verb_number=99)
 
     def execute(self):
         super(Verb99, self).execute()

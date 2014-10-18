@@ -87,7 +87,7 @@ class Program11(Program):
 
         # test if KSP is connected
         try:
-            get_telemetry("ut")
+            get_telemetry("universalTime")
         except KSPNotConnected:
             self.terminate()
             return
@@ -127,7 +127,7 @@ class Program15(Program):
     def execute(self):
 
         super(Program15, self).execute()
-        self.orbiting_body = get_telemetry("orbiting_body_name")
+        self.orbiting_body = get_telemetry("body")
 
         # check if orbit is circular
         if get_telemetry("eccentricity") > 0.001:
@@ -164,11 +164,11 @@ class Program15(Program):
         destination_altitude = 0
         if target == "Mun":
             destination_altitude = 12250000
-        departure_altitude = get_telemetry("asl")
-        orbital_period = get_telemetry("orbital_period")
-        departure_body_orbital_period = get_telemetry("body_orbital_period", body_number=config.BODIES["Kerbin"])
-        grav_param = get_telemetry("body_gravitational_parameter", body_number=config.BODIES[self.orbiting_body])
-        current_phase_angle = get_telemetry("body_phase_angle", body_number=config.BODIES[target])
+        departure_altitude = get_telemetry("altitude")
+        orbital_period = get_telemetry("period")
+        departure_body_orbital_period = get_telemetry("body_period", body_number=config.BODIES["Kerbin"])
+        grav_param = get_telemetry("body_gravParameter", body_number=config.BODIES[self.orbiting_body])
+        current_phase_angle = get_telemetry("body_phaseAngle", body_number=config.BODIES[target])
         self.delta_v_required = maneuvers.delta_v(departure_altitude, destination_altitude)
         self.time_to_transfer = maneuvers.time_to_transfer(departure_altitude, destination_altitude, grav_param)
 
@@ -194,8 +194,8 @@ class Program15(Program):
         delta_time = utils.seconds_to_time(self.delta_time_to_burn)
         print("Time to burn: {} hours, {} minutes, {} seconds".format(int(delta_time[1]), int(delta_time[2]), round(delta_time[3], 2)))
         print("-----------------")
-        self.time_of_ignition = get_telemetry("met") + self.delta_time_to_burn
-        self.reference_delta_v = get_telemetry("orbital_velocity")
+        self.time_of_ignition = get_telemetry("missionTime") + self.delta_time_to_burn
+        self.reference_delta_v = get_telemetry("orbitalVelocity")
         gc.burn_data["is_active"] = True
         gc.burn_data["data"] = self
         gc.execute_verb(verb=16, noun=79)
