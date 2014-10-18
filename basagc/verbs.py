@@ -30,6 +30,8 @@ import nouns
 import config
 import computer as Computer
 from telemachus import KSPNotConnected
+from telemachus import get_telemetry
+from mechanics.orbit import Orbit
 
 telemetry = None
 computer = None
@@ -416,24 +418,24 @@ class Verb25(LoadVerb):
 
     def execute(self):
         pass
-
-# no verb 26
-
-class Verb27(LoadVerb):
-    def __init__(self):
-        super(Verb27, self).__init__(name="Display fixed telemetry", verb_number=27, components=(1,), registers=(1,))
+#
+# # no verb 26
+#
+# class Verb27(LoadVerb):
+#     def __init__(self):
+#         super(Verb27, self).__init__(name="Display fixed telemetry", verb_number=27, components=(1,), registers=(1,))
 
 # no verb 28
 
 # no verb 29
 
-class Verb30(Verb):
-    def __init__(self):
-        super(Verb30, self).__init__(name="Request Executive", verb_number=30)
-
-class Verb31(Verb):
-    def __init__(self):
-        super(Verb31, self).__init__(name="Request waitlist", verb_number=31)
+# class Verb30(Verb):
+#     def __init__(self):
+#         super(Verb30, self).__init__(name="Request Executive", verb_number=30)
+#
+# class Verb31(Verb):
+#     def __init__(self):
+#         super(Verb31, self).__init__(name="Request waitlist", verb_number=31)
 
 class Verb32(Verb):
     def __init__(self):
@@ -441,7 +443,7 @@ class Verb32(Verb):
 
     def execute(self):
         if isinstance(dsky.state["backgrounded_update"], MonitorVerb):
-            dsky.state["backgrounded_update"].terminate()
+            dsky.state["backgrounded_update"].terminate()  # TODO
         else:
             print("V32 called, but nothing to recycle!")
 
@@ -465,7 +467,7 @@ class Verb34(Verb):
         else:
             print("V34 called, but nothing to terminate!")
 
-class Verb35(Verb): # Implemented
+class Verb35(Verb):
 
     """Lamp test"""
 
@@ -545,149 +547,149 @@ class Verb37(Verb):
 
 #-------------------------------BEGIN EXTENDED VERBS----------------------------
 
-class Verb40(Verb):
-    def __init__(self):
-        super(Verb40, self).__init__(name="Zero CDUs", verb_number=40)
-
-    def execute(self):
-        pass
-
-class Verb41(Verb):
-    def __init__(self):
-        super(Verb41, self).__init__(name="Coarse align CDUs", verb_number=41)
-
-    def execute(self):
-        pass
-
-class Verb42(Verb):
-    def __init__(self):
-        super(Verb42, self).__init__(name="Fine align IMU", verb_number=42)
-
-class Verb43(Verb):
-    def __init__(self):
-        super(Verb43, self).__init__(name="Load IMU attitude error meters (test only)", verb_number=43)
-
-class Verb44(Verb):
-    def __init__(self):
-        super(Verb44, self).__init__(name="Set surface flag", verb_number=44)
-
-class Verb45(Verb):
-    def __init__(self):
-        super(Verb45, self).__init__(name="Reset surface flag", verb_number=45)
-
-class Verb46(Verb):
-    def __init__(self):
-        super(Verb46, self).__init__(name="Establish G&C control", verb_number=46)
-
-class Verb47(Verb):
-    def __init__(self):
-        super(Verb47, self).__init__(name="Move LM state vector into CM state vector", verb_number=47)
-
-class Verb48(Verb):
-    def __init__(self):
-        super(Verb48, self).__init__(name="Request DAP data load (R03)", verb_number=48)
-
-class Verb49(Verb):
-    def __init__(self):
-        super(Verb49, self).__init__(name="Request crew defined maneuver (R62)", verb_number=49)
-
-class Verb50(Verb):
-    def __init__(self):
-        super(Verb50, self).__init__(name="Please perform", verb_number=50)
-
-class Verb51(Verb):
-    def __init__(self):
-        super(Verb51, self).__init__(name="Please mark", verb_number=51)
-
-class Verb52(Verb):
-    def __init__(self):
-        super(Verb52, self).__init__(name="Mark on offset landing site", verb_number=52)
-
-class Verb53(Verb):
-    def __init__(self):
-        super(Verb53, self).__init__(name="Please perform alternate LOS mark", verb_number=53)
-
-class Verb54(Verb):
-    def __init__(self):
-        super(Verb54, self).__init__(name="Request rendezvous backup sighting mark routine (R23)", verb_number=54)
-
-class Verb55(Verb):
-    def __init__(self):
-        super(Verb55, self).__init__(name="Increment AGC time (decimal)", verb_number=55)
-
-class Verb56(Verb):
-    def __init__(self):
-        super(Verb56, self).__init__(name="Terminate tracking (P20)", verb_number=56)
-
-class Verb57(Verb):
-    def __init__(self):
-        super(Verb57, self).__init__(name="Display update state of FULTKFLG", verb_number=57)
-
-class Verb58(Verb):
-    def __init__(self):
-        super(Verb58, self).__init__(name="Enable auto maneuver in P20", verb_number=58)
-
-class Verb59(Verb):
-    def __init__(self):
-        super(Verb59, self).__init__(name="Please calibrate", verb_number=59)
-
-class Verb60(Verb):
-    def __init__(self):
-        super(Verb60, self).__init__(name="Set astronaut total attitude (N17) to present attitude", verb_number=60)
-
-class Verb61(Verb):
-    def __init__(self):
-        super(Verb61, self).__init__(name="Display DAP attitude error", verb_number=61)
-
-class Verb62(Verb):
-    def __init__(self):
-        super(Verb62, self).__init__(name="Display total attitude error WRT N22", verb_number=62)
-
-class Verb63(Verb):
-    def __init__(self):
-        super(Verb63, self).__init__(name="Display total astronaut attitude error WRT N17", verb_number=63)
-
-class Verb64(Verb):
-    def __init__(self):
-        super(Verb64, self).__init__(name="Enable Autopilot", verb_number=64) # TODO
-
-class Verb65(Verb):
-    def __init__(self):
-        super(Verb65, self).__init__(name="Optical verification of prelaunch alignment", verb_number=65)
-
-class Verb66(Verb):
-    def __init__(self):
-        super(Verb66, self).__init__(name="Vehicles attached, move this vehicle state vector to other vehicle state vector", verb_number=66)
-
-class Verb67(Verb):
-    def __init__(self):
-        super(Verb67, self).__init__(name="Display W Matrix", verb_number=67)
-
-#no Verb 68
-
-class Verb69(Verb):
-    def __init__(self):
-        super(Verb69, self).__init__(name="Cause restart", verb_number=69)
-
-class Verb70(Verb):
-    def __init__(self):
-        super(Verb70, self).__init__(name="Update liftoff time", verb_number=70)
-
-class Verb71(Verb):
-    def __init__(self):
-        super(Verb71, self).__init__(name="Universal update - block address", verb_number=71)
-
-class Verb72(Verb):
-    def __init__(self):
-        super(Verb72, self).__init__(name="Universal update - single address", verb_number=72)
-
-class Verb73(Verb):
-    def __init__(self):
-        super(Verb73, self).__init__(name="Update AGC time (octal)", verb_number=73)
-
-class Verb74(Verb):
-    def __init__(self):
-        super(Verb74, self).__init__(name="Initialize erasable dump via downlink", verb_number=74)
+# class Verb40(Verb):
+#     def __init__(self):
+#         super(Verb40, self).__init__(name="Zero CDUs", verb_number=40)
+#
+#     def execute(self):
+#         pass
+#
+# class Verb41(Verb):
+#     def __init__(self):
+#         super(Verb41, self).__init__(name="Coarse align CDUs", verb_number=41)
+#
+#     def execute(self):
+#         pass
+#
+# class Verb42(Verb):
+#     def __init__(self):
+#         super(Verb42, self).__init__(name="Fine align IMU", verb_number=42)
+#
+# class Verb43(Verb):
+#     def __init__(self):
+#         super(Verb43, self).__init__(name="Load IMU attitude error meters (test only)", verb_number=43)
+#
+# class Verb44(Verb):
+#     def __init__(self):
+#         super(Verb44, self).__init__(name="Set surface flag", verb_number=44)
+#
+# class Verb45(Verb):
+#     def __init__(self):
+#         super(Verb45, self).__init__(name="Reset surface flag", verb_number=45)
+#
+# class Verb46(Verb):
+#     def __init__(self):
+#         super(Verb46, self).__init__(name="Establish G&C control", verb_number=46)
+#
+# class Verb47(Verb):
+#     def __init__(self):
+#         super(Verb47, self).__init__(name="Move LM state vector into CM state vector", verb_number=47)
+#
+# class Verb48(Verb):
+#     def __init__(self):
+#         super(Verb48, self).__init__(name="Request DAP data load (R03)", verb_number=48)
+#
+# class Verb49(Verb):
+#     def __init__(self):
+#         super(Verb49, self).__init__(name="Request crew defined maneuver (R62)", verb_number=49)
+#
+# class Verb50(Verb):
+#     def __init__(self):
+#         super(Verb50, self).__init__(name="Please perform", verb_number=50)
+#
+# class Verb51(Verb):
+#     def __init__(self):
+#         super(Verb51, self).__init__(name="Please mark", verb_number=51)
+#
+# class Verb52(Verb):
+#     def __init__(self):
+#         super(Verb52, self).__init__(name="Mark on offset landing site", verb_number=52)
+#
+# class Verb53(Verb):
+#     def __init__(self):
+#         super(Verb53, self).__init__(name="Please perform alternate LOS mark", verb_number=53)
+#
+# class Verb54(Verb):
+#     def __init__(self):
+#         super(Verb54, self).__init__(name="Request rendezvous backup sighting mark routine (R23)", verb_number=54)
+#
+# class Verb55(Verb):
+#     def __init__(self):
+#         super(Verb55, self).__init__(name="Increment AGC time (decimal)", verb_number=55)
+#
+# class Verb56(Verb):
+#     def __init__(self):
+#         super(Verb56, self).__init__(name="Terminate tracking (P20)", verb_number=56)
+#
+# class Verb57(Verb):
+#     def __init__(self):
+#         super(Verb57, self).__init__(name="Display update state of FULTKFLG", verb_number=57)
+#
+# class Verb58(Verb):
+#     def __init__(self):
+#         super(Verb58, self).__init__(name="Enable auto maneuver in P20", verb_number=58)
+#
+# class Verb59(Verb):
+#     def __init__(self):
+#         super(Verb59, self).__init__(name="Please calibrate", verb_number=59)
+#
+# class Verb60(Verb):
+#     def __init__(self):
+#         super(Verb60, self).__init__(name="Set astronaut total attitude (N17) to present attitude", verb_number=60)
+#
+# class Verb61(Verb):
+#     def __init__(self):
+#         super(Verb61, self).__init__(name="Display DAP attitude error", verb_number=61)
+#
+# class Verb62(Verb):
+#     def __init__(self):
+#         super(Verb62, self).__init__(name="Display total attitude error WRT N22", verb_number=62)
+#
+# class Verb63(Verb):
+#     def __init__(self):
+#         super(Verb63, self).__init__(name="Display total astronaut attitude error WRT N17", verb_number=63)
+#
+# class Verb64(Verb):
+#     def __init__(self):
+#         super(Verb64, self).__init__(name="Enable Autopilot", verb_number=64) # TODO
+#
+# class Verb65(Verb):
+#     def __init__(self):
+#         super(Verb65, self).__init__(name="Optical verification of prelaunch alignment", verb_number=65)
+#
+# class Verb66(Verb):
+#     def __init__(self):
+#         super(Verb66, self).__init__(name="Vehicles attached, move this vehicle state vector to other vehicle state vector", verb_number=66)
+#
+# class Verb67(Verb):
+#     def __init__(self):
+#         super(Verb67, self).__init__(name="Display W Matrix", verb_number=67)
+#
+# #no Verb 68
+#
+# class Verb69(Verb):
+#     def __init__(self):
+#         super(Verb69, self).__init__(name="Cause restart", verb_number=69)
+#
+# class Verb70(Verb):
+#     def __init__(self):
+#         super(Verb70, self).__init__(name="Update liftoff time", verb_number=70)
+#
+# class Verb71(Verb):
+#     def __init__(self):
+#         super(Verb71, self).__init__(name="Universal update - block address", verb_number=71)
+#
+# class Verb72(Verb):
+#     def __init__(self):
+#         super(Verb72, self).__init__(name="Universal update - single address", verb_number=72)
+#
+# class Verb73(Verb):
+#     def __init__(self):
+#         super(Verb73, self).__init__(name="Update AGC time (octal)", verb_number=73)
+#
+# class Verb74(Verb):
+#     def __init__(self):
+#         super(Verb74, self).__init__(name="Initialize erasable dump via downlink", verb_number=74)
 
 class Verb75(Verb):
     def __init__(self):
@@ -699,19 +701,19 @@ class Verb75(Verb):
 #no verb 76
 #no verb 77
 
-class Verb78(Verb):
-    def __init__(self):
-        super(Verb78, self).__init__(name="Update prelaunch azimuth", verb_number=78)
-
-#no verb 79
-
-class Verb80(Verb):
-    def __init__(self):
-        super(Verb80, self).__init__(name="Update LM state vector", verb_number=80)
-
-class Verb81(Verb):
-    def __init__(self):
-        super(Verb81, self).__init__(name="Update CSM state vector", verb_number=81)
+# class Verb78(Verb):
+#     def __init__(self):
+#         super(Verb78, self).__init__(name="Update prelaunch azimuth", verb_number=78)
+#
+# #no verb 79
+#
+# class Verb80(Verb):
+#     def __init__(self):
+#         super(Verb80, self).__init__(name="Update LM state vector", verb_number=80)
+#
+# class Verb81(Verb):
+#     def __init__(self):
+#         super(Verb81, self).__init__(name="Update CSM state vector", verb_number=81)
 
 class Verb82(Verb):
     def __init__(self):
@@ -723,65 +725,73 @@ class Verb82(Verb):
         computer.execute_verb(verb=16, noun=44)
 
 
-class Verb83(Verb):
-    def __init__(self):
-        super(Verb83, self).__init__(name="Request rendezvous parameter display (R31)", verb_number=83)
+# class Verb83(Verb):
+#     def __init__(self):
+#         super(Verb83, self).__init__(name="Request rendezvous parameter display (R31)", verb_number=83)
+#
+#
+# #no verb 84
+#
+# class Verb85(Verb):
+#     def __init__(self):
+#         super(Verb85, self).__init__(name="Request rendezvous parameter display no. 2 (R34)", verb_number=85)
+#
+# class Verb86(Verb):
+#     def __init__(self):
+#         super(Verb86, self).__init__(name="Reject rendezvous backup sighting mark", verb_number=86)
+#
+# class Verb87(Verb):
+#     def __init__(self):
+#         super(Verb87, self).__init__(name="Set VHF range flag", verb_number=87)
+#
+# class Verb88(Verb):
+#     def __init__(self):
+#         super(Verb88, self).__init__(name="Reset VHF range flag", verb_number=88)
+#
+# class Verb89(Verb):
+#     def __init__(self):
+#         super(Verb89, self).__init__(name="Request rendezvous final attitude (R63)", verb_number=89)
+#
+# class Verb90(Verb):
+#     def __init__(self):
+#         super(Verb90, self).__init__(name="Request rendezvous out of plane display (R36)", verb_number=90)
+#
+# class Verb91(Verb):
+#     def __init__(self):
+#         super(Verb91, self).__init__(name="Display bank sum", verb_number=91)
+#
+# class Verb92(Verb):
+#     def __init__(self):
+#         super(Verb92, self).__init__(name="Operate IMU performance test (P07)", verb_number=92)
+#
+# class Verb93(Verb):
+#     def __init__(self):
+#         super(Verb93, self).__init__(name="Enable W Matrix initialization", verb_number=93)
+#
+# class Verb94(Verb):
+#     def __init__(self):
+#         super(Verb94, self).__init__(name="Request rendezvous backup sighting mark routine (R23)", verb_number=94)
+#
+# #no verb 95
+#
+# class Verb96(Verb):
+#     def __init__(self):
+#         super(Verb96, self).__init__(name="Terminate integration and go to P00", verb_number=96)
+#
+# class Verb97(Verb):
+#     def __init__(self):
+#         super(Verb97, self).__init__(name="Perform engine fail procedure", verb_number=97)
+#
+# #no verb 98
+#
+# class Verb99(Verb):
+#     def __init__(self):
+#         super(Verb99, self).__init__(name="Please enable engine", verb_number=99)
 
-
-#no verb 84
-
-class Verb85(Verb):
-    def __init__(self):
-        super(Verb85, self).__init__(name="Request rendezvous parameter display no. 2 (R34)", verb_number=85)
-
-class Verb86(Verb):
-    def __init__(self):
-        super(Verb86, self).__init__(name="Reject rendezvous backup sighting mark", verb_number=86)
-
-class Verb87(Verb):
-    def __init__(self):
-        super(Verb87, self).__init__(name="Set VHF range flag", verb_number=87)
-
-class Verb88(Verb):
-    def __init__(self):
-        super(Verb88, self).__init__(name="Reset VHF range flag", verb_number=88)
-
-class Verb89(Verb):
-    def __init__(self):
-        super(Verb89, self).__init__(name="Request rendezvous final attitude (R63)", verb_number=89)
-
-class Verb90(Verb):
-    def __init__(self):
-        super(Verb90, self).__init__(name="Request rendezvous out of plane display (R36)", verb_number=90)
-
-class Verb91(Verb):
-    def __init__(self):
-        super(Verb91, self).__init__(name="Display bank sum", verb_number=91)
-
-class Verb92(Verb):
-    def __init__(self):
-        super(Verb92, self).__init__(name="Operate IMU performance test (P07)", verb_number=92)
-
-class Verb93(Verb):
-    def __init__(self):
-        super(Verb93, self).__init__(name="Enable W Matrix initialization", verb_number=93)
-
-class Verb94(Verb):
-    def __init__(self):
-        super(Verb94, self).__init__(name="Request rendezvous backup sighting mark routine (R23)", verb_number=94)
-
-#no verb 95
-
-class Verb96(Verb):
-    def __init__(self):
-        super(Verb96, self).__init__(name="Terminate integration and go to P00", verb_number=96)
-
-class Verb97(Verb):
-    def __init__(self):
-        super(Verb97, self).__init__(name="Perform engine fail procedure", verb_number=97)
-
-#no verb 98
-
-class Verb99(Verb):
-    def __init__(self):
-        super(Verb99, self).__init__(name="Please enable engine", verb_number=99)
+    def execute(self):
+        super(Verb99, self).execute()
+        this_orbit = Orbit(object_name=get_telemetry("name"))
+        this_orbit.update_parameters()
+        print(this_orbit)
+        import telemachus
+        telemachus.get_api_listing()
