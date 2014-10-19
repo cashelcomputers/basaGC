@@ -31,7 +31,6 @@ from telemachus import get_telemetry, KSPNotConnected
 
 gc = None
 dsky = None
-log = logging.getLogger("Programs")
 
 class Program(object):
 

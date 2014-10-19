@@ -31,26 +31,16 @@ import logging
 
 import wx
 
-from basagc import telemachus
-from basagc import dsky
-from basagc import config
-from basagc import timer
-from basagc import display
-from basagc import verbs
-from basagc import nouns
-from basagc import programs
-from basagc import utils
-from basagc import routines
-
-# import config
-# import timer
-# import display
-# import dsky
-# import verbs
-# import nouns
-# import programs
-# import lib
-# import routines
+import utils
+import telemachus
+import config
+import timer
+import display
+import dsky
+import verbs
+import nouns
+import programs
+import routines
 
 
 memory_log = logging.getLogger("MEMORY")
@@ -163,6 +153,7 @@ class Computer(object):
 
 
     def on(self):
+        utils.log("Computer booting...")
         self.loop_timer.start()
         self.is_powered_on = True
         for display_item in self.dsky.static_display:
