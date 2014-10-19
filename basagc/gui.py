@@ -124,7 +124,7 @@ class GUI(wx.Frame):
 
     def __set_properties(self):
 
-        self.SetTitle("pyDSKY")
+        self.SetTitle("basaGC")
         _icon = wx.EmptyIcon()
         _icon.CopyFromBitmap(wx.Bitmap(config.IMAGES_DIR + "ApolloPatch2.png", wx.BITMAP_TYPE_ANY))
         self.SetIcon(_icon)
