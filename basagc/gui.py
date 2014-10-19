@@ -30,12 +30,12 @@ import computer as Computer
 import config
 import utils
 
-console = logging.StreamHandler()
-console.setLevel(logging.DEBUG)
-
-formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
-console.setFormatter(formatter)
-logging.getLogger('').addHandler(console)
+# console = logging.StreamHandler()
+# console.setLevel(logging.DEBUG)
+#
+# formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+# console.setFormatter(formatter)
+# logging.getLogger('').addHandler(console)
 
 
 class LogViewerFrame(wx.Frame):
@@ -46,7 +46,7 @@ class LogViewerFrame(wx.Frame):
         kwds["style"] = wx.CLOSE_BOX | wx.MINIMIZE_BOX
         wx.Frame.__init__(self, *args, **kwds)
         self.panel_2 = wx.Panel(self, wx.ID_ANY)
-        self.viewer = wx.TextCtrl(self.panel_2, wx.ID_ANY, "", style=wx.TE_MULTILINE)
+        self.viewer = wx.TextCtrl(self.panel_2, wx.ID_ANY, "", style=wx.TE_MULTILINE | wx.TE_READONLY)
         self.close_button = wx.Button(self.panel_2, wx.ID_CLOSE, "")
 
         self.__set_properties()
@@ -391,17 +391,17 @@ class GUI(wx.Frame):
         GUI.dsky.control_registers["noun"].stop_blink()
 
     def on(self):
-        print("DSKY on")
+        utils.log("DSKY on")
         for item in GUI.dsky.static_display:
             item.on()
 
     def off(self):
-        print("DSKY off")
+        utils.log("DSKY off")
         for item in GUI.dsky.static_display:
             item.off()
 
     def settings_menuitem_click(self, event):
-        print "Event handler 'settings_menuitem_click' not implemented!"
+        utils.log("Event handler 'settings_menuitem_click' not implemented!")
         event.Skip()
 
     def show_log_menuitem_click(self, event):

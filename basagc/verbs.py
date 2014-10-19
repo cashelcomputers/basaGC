@@ -109,7 +109,7 @@ class Verb(object):
         raise NotImplementedError
 
     def receive_data(self, data):
-        print("{} received data: {}".format(self, data))
+        utils.log("{} received data: {}".format(self, data))
         self.data = data
         self.execute()
 
@@ -150,7 +150,7 @@ class MonitorVerb(DisplayVerb):
             self.terminate()
             return
         except KSPNotConnected:
-            print("KSP not connected, terminating V{}".format(self.number))
+            utils.log("KSP not connected, terminating V{}".format(self.number))
             computer.poodoo_abort(110)
             self.terminate()
             raise
@@ -188,7 +188,7 @@ class MonitorVerb(DisplayVerb):
         self._send_output()
 
     def terminate(self):
-        print("Terminating V{}".format(self.number))
+        utils.log("Terminating V{}".format(self.number))
         dsky.annunciators["key_rel"].off()
         dsky.state["display_lock"] = None
         dsky.state["backgrounded_update"] = None
@@ -288,7 +288,7 @@ class Verb5(DisplayVerb):
                                     components=(1, 2, 3), registers=(1, 2, 3))
         self.illegal_nouns = []
     def execute(self):
-        print("Executing V05")
+        utils.log("Executing V05")
         super(Verb5, self).execute()
         noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
         noun_data = noun_function(calling_verb=self)
@@ -382,7 +382,7 @@ class Verb21(LoadVerb):
         pass
 
     def accept_data(self, data):
-        print(data)
+        utils.log(data)
 
 class Verb22(LoadVerb):
     def __init__(self):
@@ -447,7 +447,7 @@ class Verb32(Verb):
         if isinstance(dsky.state["backgrounded_update"], MonitorVerb):
             dsky.state["backgrounded_update"].terminate()  # TODO
         else:
-            print("V32 called, but nothing to recycle!")
+            utils.log("V32 called, but nothing to recycle!")
 
 class Verb33(Verb):
     def __init__(self):
@@ -457,7 +457,7 @@ class Verb33(Verb):
         if isinstance(dsky.state["backgrounded_update"], MonitorVerb):
             dsky.state["backgrounded_update"].terminate()
         else:
-            print("V33 called, but nothing to proceed with!")
+            utils.log("V33 called, but nothing to proceed with!")
 
 class Verb34(Verb):
     def __init__(self):
@@ -467,7 +467,7 @@ class Verb34(Verb):
         if isinstance(dsky.state["backgrounded_update"], MonitorVerb):
             dsky.state["backgrounded_update"].terminate()
         else:
-            print("V34 called, but nothing to terminate!")
+            utils.log("V34 called, but nothing to terminate!")
 
 class Verb35(Verb):
 
@@ -501,7 +501,7 @@ class Verb35(Verb):
         self.stop_timer.Start(5000, oneShot=True)
 
     def terminate(self):
-        print("Hit terminate")
+        utils.log("Hit terminate")
         for annunciator in dsky.annunciators.itervalues():
             annunciator.off()
         for name, register in dsky.control_registers.iteritems():
@@ -514,7 +514,7 @@ class Verb35(Verb):
                     digit.display(8)
 
     def stop_timer_event(self, event):
-        print("Stopping V35 timer")
+        utils.log("Stopping V35 timer")
         self.terminate()
 
 class Verb36(Verb):
@@ -530,7 +530,7 @@ class Verb37(Verb):
         #self.data.append("")
 
     def execute(self):
-
+        super(Verb37, self).execute()
         dsky.request_data(requesting_object=self.receive_data, location=dsky.control_registers["noun"])
 
     def receive_data(self, data):
@@ -795,5 +795,5 @@ class Verb99(Verb):
         orbiting_body = body.Body(get_telemetry("body"))
         orbiting_body.orbit.update_parameters()
         orbiting_body.parent_body.orbit.update_parameters()
-        print(orbiting_body, orbiting_body.parent_body.orbit)
+        utils.log(orbiting_body, orbiting_body.parent_body.orbit)
 

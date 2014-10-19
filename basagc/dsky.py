@@ -27,6 +27,7 @@ import wx
 
 import config
 import verbs
+import utils
 
 class DSKY(object):
 
@@ -109,7 +110,7 @@ class DSKY(object):
 
         """Called when the astronaut has entered invalid keyboard input."""
         if message:
-            print("OPERATOR ERROR: " + message)
+            utils.log("OPERATOR ERROR: " + message)
         self.annunciators["opr_err"].blink_timer.Start(500)
 
     def _init_state(self):
@@ -138,7 +139,7 @@ class DSKY(object):
         self.annunciators["comp_acty"].off()
 
     def request_data(self, requesting_object, location):
-        print("{} requesting data".format(requesting_object))
+        utils.log("{} requesting data".format(requesting_object))
         self.verb_noun_flash_on()
         self.state["object_requesting_data"] = requesting_object
         self.state["is_expecting_data"] = True
@@ -445,8 +446,8 @@ class DSKY(object):
                 #try:
                     #self.digits[index].display(int(value[index]))
                 #except IndexError:
-                    #print(value, index)
-                    #print("Too many values to display, silently ignoring further data")
+                    #utils.log(value, index)
+                    #utils.log("Too many values to display, silently ignoring further data")
 
         def blank(self):
             for digit in self.digits.itervalues():
@@ -523,7 +524,7 @@ class DSKY(object):
 
             if keypress == "P":
                 stop_blink()
-                print("Proceeding without input, calling {}(proceed)".format(
+                utils.log("Proceeding without input, calling {}(proceed)".format(
                     self.state["object_requesting_data"]))
                 self.state["object_requesting_data"]("proceed")
                 self.input_data_buffer = ""
@@ -533,7 +534,7 @@ class DSKY(object):
             # program or verb requesting the data load
             elif keypress == "E":
                 stop_blink()
-                print("Data load complete, calling {}({})".format(
+                utils.log("Data load complete, calling {} ({})".format(
                     self.state["object_requesting_data"],
                     self.input_data_buffer))
                 self.state["object_requesting_data"](self.input_data_buffer)
@@ -640,8 +641,8 @@ class DSKY(object):
                         self.state["requested_noun"],
                         self.state["requested_verb"]))
             # except IndexError:
-            # print(type(self.state["requested_verb"]))
-            #     print("Verb {} not in verb list".format(self.state["requested_verb"]))
+            # utils.log(type(self.state["requested_verb"]))
+            #     utils.log("Verb {} not in verb list".format(self.state["requested_verb"]))
             #     self.operator_error("Requested verb {} does not exist in list of verbs :(".format(self.state["requested_verb"]))
             return
 
@@ -675,7 +676,7 @@ class DSKY(object):
             if keypress == "P":
                 self.computer.on()
             else:
-                print("Key {} ignored because gc is off".format(keypress))
+                utils.log("Key {} ignored because gc is off".format(keypress))
             return
 
         if keypress == "R":
