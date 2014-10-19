@@ -133,6 +133,7 @@ def noun09(calling_verb):
 # def noun16(calling_verb):
 #     raise NounNotImplementedError
 
+
 def noun17(calling_verb=None):
 
     # FIXME: need to make sure that data is correct length (sometimes drops the last 0 when input is xxx.x rather than
@@ -164,16 +165,7 @@ def noun17(calling_verb=None):
 #
 # def noun21(calling_verb):
 #     raise NounNotImplementedError
-#     """PIPA'S"""
-#     #inputs = computer.
-#     #data = {
-#         #1:
-#         #2:
-#         #3:
-#         #"description": "PIPA pulse rate for X, Y, Z axis",
-#         #"is_octal": False,
-#     #}
-#     #return data
+#
 #
 # def noun22(calling_verb):
 #     raise NounNotImplementedError
