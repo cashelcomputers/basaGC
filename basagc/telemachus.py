@@ -27,9 +27,16 @@ import urllib2
 
 import config
 
+class KSPNotConnected(Exception):
+    """ This exception should be raised when there is no connection to KSP """
+    pass
 
 def _get_api_listing():
-    response = urllib2.urlopen(config.URL + "api=a.api")
+    try:
+        response = urllib2.urlopen(config.URL + "api=a.api")
+    except urllib2.URLError as e:
+        print(e)
+        raise KSPNotConnected
     data = json.load(response)
     telemetry = {}
     commands = {}
@@ -49,9 +56,11 @@ def _get_api_listing():
             telemetry[name] = b["apistring"]
     return telemetry
 
-
-telemetry = _get_api_listing()
-
+try:
+    telemetry = _get_api_listing()
+except KSPNotConnected:
+    telemetry = None
+    print("Could not construct telemetry information - no contact with KSP")
 
 def get_telemetry(data, body_number=None):
     """ Contacts telemachus for the requested data.
@@ -68,14 +77,12 @@ def get_telemetry(data, body_number=None):
     try:
         raw_response = urllib2.urlopen(config.URL + query_string)
     except urllib2.URLError as e:
-        print(query_string)
+        print("Query string: {}".format(query_string))
         print(e)
         raise KSPNotConnected
     json_response = json.load(raw_response)
     return json_response[data]
 
 
-class KSPNotConnected(Exception):
-    """ This exception should be raised when there is no connection to KSP """
-    pass
+
 

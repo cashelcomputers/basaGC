@@ -34,7 +34,6 @@ from telemachus import get_telemetry
 from mechanics import orbit, body
 
 
-telemetry = None
 computer = None
 dsky = None
 frame = None

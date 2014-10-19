@@ -28,10 +28,6 @@ import wx
 import config
 import verbs
 
-
-dsky_log = logging.getLogger("DSKY")
-debug_computer = None
-
 class DSKY(object):
 
     def __init__(self, gui, computer):

@@ -27,12 +27,7 @@ import math
 
 from telemachus import get_telemetry
 
-log = logging.getLogger("Nouns")
-
-memory = None
 computer = None
-dsky = None
-frame = None
 
 def octal(value):
     return int(oct(value))

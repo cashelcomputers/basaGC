@@ -81,11 +81,11 @@ class Computer(object):
         self.target = ""
 
         telemachus.gc = self
-        verbs.telemetry = telemachus.telemetry
+        #verbs.telemetry = telemachus.telemetry
         verbs.computer = self
         verbs.dsky = self.dsky
         verbs.frame = self.gui
-        nouns.telemetry = telemachus.telemetry
+        #nouns.telemetry = telemachus.telemetry
         nouns.computer = self
         nouns.dsky = self.dsky
         nouns.frame = self.gui
