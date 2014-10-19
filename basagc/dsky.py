@@ -534,7 +534,7 @@ class DSKY(object):
             # program or verb requesting the data load
             elif keypress == "E":
                 stop_blink()
-                utils.log("Data load complete, calling {}({})".format(
+                utils.log("Data load complete, calling {} ({})".format(
                     self.state["object_requesting_data"],
                     self.input_data_buffer))
                 self.state["object_requesting_data"](self.input_data_buffer)

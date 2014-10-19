@@ -25,6 +25,7 @@
 import json
 import urllib2
 
+import utils
 import config
 
 class KSPNotConnected(Exception):
@@ -35,7 +36,7 @@ def _get_api_listing():
     try:
         response = urllib2.urlopen(config.URL + "api=a.api")
     except urllib2.URLError as e:
-        utils.log(e)
+        print(e)
         raise KSPNotConnected
     data = json.load(response)
     telemetry = {}
@@ -60,7 +61,7 @@ try:
     telemetry = _get_api_listing()
 except KSPNotConnected:
     telemetry = None
-    utils.log("Could not construct telemetry information - no contact with KSP")
+    print("Could not construct telemetry information - no contact with KSP")
 
 def get_telemetry(data, body_number=None):
     """ Contacts telemachus for the requested data.
