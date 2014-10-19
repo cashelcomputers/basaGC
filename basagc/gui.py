@@ -30,12 +30,12 @@ import computer as Computer
 import config
 import utils
 
-console = logging.StreamHandler()
-console.setLevel(logging.DEBUG)
-
-formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
-console.setFormatter(formatter)
-logging.getLogger('').addHandler(console)
+# console = logging.StreamHandler()
+# console.setLevel(logging.DEBUG)
+#
+# formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+# console.setFormatter(formatter)
+# logging.getLogger('').addHandler(console)
 
 
 class LogViewerFrame(wx.Frame):
@@ -46,7 +46,7 @@ class LogViewerFrame(wx.Frame):
         kwds["style"] = wx.CLOSE_BOX | wx.MINIMIZE_BOX
         wx.Frame.__init__(self, *args, **kwds)
         self.panel_2 = wx.Panel(self, wx.ID_ANY)
-        self.viewer = wx.TextCtrl(self.panel_2, wx.ID_ANY, "", style=wx.TE_MULTILINE)
+        self.viewer = wx.TextCtrl(self.panel_2, wx.ID_ANY, "", style=wx.TE_MULTILINE | wx.TE_READONLY)
         self.close_button = wx.Button(self.panel_2, wx.ID_CLOSE, "")
 
         self.__set_properties()
