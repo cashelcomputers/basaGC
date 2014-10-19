@@ -633,7 +633,7 @@ class DSKY(object):
                         self.state["requested_verb"]))
                 return
             try:
-                self.computer.verbs[int(self.state["requested_verb"])].execute()
+                self.computer.verbs[str(self.state["requested_verb"])].execute()
             except NotImplementedError:
                 self.operator_error(
                     "Verb {} is not implemented yet. Sorry about that...".format(
@@ -706,8 +706,9 @@ class DSKY(object):
         # if self.state["display_lock"] is not None:
         #     self.state["display_lock"].background()
     def flash_comp_acty(self):
-        self.annunciators["comp_acty"].on()
-        self.comp_acty_timer.Start(config.COMP_ACTY_FLASH_DURATION, oneShot=True)
+        pass
+        # self.annunciators["comp_acty"].on()
+        # self.comp_acty_timer.Start(config.COMP_ACTY_FLASH_DURATION, oneShot=True)
 
     def set_noun(self, noun):
         self.state["requested_noun"] = noun

@@ -31,7 +31,8 @@ import config
 import computer as Computer
 from telemachus import KSPNotConnected
 from telemachus import get_telemetry
-from mechanics.orbit import Orbit
+from mechanics import orbit, body
+
 
 telemetry = None
 computer = None
@@ -140,7 +141,7 @@ class MonitorVerb(DisplayVerb):
         if computer.dsky.state["requested_noun"] in self.illegal_nouns:
             raise NounNotAcceptableError
             return
-        noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
+        noun_function = computer.nouns[str(computer.dsky.state["requested_noun"])]
         try:
             data = noun_function()
         except nouns.NounNotImplementedError:
@@ -790,8 +791,7 @@ class Verb99(Verb):
 
     def execute(self):
         super(Verb99, self).execute()
-        this_orbit = Orbit(object_name=get_telemetry("name"))
-        this_orbit.update_parameters()
-        print(this_orbit)
-        import telemachus
-        telemachus.get_api_listing()
+        orbiting_body = body.Body(get_telemetry("body"))
+        orbiting_body.orbit.update_parameters()
+        orbiting_body.parent_body.orbit.update_parameters()
+        print(orbiting_body, orbiting_body.parent_body.orbit)

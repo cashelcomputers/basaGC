@@ -135,6 +135,8 @@ def noun09(calling_verb):
 
 def noun17(calling_verb=None):
 
+    # FIXME: need to make sure that data is correct length (sometimes drops the last 0 when input is xxx.x rather than
+    # xxx.xx
     roll = str(round(get_telemetry("roll"), 2))
     pitch = str(round(get_telemetry("pitch"), 2))
     yaw = str(round(get_telemetry("heading"), 2))

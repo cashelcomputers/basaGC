@@ -123,6 +123,7 @@ class Program15(Program):
         self.time_of_ignition = 0.0
         self.delta_time_to_burn = 0.0
         self.reference_delta_v = 0.0
+        self.phase_angle_difference = 0.0
 
     def execute(self):
 
@@ -182,7 +183,7 @@ class Program15(Program):
         try:
             self.delta_time_to_burn = self.phase_angle_difference /\
                                  ((360 / orbital_period) - (360 / departure_body_orbital_period))
-        except TypeError: # FIXME
+        except TypeError:  # FIXME
             return
         print
         print("-----------------")
@@ -199,8 +200,6 @@ class Program15(Program):
         gc.burn_data["is_active"] = True
         gc.burn_data["data"] = self
         gc.execute_verb(verb=16, noun=79)
-
-
         gc.set_attitude("prograde")
 class ProgramNotImplementedError(Exception):
     pass

@@ -63,11 +63,11 @@ class Orbit(object):
         self.time_to_apoapsis = 0.0  # in seconds
         self.time_to_apoapsis_dhms = (0, 0, 0, 0)  # same as above, except in days, hours, minutes, and seconds
         self.time_to_periapsis = 0.0  # in seconds
-        self.time_to_periapsis_dhms = (0, 0, 0, 0) # same as above, except in days, hours, minutes, and seconds
+        self.time_to_periapsis_dhms = (0, 0, 0, 0)  # same as above, except in days, hours, minutes, and seconds
         self.orbital_period = 0.0  # the time it takes to complete one orbit
-        self.orbital_period_hms = (0, 0, 0, 0) # same as above, except in days, hours, minutes, and seconds
+        self.orbital_period_hms = (0, 0, 0, 0)  # same as above, except in days, hours, minutes, and seconds
         self.time_of_periapsis_passage = 0.0  # in seconds
-        self.time_of_periapsis_passage_hms = (0, 0, 0, 0) # same as above, except in days, hours, minutes, and seconds
+        self.time_of_periapsis_passage_hms = (0, 0, 0, 0)  # same as above, except in days, hours, minutes, and seconds
 
     def __str__(self):
         return "Orbit parameters:\nEccentricity: {}\nSemi-major axis: {} km\nInclination: {}°\nLongitude of ascending " \
