@@ -32,6 +32,7 @@ import computer as Computer
 from telemachus import KSPNotConnected
 from telemachus import get_telemetry
 from mechanics import orbit, body
+import utils
 
 
 computer = None
@@ -97,6 +98,7 @@ class Verb(object):
         self.data = ""
 
     def execute(self):
+        utils.log("Executing Verb {}: {}".format(self.number, self.name))
         computer.dsky.state["current_verb"] = self.number
 
     def _activity(self, event):
@@ -794,3 +796,4 @@ class Verb99(Verb):
         orbiting_body.orbit.update_parameters()
         orbiting_body.parent_body.orbit.update_parameters()
         print(orbiting_body, orbiting_body.parent_body.orbit)
+

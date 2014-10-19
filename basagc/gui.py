@@ -28,13 +28,7 @@ import wx
 
 import computer as Computer
 import config
-
-
-logging.basicConfig(level=logging.DEBUG,
-    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-    datefmt='%d/%m/%y %H:%M',
-    filename='gc.log',
-    filemode='w')
+import utils
 
 console = logging.StreamHandler()
 console.setLevel(logging.DEBUG)
@@ -101,6 +95,7 @@ class GUI(wx.Frame):
 
         self.log_viewer = LogViewerFrame(self)
 
+        utils.LOG_VIEWER = self.log_viewer
         GUI.computer = Computer.Computer(self)
         GUI.dsky = GUI.computer.dsky
         GUI.keyboard = GUI.computer.dsky.keyboard
