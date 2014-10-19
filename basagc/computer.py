@@ -124,11 +124,9 @@ class Computer(object):
         }
 
         self.programs = {
-            "01": programs.Program01(name="Prelaunch or Service -"
-                                          "Initialization Program", number=01),
-            "11": programs.Program11(name="Change Program (Major Mode)",
-                                     number=11),
-            "15": programs.Program15(name="TMI initiate/cutoff", number=15),
+            "00": programs.Program00(),
+            "11": programs.Program11(),
+            "15": programs.Program15(),
         }
 
         self.routines = {
@@ -206,8 +204,7 @@ class Computer(object):
 
     def program_restart(self, alarm_code):
         # insert terminate and restart program
-        print("Program fresh start not implemented yet... watch this"
-              "space...")
+        utils.log("Program fresh start not implemented yet... watch this space...")
 
     def computer_restart(self, alarm_code):
         # insert computer reboot

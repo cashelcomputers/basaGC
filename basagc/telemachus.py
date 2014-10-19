@@ -35,7 +35,7 @@ def _get_api_listing():
     try:
         response = urllib2.urlopen(config.URL + "api=a.api")
     except urllib2.URLError as e:
-        print(e)
+        utils.log(e)
         raise KSPNotConnected
     data = json.load(response)
     telemetry = {}
@@ -60,7 +60,7 @@ try:
     telemetry = _get_api_listing()
 except KSPNotConnected:
     telemetry = None
-    print("Could not construct telemetry information - no contact with KSP")
+    utils.log("Could not construct telemetry information - no contact with KSP")
 
 def get_telemetry(data, body_number=None):
     """ Contacts telemachus for the requested data.
@@ -77,8 +77,8 @@ def get_telemetry(data, body_number=None):
     try:
         raw_response = urllib2.urlopen(config.URL + query_string)
     except urllib2.URLError as e:
-        print("Query string: {}".format(query_string))
-        print(e)
+        utils.log("Query string: {}".format(query_string))
+        utils.log(e)
         raise KSPNotConnected
     json_response = json.load(raw_response)
     return json_response[data]

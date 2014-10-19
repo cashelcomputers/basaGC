@@ -391,17 +391,17 @@ class GUI(wx.Frame):
         GUI.dsky.control_registers["noun"].stop_blink()
 
     def on(self):
-        print("DSKY on")
+        utils.log("DSKY on")
         for item in GUI.dsky.static_display:
             item.on()
 
     def off(self):
-        print("DSKY off")
+        utils.log("DSKY off")
         for item in GUI.dsky.static_display:
             item.off()
 
     def settings_menuitem_click(self, event):
-        print "Event handler 'settings_menuitem_click' not implemented!"
+        utils.log("Event handler 'settings_menuitem_click' not implemented!")
         event.Skip()
 
     def show_log_menuitem_click(self, event):

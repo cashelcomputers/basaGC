@@ -40,6 +40,7 @@ class Program(object):
 
     def execute(self):
         """Executes the program"""
+        utils.log("Executing Program {}: {}".format(self.number, self.name))
         dsky.flash_comp_acty()
         dsky.control_registers["program"].display(str(self.number))
         gc.running_programs.append(self.number)
@@ -58,27 +59,26 @@ class Program(object):
 
 class Program00(Program):
 
-    def __init__(self, name, number):
-        super(Program00, self).__init__(name, number)
+    def __init__(self):
+        super(Program00, self).__init__(name="AGC Idling", number="00")
 
     def execute(self):
-        #self.init_program()
-        log.debug("Program 00 executing...")
+        super(Program00, self).execute()
         dsky.control_registers["program"].display("00")
 
-class Program01(Program):
-    def __init__(self, name, number):
-        super(Program01, self).__init__(name, number)
-
-    def execute(self):
-        super(Program01, self).execute()
-        log.info("Program 01 executing")
-        dsky.annunciators["no_att"].on()
+# class Program01(Program):
+#     def __init__(self, name, number):
+#         super(Program01, self).__init__(name=, number)
+#
+#     def execute(self):
+#         super(Program01, self).execute()
+#         log.info("Program 01 executing")
+#         dsky.annunciators["no_att"].on()
 
 
 class Program11(Program):
-    def __init__(self, name, number):
-        super(Program11, self).__init__(name, number)
+    def __init__(self):
+        super(Program11, self).__init__(name="Earth Orbit Insertion Monitor", number="11")
 
     def execute(self):
         super(Program11, self).execute()
@@ -113,8 +113,8 @@ class Program11(Program):
 
 class Program15(Program):
 
-    def __init__(self, name, number):
-        super(Program15, self).__init__(name, number)
+    def __init__(self):
+        super(Program15, self).__init__(name="TMI Initiate/Cutoff", number="15")
         self.delta_v_required = 0.0
         self.time_to_transfer = 0.0
         self.orbiting_body = None
@@ -157,7 +157,6 @@ class Program15(Program):
             self.execute()
             return
         elif int(target) not in config.OCTAL_BODIES:
-            print(int(target))
             gc.poodoo_abort(223)
             return
         target = config.OCTAL_BODIES[int(target)]
@@ -184,16 +183,12 @@ class Program15(Program):
                                  ((360 / orbital_period) - (360 / departure_body_orbital_period))
         except TypeError:  # FIXME
             return
-        print
-        print("-----------------")
-        print("P15 calculations:")
-        print("Phase angle: {}, delta-v for burn: {} m/s, time to transfer: {}".format(
-            round(self.phase_angle, 2), int(self.delta_v_required), utils.seconds_to_time(self.time_to_transfer)))
-        print("Current Phase Angle: {}, difference: {}".format(
-            current_phase_angle, self.phase_angle_difference))
         delta_time = utils.seconds_to_time(self.delta_time_to_burn)
-        print("Time to burn: {} hours, {} minutes, {} seconds".format(int(delta_time[1]), int(delta_time[2]), round(delta_time[3], 2)))
-        print("-----------------")
+        utils.log("P15 calculations:")
+        utils.log("Phase angle: {}, delta-v for burn: {} m/s, time to transfer: {}".format(
+            round(self.phase_angle, 2), int(self.delta_v_required), utils.seconds_to_time(self.time_to_transfer)))
+        utils.log("Current Phase Angle: {}, difference: {}".format(current_phase_angle, self.phase_angle_difference))
+        utils.log("Time to burn: {} hours, {} minutes, {} seconds".format(int(delta_time[1]), int(delta_time[2]), round(delta_time[3], 2)))
         self.time_of_ignition = get_telemetry("missionTime") + self.delta_time_to_burn
         self.reference_delta_v = get_telemetry("orbitalVelocity")
         gc.burn_data["is_active"] = True

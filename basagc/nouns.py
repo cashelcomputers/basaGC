@@ -205,7 +205,6 @@ def noun17(calling_verb=None):
 def noun36(*args, **kwargs):
 
     telemetry = get_telemetry("missionTime")
-    print(telemetry)
     minutes, seconds = divmod(telemetry, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
