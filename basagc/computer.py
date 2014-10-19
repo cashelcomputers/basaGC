@@ -156,7 +156,7 @@ class Computer(object):
         }
         self.on()
 
-    def quit(self, event):
+    def quit(self, event=None):
         if self.loop_timer.is_running:
             self.loop_timer.stop()
         self.gui.Destroy()

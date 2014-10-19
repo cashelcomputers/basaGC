@@ -44,7 +44,49 @@ console.setFormatter(formatter)
 logging.getLogger('').addHandler(console)
 
 
+class LogViewerFrame(wx.Frame):
+
+    """This frame provides a log viewer"""
+
+    def __init__(self, *args, **kwds):
+        kwds["style"] = wx.CLOSE_BOX | wx.MINIMIZE_BOX
+        wx.Frame.__init__(self, *args, **kwds)
+        self.panel_2 = wx.Panel(self, wx.ID_ANY)
+        self.viewer = wx.TextCtrl(self.panel_2, wx.ID_ANY, "", style=wx.TE_MULTILINE)
+        self.close_button = wx.Button(self.panel_2, wx.ID_CLOSE, "")
+
+        self.__set_properties()
+        self.__do_layout()
+
+        self.Bind(wx.EVT_BUTTON, self.close_button_event, self.close_button)
+
+    def __set_properties(self):
+        self.SetTitle("Log Viewer")
+        _icon = wx.EmptyIcon()
+        _icon.CopyFromBitmap(wx.Bitmap(config.ICON, wx.BITMAP_TYPE_PNG))
+        self.SetIcon(_icon)
+        self.SetSize((720, 450))
+        self.close_button.SetFocus()
+
+    def __do_layout(self):
+        sizer_16 = wx.BoxSizer(wx.VERTICAL)
+        grid_sizer_3 = wx.FlexGridSizer(2, 1, 5, 0)
+        grid_sizer_3.Add(self.viewer, 0, wx.EXPAND | wx.ADJUST_MINSIZE, 0)
+        grid_sizer_3.Add(self.close_button, 0, wx.ADJUST_MINSIZE, 0)
+        self.panel_2.SetSizer(grid_sizer_3)
+        grid_sizer_3.AddGrowableRow(0)
+        grid_sizer_3.AddGrowableCol(0)
+        sizer_16.Add(self.panel_2, 1, wx.ALL | wx.EXPAND, 5)
+        self.SetSizer(sizer_16)
+        self.Layout()
+
+    def close_button_event(self, event):
+        self.Hide()
+
+
 class GUI(wx.Frame):
+
+    """This class provides the main DSKY GUI"""
 
     computer = None
     dsky = None
@@ -56,6 +98,8 @@ class GUI(wx.Frame):
         kwds["style"] = wx.CAPTION | wx.CLOSE_BOX | wx.MINIMIZE_BOX | wx.SYSTEM_MENU
         wx.Frame.__init__(self, *args, **kwds)
         self.panel_1 = wx.Panel(self, wx.ID_ANY)
+
+        self.log_viewer = LogViewerFrame(self)
 
         GUI.computer = Computer.Computer(self)
         GUI.dsky = GUI.computer.dsky
@@ -81,6 +125,23 @@ class GUI(wx.Frame):
         self.KeyRelButton = GUI.keyboard["key_release"].widget
         self.EntrButton = GUI.keyboard["enter"].widget
         self.RsetButton = GUI.keyboard["reset"].widget
+
+        # Menu Bar
+        self.menubar = wx.MenuBar()
+        self.file_menu = wx.Menu()
+        self.settings_menuitem = wx.MenuItem(self.file_menu, wx.ID_ANY, "Settings...", "", wx.ITEM_NORMAL)
+        self.file_menu.AppendItem(self.settings_menuitem)
+        self.show_log_menuitem = wx.MenuItem(self.file_menu, wx.ID_ANY, "Show Log...", "", wx.ITEM_NORMAL)
+        self.file_menu.AppendItem(self.show_log_menuitem)
+        self.quit_menuitem = wx.MenuItem(self.file_menu, wx.ID_ANY, "Quit", "", wx.ITEM_NORMAL)
+        self.file_menu.AppendItem(self.quit_menuitem)
+        self.menubar.Append(self.file_menu, "File")
+        self.help_menu = wx.Menu()
+        self.about_menuitem = wx.MenuItem(self.help_menu, wx.ID_ANY, "About...", "", wx.ITEM_NORMAL)
+        self.help_menu.AppendItem(self.about_menuitem)
+        self.menubar.Append(self.help_menu, "Help")
+        self.SetMenuBar(self.menubar)
+        # Menu Bar end
 
         self.bitmap_5 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg",
             wx.BITMAP_TYPE_ANY))
@@ -122,11 +183,17 @@ class GUI(wx.Frame):
         self.Bind(wx.EVT_BUTTON, GUI.keyboard["enter"].press, id=config.ID_ENTRBUTTON)
         self.Bind(wx.EVT_BUTTON, GUI.keyboard["reset"].press, id=config.ID_RSETBUTTON)
 
+        # menu binds
+        self.Bind(wx.EVT_MENU, self.settings_menuitem_click, self.settings_menuitem)
+        self.Bind(wx.EVT_MENU, self.show_log_menuitem_click, self.show_log_menuitem)
+        self.Bind(wx.EVT_MENU, self.quit_menuitem_click, self.quit_menuitem)
+        self.Bind(wx.EVT_MENU, self.about_menuitem_click, self.about_menuitem)
+
     def __set_properties(self):
 
         self.SetTitle("basaGC")
         _icon = wx.EmptyIcon()
-        _icon.CopyFromBitmap(wx.Bitmap(config.IMAGES_DIR + "ApolloPatch2.png", wx.BITMAP_TYPE_ANY))
+        _icon.CopyFromBitmap(wx.Bitmap(config.ICON, wx.BITMAP_TYPE_PNG))
         self.SetIcon(_icon)
         self.panel_1.SetBackgroundColour(wx.Colour(160, 160, 160))
         self.VerbButton.SetMinSize((75, 75))
@@ -337,6 +404,31 @@ class GUI(wx.Frame):
         print("DSKY off")
         for item in GUI.dsky.static_display:
             item.off()
+
+    def settings_menuitem_click(self, event):
+        print "Event handler 'settings_menuitem_click' not implemented!"
+        event.Skip()
+
+    def show_log_menuitem_click(self, event):
+        self.log_viewer.Show()
+
+    def quit_menuitem_click(self, event):
+        GUI.computer.quit()
+
+    def about_menuitem_click(self, event):
+
+        about_dialog = wx.AboutDialogInfo()
+
+        #about_dialog.SetIcon(wx.Icon(config.ICON, wx.BITMAP_TYPE_PNG))
+        about_dialog.SetName(config.PROGRAM_NAME)
+        about_dialog.SetVersion(config.VERSION)
+        about_dialog.SetDescription(config.PROGRAM_DESCRIPTION)
+        about_dialog.SetCopyright(config.COPYRIGHT)
+        about_dialog.SetWebSite(config.WEBSITE)
+        about_dialog.SetLicence(config.LICENCE)
+        about_dialog.AddDeveloper(config.DEVELOPERS)
+
+        wx.AboutBox(about_dialog)
 
 
 class basaGCApp(wx.App):
