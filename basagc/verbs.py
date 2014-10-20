@@ -791,9 +791,10 @@ class Verb99(Verb):
         super(Verb99, self).__init__(name="Please enable engine", verb_number=99)
 
     def execute(self):
-        super(Verb99, self).execute()
-        orbiting_body = body.Body(get_telemetry("body"))
-        orbiting_body.orbit.update_parameters()
-        orbiting_body.parent_body.orbit.update_parameters()
-        utils.log(orbiting_body, orbiting_body.parent_body.orbit)
+        pass
+        # super(Verb99, self).execute()
+        # orbiting_body = body.Body(get_telemetry("body"))
+        # orbiting_body.orbit.update_parameters()
+        # orbiting_body.parent_body.orbit.update_parameters()
+        # utils.log(orbiting_body, orbiting_body.parent_body.orbit)
 

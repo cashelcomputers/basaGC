@@ -24,8 +24,9 @@
 
 import logging
 import simplevector
-import gui
 import time
+
+import config
 
 LOG_VIEWER = None
 
@@ -59,8 +60,21 @@ def seconds_to_time(seconds):
     days, hours = divmod(hours, 24)
     return days, hours, minutes, seconds
 
-def log(message, log_type="debug"):
+def log(message, log_type="DEBUG"):
+    if log_type not in config.LOG_LEVELS:
+        gc_log.error("Log level does not exist!")
+        return
     now = time.strftime("%d/%m/%Y %H:%M:%S")
-    LOG_VIEWER.viewer.AppendText(now + ": " + message + "\n")
-    if log_type == "debug":
+    log_level_number = config.LOG_LEVELS.index(log_type)
+    if log_level_number >= config.LOG_LEVELS.index(config.current_log_level):
+        LOG_VIEWER.viewer.AppendText(now + ": " + log_type + ": " + message + "\n")
+    if log_type == "DEBUG":
         gc_log.debug(message)
+    elif log_type == "INFO":
+        gc_log.info(message)
+    elif log_type == "WARNING":
+        gc_log.warning(message)
+    elif log_type == "ERROR":
+        gc_log.error(message)
+    elif log_type == "CRITICAL":
+        gc_log.critical(message)

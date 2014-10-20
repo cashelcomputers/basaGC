@@ -43,9 +43,6 @@ import programs
 import routines
 
 
-memory_log = logging.getLogger("MEMORY")
-
-
 class Computer(object):
     def __init__(self, gui):
         self.gui = gui
@@ -151,7 +148,7 @@ class Computer(object):
 
 
     def on(self):
-        utils.log("Computer booting...")
+        utils.log("Computer booting...", log_type="INFO")
         self.loop_timer.start()
         self.is_powered_on = True
         for display_item in self.dsky.static_display:

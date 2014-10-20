@@ -28,12 +28,20 @@
 PROGRAM_NAME = "basaGC"
 VERSION = "0.4.0"
 IMAGES_DIR = "./images/"
-IP = "http://127.0.0.1:8085"
-URL = IP + "/telemachus/datalink?"
-PORT = 26000
+IP = "127.0.0.1"
+PORT = "8085"
+URL = "http://" + IP + ":" + PORT + "/telemachus/datalink?"
 DISPLAY_UPDATE_INTERVAL = 100
-HOST = "127.0.0.1"
 COMP_ACTY_FLASH_DURATION = 50
+
+LOG_LEVELS = [
+    "DEBUG",
+    "INFO",
+    "WARNING",
+    "ERROR",
+    "CRITICAL",
+]
+current_log_level = "CRITICAL"
 
 ID_VERBBUTTON = 10
 ID_NOUNBUTTON = 11

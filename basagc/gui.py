@@ -37,6 +37,86 @@ import utils
 # console.setFormatter(formatter)
 # logging.getLogger('').addHandler(console)
 
+class SettingsFrame(wx.Frame):
+
+    """This frame provides a settings dialog"""
+
+    def __init__(self, *args, **kwds):
+
+        """Class constructor"""
+
+        kwds["style"] = wx.DEFAULT_FRAME_STYLE
+        wx.Frame.__init__(self, *args, **kwds)
+        self.panel_3 = wx.Panel(self, wx.ID_ANY)
+        self.label_ip = wx.StaticText(self.panel_3, wx.ID_ANY, "Telemachus IP address:")
+        self.ip_field = wx.TextCtrl(self.panel_3, wx.ID_ANY, config.IP)
+        self.label_1 = wx.StaticText(self.panel_3, wx.ID_ANY, "Telemachus port:")
+        self.port_field = wx.TextCtrl(self.panel_3, wx.ID_ANY, config.PORT)
+        self.label_2 = wx.StaticText(self.panel_3, wx.ID_ANY, "Log level:")
+        self.log_level_combobox = wx.ComboBox(self.panel_3, wx.ID_ANY, choices=config.LOG_LEVELS,
+                                              style=wx.CB_DROPDOWN | wx.CB_READONLY)
+        self.ok_button = wx.Button(self.panel_3, wx.ID_OK, "")
+        self.cancel_button = wx.Button(self.panel_3, wx.ID_CANCEL, "")
+
+        self.__set_properties()
+        self.__do_layout()
+
+        self.Bind(wx.EVT_BUTTON, self.ok_button_event, self.ok_button)
+        self.Bind(wx.EVT_BUTTON, self.cancel_button_event, self.cancel_button)
+
+
+    def __set_properties(self):
+
+        """Internal wxPython method"""
+
+        self.SetTitle("basaGC settings")
+        self.ip_field.SetMinSize((120, 25))
+        self.log_level_combobox.SetMinSize((187, 25))
+
+
+    def __do_layout(self):
+
+        """Internal wxPython method"""
+
+        sizer_17 = wx.BoxSizer(wx.VERTICAL)
+        grid_sizer_1 = wx.FlexGridSizer(4, 1, 5, 0)
+        grid_sizer_4 = wx.FlexGridSizer(1, 2, 0, 5)
+        grid_sizer_2 = wx.FlexGridSizer(1, 2, 5, 5)
+        grid_sizer_2.Add(self.label_ip, 0, wx.ALIGN_CENTER_VERTICAL | wx.ADJUST_MINSIZE, 0)
+        grid_sizer_2.Add(self.ip_field, 0, wx.EXPAND | wx.ADJUST_MINSIZE, 0)
+        grid_sizer_2.Add(self.label_1, 0, wx.ALIGN_CENTER_VERTICAL | wx.ADJUST_MINSIZE, 0)
+        grid_sizer_2.Add(self.port_field, 0, wx.EXPAND | wx.ADJUST_MINSIZE, 0)
+        grid_sizer_2.Add(self.label_2, 0, wx.ALIGN_CENTER_VERTICAL | wx.ADJUST_MINSIZE, 0)
+        grid_sizer_2.Add(self.log_level_combobox, 0, wx.ADJUST_MINSIZE, 0)
+        grid_sizer_2.AddGrowableRow(0)
+        grid_sizer_2.AddGrowableCol(0)
+        grid_sizer_2.AddGrowableCol(1)
+        grid_sizer_1.Add(grid_sizer_2, 1, wx.EXPAND, 0)
+        grid_sizer_4.Add(self.ok_button, 0, wx.ADJUST_MINSIZE, 0)
+        grid_sizer_4.Add(self.cancel_button, 0, wx.ADJUST_MINSIZE, 0)
+        grid_sizer_1.Add(grid_sizer_4, 1, wx.ALIGN_RIGHT, 0)
+        self.panel_3.SetSizer(grid_sizer_1)
+        sizer_17.Add(self.panel_3, 1, wx.ALL | wx.EXPAND, 5)
+        self.SetSizer(sizer_17)
+        sizer_17.Fit(self)
+        self.Layout()
+
+
+    def ok_button_event(self, event):
+
+        ip_address = self.ip_field.GetValue()
+        port = self.port_field.GetValue()
+        log_level = self.log_level_combobox.GetValue()
+        config.IP = ip_address
+        config.PORT = port
+        config.current_log_level = log_level
+        config.URL = "http://" + config.IP + ":" + config.PORT + "/telemachus/datalink?"
+        self.Hide()
+
+
+    def cancel_button_event(self, event):
+        self.Hide()
+
 
 class LogViewerFrame(wx.Frame):
 
@@ -99,6 +179,7 @@ class GUI(wx.Frame):
         self.panel_1 = wx.Panel(self, wx.ID_ANY)
 
         self.log_viewer = LogViewerFrame(self)
+        self.settings_dialog = SettingsFrame(self)
 
         utils.LOG_VIEWER = self.log_viewer
         GUI.computer = Computer.Computer(self)
@@ -406,8 +487,8 @@ class GUI(wx.Frame):
             item.off()
 
     def settings_menuitem_click(self, event):
-        utils.log("Event handler 'settings_menuitem_click' not implemented!")
-        event.Skip()
+        self.settings_dialog.log_level_combobox.SetSelection(config.LOG_LEVELS.index(config.current_log_level))
+        self.settings_dialog.Show()
 
     def show_log_menuitem_click(self, event):
         self.log_viewer.Show()
