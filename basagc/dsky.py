@@ -791,7 +791,7 @@ class DSKY(object):
 
             if keypress == "C":  # user has pushed CLEAR
                 self.state["verb_position"] = 0
-                self.state["requested_verb"] = 0
+                self.state["requested_verb"] = ""
                 self.control_registers["verb"].digits[1].display("blank")
                 self.control_registers["verb"].digits[2].display("blank")
                 return
@@ -806,11 +806,11 @@ class DSKY(object):
                 return
             elif self.state["verb_position"] == 0:
                 self.control_registers["verb"].digits[1].display(keypress)
-                self.state["requested_verb"] = keypress * 10
+                self.state["requested_verb"] = str(keypress)
                 self.state["verb_position"] = 1
             elif self.state["verb_position"] == 1:
                 self.control_registers["verb"].digits[2].display(keypress)
-                self.state["requested_verb"] += keypress
+                self.state["requested_verb"] += str(keypress)
                 self.state["verb_position"] = 0
 
         def handle_noun_entry():
@@ -821,7 +821,7 @@ class DSKY(object):
 
             if keypress == "C":  # user has pushed CLEAR
                 self.state["noun_position"] = 0
-                self.state["requested_noun"] = 0
+                self.state["requested_noun"] = ""
                 self.control_registers["noun"].digits[1].display("blank")
                 self.control_registers["noun"].digits[2].display("blank")
                 return
@@ -833,11 +833,11 @@ class DSKY(object):
                 return
             elif self.state["noun_position"] == 0:
                 self.control_registers["noun"].digits[1].display(keypress)
-                self.state["requested_noun"] = keypress * 10
+                self.state["requested_noun"] = str(keypress)
                 self.state["noun_position"] = 1
             elif self.state["noun_position"] == 1:
                 self.control_registers["noun"].digits[2].display(keypress)
-                self.state["requested_noun"] += keypress
+                self.state["requested_noun"] += str(keypress)
                 self.state["noun_position"] = 0
 
         def handle_entr_keypress():
@@ -890,7 +890,7 @@ class DSKY(object):
 
             self.state["is_verb_being_loaded"] = False
             self.state["is_noun_being_loaded"] = True
-            self.state["requested_noun"] = 0
+            self.state["requested_noun"] = ""
             self.control_registers["noun"].blank()
 
         def handle_verb_keypress():
@@ -901,7 +901,7 @@ class DSKY(object):
 
             self.state["is_noun_being_loaded"] = False
             self.state["is_verb_being_loaded"] = True
-            self.state["requested_verb"] = 0
+            self.state["requested_verb"] = ""
             self.control_registers["verb"].blank()
 
         def handle_key_release_keypress():

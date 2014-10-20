@@ -26,6 +26,7 @@
 import math
 
 from telemachus import get_telemetry
+import utils
 
 computer = None
 
@@ -112,7 +113,7 @@ def noun09(calling_verb):
     :return: noun data
     """
 
-    log.info("Noun 09 requested")
+    utils.log("Noun 09 requested")
     alarm_codes = computer.alarm_codes
     data = {
         1: alarm_codes[0],

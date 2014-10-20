@@ -216,13 +216,14 @@ class Computer(object):
         :param message: optional message to print to log
         :return: None
         """
+        alarm_code += 1000
         if self.alarm_codes[0] != 0:
             self.alarm_codes[1] = self.alarm_codes[0]
-        self.alarm_codes[0] = 1000 + alarm_code
+        self.alarm_codes[0] = alarm_code
         self.alarm_codes[2] = self.alarm_codes[0]
         self.dsky.annunciators["prog"].on()
         if message:
-            utils.log(message, log_level="ERROR")
+            utils.log("PROGRAM ALARM {}: {}".format(str(alarm_code), message), log_level="ERROR")
 
     def poodoo_abort(self, alarm_code, message=None):
 
@@ -232,16 +233,18 @@ class Computer(object):
         :return: None
         """
 
+        alarm_code += 2000
         if self.alarm_codes[0] != 0:
             self.alarm_codes[1] = self.alarm_codes[0]
-        self.alarm_codes[0] = 2000 + alarm_code
+        self.alarm_codes[0] = alarm_code
         self.alarm_codes[2] = self.alarm_codes[0]
         self.dsky.annunciators["prog"].on()
-        for program in self.running_programs:
-            program.terminate()
+        try:
+            self.running_programs[-1].terminate()
+        except programs.ProgramTerminated:
+            # this should happen if the program terminated successfully
+            utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), message), log_level="ERROR")
         self.programs["00"].execute()
-        if message:
-            utils.log(message, log_level="ERROR")
 
     def program_restart(self, alarm_code, message=None):
 

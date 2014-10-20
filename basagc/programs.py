@@ -57,12 +57,14 @@ class Program(object):
         utils.log("Executing Program {}: {}".format(self.number, self.name))
         dsky.flash_comp_acty()
         dsky.control_registers["program"].display(str(self.number))
-        gc.running_programs.append(self.number)
+        gc.running_programs.append(self)
         gc.active_program = self.number
 
     def terminate(self):
+
         """Terminates the program"""
-        gc.running_programs.remove(self.number)
+
+        gc.running_programs.remove(self)
         if gc.active_program == self.number:
             gc.active_program = None
         raise ProgramTerminated
@@ -191,14 +193,14 @@ class Program15(Program):
 
         # check if orbit is circular
         if get_telemetry("eccentricity") > 0.001:
-            gc.program_alarm(224)
+            gc.poodoo_abort(224, "Orbit not circular")
             return
 
         # check if orbit is excessively inclined
         target_inclination = get_telemetry("target_inclination")
         vessel_inclination = get_telemetry("inclination")
         if vessel_inclination > (target_inclination - 0.5) and vessel_inclination > (target_inclination + 0.5):
-            gc.program_alarm(225)
+            gc.poodoo_abort(225, "Vessel and target not in same plane")
             return
 
         # if a body is set as target in KSP, set that body as the target
