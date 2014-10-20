@@ -231,14 +231,16 @@ class MonitorVerb(DisplayVerb):
         super(MonitorVerb, self).__init__(name, verb_number, components, registers, is_single_precision)
         self.timer = wx.Timer(frame)  # TODO: try making this a utils.Timer object instead
         frame.Bind(wx.EVT_TIMER, self._update_display, self.timer)
+        self.requested_noun = None
 
     def _send_output(self):
 
         """ Sends the requested output to the DSKY """
-
+        if self.requested_noun is None:
+            self.requested_noun = str(computer.dsky.state["requested_noun"])
         if computer.dsky.state["requested_noun"] in self.illegal_nouns:
             raise NounNotAcceptableError
-        noun_function = computer.nouns[str(computer.dsky.state["requested_noun"])]
+        noun_function = computer.nouns[self.requested_noun]
         try:
             data = noun_function()
         except nouns.NounNotImplementedError:
@@ -296,6 +298,7 @@ class MonitorVerb(DisplayVerb):
         dsky.state["display_lock"] = None
         dsky.state["backgrounded_update"] = None
         self.timer.Stop()
+        self.requested_noun = None
         # self.activity_timer.Stop()
 
     def background(self):
