@@ -1,5 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
+""" This modules contains orbital maneuvers.
+"""
 
 #  This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
 #  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
@@ -35,6 +37,9 @@ def delta_v(departure_altitude, destination_altitude):
 
     departure_altitude and destination_altitude are in meters above the surface.
     returns a float of the burn delta-v required, positive means prograde, negative means retrograde
+
+    :param departure_altitude: departure orbit altitude
+    :param destination_altitude: destination orbit altitude
     """
     departure_planet_radius = get_telemetry("body_radius", body_number=BODIES["Kerbin"])
     r1 = departure_altitude + departure_planet_radius
@@ -60,8 +65,16 @@ def time_to_transfer(departure_orbit, destination_orbit, grav_param):
     tH = math.pi * math.sqrt(math.pow(departure_orbit + destination_orbit, 3) / (8 * grav_param))
     return tH
 
+
 def phase_angle(departure_orbit, destination_orbit, grav_param):
 
+    """ Calculates the required phase angle for transfer.
+    :param departure_orbit: departure orbit altitude
+    :param destination_orbit: destination orbit altitude
+    :param grav_param: orbiting body gravitational parameter
+    :return: the required phase angle
+    """
+
     tH = time_to_transfer(departure_orbit, destination_orbit, grav_param)
-    phase_angle = 180 - math.sqrt(grav_param / destination_orbit) * (tH / destination_orbit ) * 180 / math.pi
-    return phase_angle
+    required_phase_angle = 180 - math.sqrt(grav_param / destination_orbit) * (tH / destination_orbit) * 180 / math.pi
+    return required_phase_angle

@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
-
+""" This module contains all nouns used by the guidance computer.
+"""
 #  This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
 #  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
 #  This program is free software; you can redistribute it and/or modify
@@ -22,15 +23,24 @@
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>
 
-import logging
 import math
 
 from telemachus import get_telemetry
+import utils
 
 computer = None
 
+
 def octal(value):
+
+    """ Converts a value to octal, but not written as Ooxxx
+    :param value: the value to convert
+    :return: the octal value
+    :rtype: int
+    """
+
     return int(oct(value))
+
 
 class NounNotImplementedError(Exception):
 
@@ -95,8 +105,15 @@ class NounNotImplementedError(Exception):
 # def noun08(calling_verb):
 #     raise NounNotImplementedError
 
+
 def noun09(calling_verb):
-    log.info("Noun 09 requested")
+
+    """ Alarm codes.
+    :param calling_verb: the verb calling the noun.
+    :return: noun data
+    """
+
+    utils.log("Noun 09 requested")
     alarm_codes = computer.alarm_codes
     data = {
         1: alarm_codes[0],
@@ -130,6 +147,11 @@ def noun09(calling_verb):
 
 
 def noun17(calling_verb=None):
+
+    """ Roll, Pitch, Yaw.
+    :param calling_verb: the verb calling the noun.
+    :return: noun data
+    """
 
     # FIXME: need to make sure that data is correct length (sometimes drops the last 0 when input is xxx.x rather than
     # xxx.xx
@@ -202,7 +224,13 @@ def noun17(calling_verb=None):
 # def noun35(calling_verb):
 #     raise NounNotImplementedError
 
-def noun36(*args, **kwargs):
+
+def noun36(calling_verb=None):
+
+    """ Mission Elapsed Time.
+    :param calling_verb: the verb calling the noun.
+    :return: noun data
+    """
 
     telemetry = get_telemetry("missionTime")
     minutes, seconds = divmod(telemetry, 60)
@@ -244,7 +272,13 @@ def noun36(*args, **kwargs):
 # def noun42(calling_verb):
 #     raise NounNotImplementedError
 
+
 def noun43(calling_verb=None):
+
+    """ Latitude, longitude, altitude.
+    :param calling_verb: the verb calling the noun.
+    :return: noun data
+    """
 
     latitude = str(round(get_telemetry("lat"), 2)).replace(".", "")
     longitude = str(round(get_telemetry("long"), 2)).replace(".", "")
@@ -260,6 +294,11 @@ def noun43(calling_verb=None):
     return data
 
 def noun44(calling_verb=None):
+
+    """ Apoapsis altitude, periapsis altitude, time to apoapsis..
+    :param calling_verb: the verb calling the noun.
+    :return: noun data
+    """
 
     apoapsis = str(round(get_telemetry("ApA") / 100, 1))
     periapsis = str(round(get_telemetry("PeA") / 100, 1))
@@ -301,16 +340,22 @@ def noun44(calling_verb=None):
 # def noun49(calling_verb):
 #     raise NounNotImplementedError
 
+
 def noun50(calling_verb=None):
 
-    surfaceVelocity_x = str(round(get_telemetry("surfaceVelocityx"))).replace(".", "")
-    surfaceVelocity_y = str(round(get_telemetry("surfaceVelocityy"))).replace(".", "")
-    surfaceVelocity_z = str(round(get_telemetry("surfaceVelocityz"))).replace(".", "")
+    """ Surface velocity X, Y, Z.
+    :param calling_verb: the verb calling the noun.
+    :return: noun data
+    """
+
+    surface_velocity_x = str(round(get_telemetry("surfaceVelocityx"))).replace(".", "")
+    surface_velocity_y = str(round(get_telemetry("surfaceVelocityy"))).replace(".", "")
+    surface_velocity_z = str(round(get_telemetry("surfaceVelocityz"))).replace(".", "")
 
     data = {
-        1: int(surfaceVelocity_x),
-        2: int(surfaceVelocity_y),
-        3: int(surfaceVelocity_z),
+        1: int(surface_velocity_x),
+        2: int(surface_velocity_y),
+        3: int(surface_velocity_z),
         "tooltips": [
             "Surface Velocity X (xxxx.x m/s)",
             "Surface Velocity Y (xxxx.x m/s)",
@@ -353,21 +398,25 @@ def noun50(calling_verb=None):
 # def noun61(calling_verb):
 #     raise NounNotImplementedError
 
-def noun62():
 
-    """Surface Velocity (m/s), Altitude rate (m/s), Altitude (km)"""
+def noun62(calling_verb=None):
 
-    surfaceVelocity = str(round(get_telemetry("surfaceVelocity"), 1))
+    """ Surface Velocity, vertical speed, altitude
+    :param calling_verb: the verb calling the noun.
+    :return: noun data
+    """
+
+    surface_velocity = str(round(get_telemetry("surfaceVelocity"), 1))
     altitude_rate = str(round(get_telemetry("verticalSpeed"), 1))
     altitude = str(round(get_telemetry("altitude") / 1000, 1))
 
-    surfaceVelocity = surfaceVelocity.replace(".", "")
+    surface_velocity = surface_velocity.replace(".", "")
     altitude_rate = altitude_rate.replace(".", "")
     altitude = altitude.replace(".", "")
 
 
     data = {
-        1: int(surfaceVelocity),
+        1: int(surface_velocity),
         2: int(altitude_rate),
         3: int(altitude),
         #"description": "",
@@ -482,5 +531,3 @@ def noun62():
 #
 # def noun99(calling_verb):
 #     raise NounNotImplementedError
-
-

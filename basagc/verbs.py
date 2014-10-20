@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
-
+""" This module contains classes of all of the verbs used by basaGC
+"""
 #  This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
 #  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
 #  This program is free software; you can redistribute it and/or modify
@@ -28,10 +29,10 @@ import wx
 
 import nouns
 import config
-import computer as Computer
+#import computer as Computer
 from telemachus import KSPNotConnected
-from telemachus import get_telemetry
-from mechanics import orbit, body
+#from telemachus import get_telemetry
+#from mechanics import orbit, body
 import utils
 
 
@@ -67,11 +68,18 @@ INVALID_VERBS = [
 
 def format_output_data(data):
 
+    """ Formats data for output to the DSKY.
+    :param data: data to display
+    :type data: dict
+    :return: DSKY formatted output
+    :rtype: string
+    """
+
     output = []
     raw_data = [data[1], data[2], data[3]]
 
     for item in raw_data:
-        if data["is_octal"] == True:
+        if data["is_octal"]:
             output.append("")
         elif item < 0:
             #item = ~item + 1
@@ -83,65 +91,153 @@ def format_output_data(data):
         output.append(d)
     return output
 
+
 class NounNotAcceptableError(Exception):
+
+    """ This exception is raised when the noun selected is not available with the verb selected.
+    """
+
     pass
 
 #------------------------BEGIN BASE CLASS DEFINITIONS---------------------------
 
+
 class Verb(object):
+
+    """ Base class for verbs
+    """
+
     def __init__(self, name, verb_number):
+
+        """ Class constructor.
+        :param name: the name (or description) of the verb
+        :type name: string
+        :param verb_number: the number of the verb. Valid ranges are 01 to 99 with some verb numbers not used
+        :type verb_number: int
+        """
+
         self.name = name
         self.number = verb_number
         self.illegal_nouns = []
-        self.activity_timer = wx.Timer(frame)
-        frame.Bind(wx.EVT_TIMER, self._activity, self.activity_timer)
-        self.data = ""
+        #self.activity_timer = wx.Timer(frame)  # TODO: convert to utils.Timer object
+        #frame.Bind(wx.EVT_TIMER, self._activity, self.activity_timer)
+        self.data = []
 
     def execute(self):
+
+        """ Executes the verb
+        :return:
+        """
+
         utils.log("Executing Verb {}: {}".format(self.number, self.name))
         computer.dsky.state["current_verb"] = self.number
 
-    def _activity(self, event):
-        #dsky.flash_comp_acty()
-        pass
+    # def _activity(self, event):
+    #
+    #     """ Flashes the COMP ACTY annunciator. Not currently used.
+    #     :param event:
+    #     :return:
+    #     """
+    #
+    #     #dsky.flash_comp_acty()
+    #     pass
 
     def terminate(self):
+
+        """ Terminates the verb
+        """
+
         raise NotImplementedError
 
     def receive_data(self, data):
+
+        """ Allows the verb to receive requested data from the DSKY.
+        :param data: the data sent by DSKY
+        """
+
         utils.log("{} received data: {}".format(self, data))
         self.data = data
         self.execute()
 
+
 class DataVerb(Verb):
+
+    """ Base class for Data verbs
+    """
+
     def __init__(self, name, verb_number, components, registers, is_single_precision=True):
+
+        """ Class constructor
+        :param name: name (description) of verb
+        :type name: string
+        :param verb_number: the verb number
+        :type verb_number: int
+        :param components: a tuple containing component numbers
+        :type components: tuple of ints
+        :param registers: a tuple containing register numbers
+        :type registers: tuple of ints
+        :param is_single_precision: Indicates if the verb displays single precision values
+        :type is_single_precision: bool
+        :return: None
+        """
+
         super(DataVerb, self).__init__(name, verb_number)
         self.components = components
         self.registers = registers
         self.is_single_precision = is_single_precision
 
+
 class DisplayVerb(DataVerb):
+
+    """ Base class for display verbs (verbs 01 through 07 inclusive)
+    """
+
     def __init__(self, name, verb_number, components, registers, is_single_precision=True):
+
+        """ Class constructor
+        :param name: name (description) of verb
+        :type name: string
+        :param verb_number: the verb number
+        :type verb_number: int
+        :param components: a tuple containing component numbers
+        :type components: tuple of ints
+        :param registers: a tuple containing register numbers
+        :type registers: tuple of ints
+        :param is_single_precision: Indicates if the verb displays single precision values
+        :type is_single_precision: bool
+        :return: None
+        """
+
         super(DisplayVerb, self).__init__(name, verb_number, components, registers, is_single_precision)
 
     def execute(self):
+
+        """ Executes the verb
+        :return: None
+        """
+
         #raise NotImplementedError
         if computer.dsky.state["requested_noun"] in self.illegal_nouns:
             raise NounNotAcceptableError
-            return
+
 
 class MonitorVerb(DisplayVerb):
+
+    """ Base class for Monitor verbs (verbs 11 through 17 inclusive)
+    """
+
     def __init__(self, name, verb_number, components, registers, is_single_precision=True):
 
         super(MonitorVerb, self).__init__(name, verb_number, components, registers, is_single_precision)
-        self.timer = wx.Timer(frame)
+        self.timer = wx.Timer(frame)  # TODO: try making this a utils.Timer object instead
         frame.Bind(wx.EVT_TIMER, self._update_display, self.timer)
 
     def _send_output(self):
+
         """ Sends the requested output to the DSKY """
+
         if computer.dsky.state["requested_noun"] in self.illegal_nouns:
             raise NounNotAcceptableError
-            return
         noun_function = computer.nouns[str(computer.dsky.state["requested_noun"])]
         try:
             data = noun_function()
@@ -154,7 +250,6 @@ class MonitorVerb(DisplayVerb):
             computer.poodoo_abort(110)
             self.terminate()
             raise
-            return
         output = format_output_data(data)
         try:
             computer.dsky.registers[1].set_tooltip(data["tooltips"][0])
@@ -168,7 +263,9 @@ class MonitorVerb(DisplayVerb):
         dsky.flash_comp_acty()
 
     def start_monitor(self):
+
         """ Starts the timer to monitor the verb """
+
         if dsky.state["backgrounded_update"] is not None:
             dsky.state["backgrounded_update"].terminate()
         dsky.state["display_lock"] = self
@@ -180,43 +277,88 @@ class MonitorVerb(DisplayVerb):
 
         self.timer.Start(config.DISPLAY_UPDATE_INTERVAL)
 
-
     def _update_display(self, event):
+
         """ a simple wrapper to call the display update method """
-        if not self.activity_timer.IsRunning():
-            self.activity_timer.Start(1000)
+
+        # if not self.activity_timer.IsRunning():
+        #     self.activity_timer.Start(1000)
         self._send_output()
 
     def terminate(self):
+
+        """ Terminates the verb
+        :return: None
+        """
+
         utils.log("Terminating V{}".format(self.number))
         dsky.annunciators["key_rel"].off()
         dsky.state["display_lock"] = None
         dsky.state["backgrounded_update"] = None
         self.timer.Stop()
-        self.activity_timer.Stop()
+        # self.activity_timer.Stop()
 
     def background(self):
+
+        """ Backgrounds verb display updates
+        :return: None
+        """
+
         dsky.state["backgrounded_update"] = self
         dsky.state["display_lock"] = None
         self.timer.Stop()
         dsky.annunciators["key_rel"].on()
-        self.activity_timer.Stop()
+        # self.activity_timer.Stop()
 
     def resume(self):
+
+        """ Resumes verb display updates
+        :return: None
+        """
+
         dsky.state["display_lock"] = self
         dsky.state["backgrounded_update"] = None
         self.start_monitor()
 
+
 class LoadVerb(DataVerb):
-    def __init__(self, name, verb_number, components, registers):
-        super(LoadVerb, self).__init__(name, verb_number, components, registers, is_single_precision=True)
+
+    """ Base class for Load verbs (verbs 21 through 25 inclusive)
+    """
+
+    def __init__(self, name, verb_number, components, registers, is_single_precision=True):
+        """ Class constructor
+        :param name: name (description) of verb
+        :type name: string
+        :param verb_number: the verb number
+        :type verb_number: int
+        :param components: a tuple containing component numbers
+        :type components: tuple of ints
+        :param registers: a tuple containing register numbers
+        :type registers: tuple of ints
+        :param is_single_precision: Indicates if the verb displays single precision values
+        :type is_single_precision: bool
+        :return: None
+        """
+
+        super(LoadVerb, self).__init__(name, verb_number, components, registers, is_single_precision)
 
 #---------------------------BEGIN VERB CLASS DEFINITIONS------------------------
 
 # no verb 00
 
+
 class Verb1(DisplayVerb):
+
+    """ Displays Octal component 1 in R1
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb1, self).__init__(name="Display Octal component 1 in R1", verb_number=1,
                                     components=(1,), registers=(1,))
     #def execute(self):
@@ -232,8 +374,18 @@ class Verb1(DisplayVerb):
             #computer.dsky.registers[1].display(output[0], output[1])
             #self.data = None
 
+
 class Verb2(DisplayVerb):
+
+    """ Displays Octal component 2 in R1
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb2, self).__init__(name="Display Octal component 2 in R1", verb_number=2,
                                     components=(2,), registers=(1,))
 
@@ -250,8 +402,18 @@ class Verb2(DisplayVerb):
             #computer.dsky.registers[1].display(output[2], output[3])
             #self.data = None
 
+
 class Verb3(DisplayVerb):
+
+    """ Displays Octal component 3 in R1
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb3, self).__init__(name="Display Octal component 3 in R1", verb_number=3,
                                     components=(3,), registers=(1,))
 
@@ -268,26 +430,56 @@ class Verb3(DisplayVerb):
             #computer.dsky.registers[1].display(output[4], output[5])
             #self.data = None
 
+
 class Verb4(DisplayVerb):
+
+    """ Displays Octal components 1, 2 in R1, R2
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb4, self).__init__(name="Display Octal components 1, 2 in R1, R2", verb_number=4,
                                     components=(1, 2), registers=(1, 2))
 
     def execute(self):
 
+        """ Executes the verb.
+        :return: None
+        """
+
         super(Verb4, self).execute()
         noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
         noun_data = noun_function(calling_verb=self)
-        output = format_output_data(self.noun_data)
+        output = format_output_data(noun_data)
         computer.dsky.registers[1].display(output[0], output[1])
         computer.dsky.registers[2].display(output[2], output[3])
 
+
 class Verb5(DisplayVerb):
+
+    """ Displays Octal components 1, 2, 3 in R1, R2, R3
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb5, self).__init__(name="Display Octal components 1, 2, 3 in R1, R2, R3", verb_number=5,
                                     components=(1, 2, 3), registers=(1, 2, 3))
         self.illegal_nouns = []
+
     def execute(self):
+
+        """ Executes the verb.
+        :return: None
+        """
+
         utils.log("Executing V05")
         super(Verb5, self).execute()
         noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
@@ -297,15 +489,29 @@ class Verb5(DisplayVerb):
         computer.dsky.registers[2].display(sign=output[2], value=output[3])
         computer.dsky.registers[3].display(sign=output[4], value=output[5])
 
+
 class Verb6(DisplayVerb):
+
+    """ Displays Decimal in R1 or in R1, R2 or in R1, R2, R3
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb6, self).__init__(name="Display Decimal in R1 or in R1, R2 or in R1, R2, R3", verb_number=6,
                                     components=(1, 2, 3), registers=(1, 2, 3))
 
-
     def execute(self):
+
+        """ Executes the verb.
+        :return: None
+        """
+
         super(Verb6, self).execute()
-        if self.data == None:
+        if self.data is None:
             noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
             noun_function(calling_verb=self, base=10)
             return
@@ -318,8 +524,18 @@ class Verb6(DisplayVerb):
             computer.dsky.registers[3].display(sign=output[4], value=output[5])
             #self.data = None
 
+
 class Verb7(DisplayVerb):
+
+    """ Displays Double Precision Decimal in R1, R2 (test only)
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb7, self).__init__(name="Display Double Precision Decimal in R1, R2 (test only)", verb_number=7,
                                     components=(1,), registers=(1, 2), is_single_precision=False)
 
@@ -329,41 +545,116 @@ class Verb7(DisplayVerb):
 
 # no verb 10
 
+
 class Verb11(MonitorVerb):
+
+    """ Monitors Octal component 1 in R1
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb11, self).__init__(name="Monitor Octal component 1 in R1", verb_number=11,
                                      components=(1,), registers=(1,))
 
+
 class Verb12(MonitorVerb):
+
+    """ Monitors Octal component 2 in R1
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb12, self).__init__(name="Monitor Octal component 2 in R1", verb_number=12,
                                      components=(2,), registers=(1,))
 
+
 class Verb13(MonitorVerb):
+
+    """ Monitors Octal component 3 in R1
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb13, self).__init__(name="Monitor Octal component 3 in R1", verb_number=13,
                                      components=(3,), registers=(1,))
 
+
 class Verb14(MonitorVerb):
+
+    """ Monitors Octal components 1, 2 in R1, R2
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb14, self).__init__(name="Monitor Octal components 1, 2 in R1, R2", verb_number=14,
                                      components=(1, 2), registers=(1, 2))
 
+
 class Verb15(MonitorVerb):
+
+    """ Monitors Octal components 1, 2, 3 in R1, R2, R3
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb15, self).__init__(name="Monitor Octal components 1, 2, 3 in R1, R2, R3", verb_number=15,
                                      components=(1, 2, 3), registers=(1, 2, 3))
 
-class Verb16(MonitorVerb): # implemented, needs testing
+
+class Verb16(MonitorVerb):
+
+    """ Monitors Decimal in R1 or in R1, R2 or in R1, R2, R3
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb16, self).__init__(name="Monitor Decimal in R1 or in R1, R2 or in R1, R2, R3", verb_number=16,
                                      components=(1, 2, 3), registers=(1, 2, 3))
 
     def execute(self):
+
+        """ Executes the verb.
+        :return: None
+        """
+
         self.start_monitor()
 
+
 class Verb17(MonitorVerb):
+
+    """ Monitors Double Precision Decimal in R1, R2 (test only)
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb17, self).__init__(name="Monitor Double Precision Decimal in R1, R2 (test only)", verb_number=17,
                                      components=(1,), registers=(1, 2), is_single_precision=False)
 
@@ -373,52 +664,139 @@ class Verb17(MonitorVerb):
 
 # no verb 20
 
+
 class Verb21(LoadVerb):
+
+    """ Loads component 1 into R1
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb21, self).__init__(name="Load component 1 into R1", verb_number=21, components=(1,), registers=(1,))
 
     def execute(self):
-        #dsky.request_data(self.accept_data, dsky.registers[3])
+
+        """ Executes the verb.
+        :return: None
+        """
+
+        #dsky.request_data(self.accept_input, dsky.registers[3])
         pass
 
-    def accept_data(self, data):
+    def accept_input(self, data):
+
+        """ Accepts data provided by user via DSKY
+        :param data: the data
+        :return: None
+        """
+
         utils.log(data)
 
+
 class Verb22(LoadVerb):
+
+    """ Loads component 2 into R2
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb22, self).__init__(name="Load component 2 into R2", verb_number=22, components=(2,), registers=(2,))
 
     def execute(self):
+
+        """ Executes the verb.
+        :return: None
+        """
+
         pass
 
+
 class Verb23(LoadVerb):
+
+    """ Loads component 3 into R3
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb23, self).__init__(name="Load component 3 into R3", verb_number=23, components=(3,), registers=(3,))
 
     def execute(self):
+
+        """ Executes the verb.
+        :return: None
+        """
+
         computer.dsky.request_data(requesting_object=self.accept_input, location=dsky.registers[3])
 
-    def accept_input(self, input):
+    def accept_input(self, data):
+
+        """ Accepts data provided by user via DSKY
+        :param data: the data
+        :return: None
+        """
+
         computer.loaded_data["verb"] = self.number
         computer.loaded_data["noun"] = dsky.state["current_noun"]
-        computer.loaded_data[3] = input
+        computer.loaded_data[3] = data
         if computer.object_requesting_data:
             computer.object_requesting_data()
 
+
 class Verb24(LoadVerb):
+
+    """ Loads component 1, 2 into R1, R2
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb24, self).__init__(name="Load component 1, 2 into R1, R2", verb_number=24,
                                      components=(1, 2), registers=(1, 2))
 
     def execute(self):
+
+        """ Executes the verb.
+        :return: None
+        """
+
         pass
 
+
 class Verb25(LoadVerb):
+
+    """ Loads component 1, 2, 3 into R1, R2, R3
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb25, self).__init__(name="Load component 1, 2, 3 into R1, R2, R3", verb_number=25,
                                      components=(1, 2, 3), registers=(1, 2, 3))
 
     def execute(self):
+
+        """ Executes the verb.
+        :return: None
+        """
+
         pass
 #
 # # no verb 26
@@ -439,48 +817,103 @@ class Verb25(LoadVerb):
 #     def __init__(self):
 #         super(Verb31, self).__init__(name="Request waitlist", verb_number=31)
 
+
 class Verb32(Verb):
+
+    """ Recycle program
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb32, self).__init__(name="Recycle program", verb_number=32)
 
     def execute(self):
+
+        """ Executes the verb.
+        :return: None
+        """
+
         if isinstance(dsky.state["backgrounded_update"], MonitorVerb):
             dsky.state["backgrounded_update"].terminate()  # TODO
         else:
             utils.log("V32 called, but nothing to recycle!")
 
+
 class Verb33(Verb):
+
+    """ Proceed without DSKY inputs
+    """
+
     def __init__(self):
+
+        """ Class constructor
+            :return: None
+            """
+
         super(Verb33, self).__init__(name="Proceed without DSKY inputs", verb_number=33)
 
     def execute(self):
+
+        """ Executes the verb.
+        :return: None
+        """
+
         if isinstance(dsky.state["backgrounded_update"], MonitorVerb):
             dsky.state["backgrounded_update"].terminate()
         else:
             utils.log("V33 called, but nothing to proceed with!")
 
+
 class Verb34(Verb):
+
+    """ Terminate function
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb34, self).__init__(name="Terminate function", verb_number=34)
 
     def execute(self):
+
+        """ Executes the verb.
+        :return: None
+        """
+
         if isinstance(dsky.state["backgrounded_update"], MonitorVerb):
             dsky.state["backgrounded_update"].terminate()
         else:
             utils.log("V34 called, but nothing to terminate!")
+
 
 class Verb35(Verb):
 
     """Lamp test"""
 
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb35, self).__init__(name="Test lights", verb_number=35)
-        global frame
         self.stop_timer = wx.Timer(frame)
         self.loop_counter = 0
         frame.Bind(wx.EVT_TIMER, self.stop_timer_event, self.stop_timer)
 
     def execute(self):
+
+        """ Executes the verb.
+        :return: None
+        """
+
         # commands the annunciators
         for annunciator in dsky.annunciators.itervalues():
             annunciator.on()
@@ -501,6 +934,11 @@ class Verb35(Verb):
         self.stop_timer.Start(5000, oneShot=True)
 
     def terminate(self):
+
+        """ Terminates the verb.
+        :return: None
+        """
+
         utils.log("Hit terminate")
         for annunciator in dsky.annunciators.itervalues():
             annunciator.off()
@@ -514,30 +952,76 @@ class Verb35(Verb):
                     digit.display(8)
 
     def stop_timer_event(self, event):
+
+        """ Event handler for when the timer stops
+        :param event: wxPython event object (not used)
+        :return:
+        """
+
         utils.log("Stopping V35 timer")
         self.terminate()
 
+
 class Verb36(Verb):
+
+    """ Request fresh start
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb36, self).__init__(name="Request fresh start", verb_number=36)
 
     def execute(self):
+
+        """ Executes the verb.
+        :return: None
+        """
+
         computer.fresh_start()
 
+
 class Verb37(Verb):
+
+    """ Change program (Major Mode)
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb37, self).__init__(name="Change program (Major Mode)", verb_number=37)
         #self.data.append("")
 
     def execute(self):
+
+        """ Executes the verb.
+        :return: None
+        """
+
         super(Verb37, self).execute()
         dsky.request_data(requesting_object=self.receive_data, location=dsky.control_registers["noun"])
 
     def receive_data(self, data):
 
+        """ Accepts data provided by user via DSKY
+        :param data: the data from DSKY
+        :return: None
+        """
+
         computer.programs[data].execute()
 
     def data_load_done(self):
+
+        """ Called when the data load is complete
+        :return: None
+        """
+
         dsky.verb_noun_flash_off()
         data = self.data.pop()
         number_of_digits = len(data)
@@ -661,7 +1145,8 @@ class Verb37(Verb):
 #
 # class Verb66(Verb):
 #     def __init__(self):
-#         super(Verb66, self).__init__(name="Vehicles attached, move this vehicle state vector to other vehicle state vector", verb_number=66)
+#        super(Verb66, self).__init__(name="Vehicles attached, move this vehicle state vector to other vehicle state "
+#                                          "vector", verb_number=66)
 #
 # class Verb67(Verb):
 #     def __init__(self):
@@ -693,11 +1178,26 @@ class Verb37(Verb):
 #     def __init__(self):
 #         super(Verb74, self).__init__(name="Initialize erasable dump via downlink", verb_number=74)
 
+
 class Verb75(Verb):
+
+    """ Backup liftoff
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb75, self).__init__(name="Backup liftoff", verb_number=75)
 
     def execute(self):
+
+        """ Executes the verb.
+        :return: None
+        """
+
         computer.programs["11"].execute()
 
 #no verb 76
@@ -717,11 +1217,26 @@ class Verb75(Verb):
 #     def __init__(self):
 #         super(Verb81, self).__init__(name="Update CSM state vector", verb_number=81)
 
+
 class Verb82(Verb):
+
+    """ Request orbital parameters display (R30)
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb82, self).__init__(name="Request orbital parameters display (R30)", verb_number=82)
 
     def execute(self):
+
+        """ Executes the verb.
+        :return: None
+        """
+
         #super(Verb82, self).execute()
         #computer.routines[30]()
         computer.execute_verb(verb=16, noun=44)
@@ -786,15 +1301,30 @@ class Verb82(Verb):
 #
 # #no verb 98
 #
+
+
 class Verb99(Verb):
+
+    """ Please enable engine
+    """
+
     def __init__(self):
+
+        """ Class constructor
+        :return: None
+        """
+
         super(Verb99, self).__init__(name="Please enable engine", verb_number=99)
 
     def execute(self):
+
+        """ Executes the verb.
+        :return: None
+        """
+
         pass
         # super(Verb99, self).execute()
         # orbiting_body = body.Body(get_telemetry("body"))
         # orbiting_body.orbit.update_parameters()
         # orbiting_body.parent_body.orbit.update_parameters()
         # utils.log(orbiting_body, orbiting_body.parent_body.orbit)
-
