@@ -310,7 +310,7 @@ class MonitorVerb(DisplayVerb):
         dsky.state["backgrounded_update"] = self
         dsky.state["display_lock"] = None
         self.timer.Stop()
-        dsky.annunciators["key_rel"].on()
+        dsky.annunciators["key_rel"].start_blink()
         # self.activity_timer.Stop()
 
     def resume(self):
