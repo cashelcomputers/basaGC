@@ -27,15 +27,13 @@
 #  <info@sandroid.org>
 
 import multiprocessing as mp
-import logging
 
 import wx
 
 import utils
 import telemachus
-import config
-import timer
-import display
+#import config
+#import display
 import dsky
 import verbs
 import nouns
@@ -47,7 +45,7 @@ class Computer(object):
     def __init__(self, gui):
         self.gui = gui
         self.dsky = dsky.DSKY(self.gui, self)
-        self.loop_timer = timer.Timer(interval=0.5, function=self.main_loop)
+        self.loop_timer = utils.Timer(interval=0.5, function=self.main_loop)
         self.out_queue = mp.Queue()
         self.in_queue = mp.Queue()
         self.is_powered_on = False

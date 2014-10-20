@@ -26,7 +26,7 @@
 # <info@sandroid.org>
 
 PROGRAM_NAME = "basaGC"
-VERSION = "0.4.0"
+VERSION = "0.5.0"
 IMAGES_DIR = "./images/"
 IP = "127.0.0.1"
 PORT = "8085"

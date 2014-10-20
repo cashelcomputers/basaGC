@@ -1,5 +1,6 @@
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
+"""This module contains code that interacts with the Telemachus mod to access KSP telemetry"""
 
 # This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
 #  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
@@ -28,18 +29,25 @@ import urllib2
 import utils
 import config
 
+
 class KSPNotConnected(Exception):
     """ This exception should be raised when there is no connection to KSP """
     pass
 
+
 def _get_api_listing():
+
+    """ Gets the list of API calls provided by Telemachus
+    :rtype: dict
+    """
+
     try:
         response = urllib2.urlopen(config.URL + "api=a.api")
     except urllib2.URLError as e:
         print(e)
         raise KSPNotConnected
     data = json.load(response)
-    telemetry = {}
+    telemetry_available = {}
     commands = {}
     for a in data.itervalues():
         for b in a:
@@ -54,8 +62,8 @@ def _get_api_listing():
                 continue
             else:
                 name = b["apistring"].rsplit(".", 1)[1]
-            telemetry[name] = b["apistring"]
-    return telemetry
+            telemetry_available[name] = b["apistring"]
+    return telemetry_available
 
 try:
     telemetry = _get_api_listing()
@@ -63,9 +71,15 @@ except KSPNotConnected:
     telemetry = None
     print("Could not construct telemetry information - no contact with KSP")
 
+
 def get_telemetry(data, body_number=None):
     """ Contacts telemachus for the requested data.
 
+    :param data: The API call required
+    :type data: string
+    :param body_number: Specify which body to obtain data for
+    :type body_number: string
+    :rtype: string
     """
     try:
         query_string = data + "=" + telemetry[data]
@@ -83,7 +97,3 @@ def get_telemetry(data, body_number=None):
         raise KSPNotConnected
     json_response = json.load(raw_response)
     return json_response[data]
-
-
-
-
