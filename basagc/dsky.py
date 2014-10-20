@@ -914,6 +914,10 @@ class DSKY(object):
                 self.annunciators["key_rel"].off()
                 self.state["backgrounded_update"].resume()
 
+        if self.state["display_lock"] is not None:
+            print(self.state["display_lock"])
+            self.state["display_lock"].background()
+
         # if the computer is off, we only want to accept the PRO key input,
         # all other keys are ignored
         if self.computer.is_powered_on is False:
@@ -942,9 +946,8 @@ class DSKY(object):
         elif keypress == "C":
             pass  # TODO
 
-        # # if a verb has the display lock, background it
-        # if self.state["display_lock"] is not None:
-        #     self.state["display_lock"].background()
+        # if a verb has the display lock, background it
+
 
     def flash_comp_acty(self):
 
