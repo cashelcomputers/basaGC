@@ -321,6 +321,8 @@ class MonitorVerb(DisplayVerb):
 
         dsky.state["display_lock"] = self
         dsky.state["backgrounded_update"] = None
+        dsky.control_registers["verb"].display(str(self.number))
+        dsky.control_registers["noun"].display(self.requested_noun)
         self.start_monitor()
 
 
