@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
-
+""" This module contains the wxPython GUI. """
 #  This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
 #  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
 #  This program is free software; you can redistribute it and/or modify
@@ -22,20 +22,12 @@
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>
 
-import logging
-
 import wx
 
-import computer as Computer
+import computer
 import config
 import utils
 
-# console = logging.StreamHandler()
-# console.setLevel(logging.DEBUG)
-#
-# formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
-# console.setFormatter(formatter)
-# logging.getLogger('').addHandler(console)
 
 class SettingsFrame(wx.Frame):
 
@@ -64,7 +56,6 @@ class SettingsFrame(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.ok_button_event, self.ok_button)
         self.Bind(wx.EVT_BUTTON, self.cancel_button_event, self.cancel_button)
 
-
     def __set_properties(self):
 
         """Internal wxPython method"""
@@ -72,7 +63,6 @@ class SettingsFrame(wx.Frame):
         self.SetTitle("basaGC settings")
         self.ip_field.SetMinSize((120, 25))
         self.log_level_combobox.SetMinSize((187, 25))
-
 
     def __do_layout(self):
 
@@ -101,8 +91,12 @@ class SettingsFrame(wx.Frame):
         sizer_17.Fit(self)
         self.Layout()
 
-
     def ok_button_event(self, event):
+
+        """ Event handler for OK button.
+        :param event: wxPython event (not used)
+        :return:
+        """
 
         ip_address = self.ip_field.GetValue()
         port = self.port_field.GetValue()
@@ -113,8 +107,13 @@ class SettingsFrame(wx.Frame):
         config.URL = "http://" + config.IP + ":" + config.PORT + "/telemachus/datalink?"
         self.Hide()
 
-
     def cancel_button_event(self, event):
+
+        """ Event handler for Cancel button.
+        :param event: wxPython event (not used)
+        :return:
+        """
+
         self.Hide()
 
 
@@ -182,7 +181,7 @@ class GUI(wx.Frame):
         self.settings_dialog = SettingsFrame(self)
 
         utils.LOG_VIEWER = self.log_viewer
-        GUI.computer = Computer.Computer(self)
+        GUI.computer = computer.Computer(self)
         GUI.dsky = GUI.computer.dsky
         GUI.keyboard = GUI.computer.dsky.keyboard
         GUI.annunciators = GUI.computer.dsky.annunciators
@@ -225,21 +224,22 @@ class GUI(wx.Frame):
         # Menu Bar end
 
         self.bitmap_5 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg",
-            wx.BITMAP_TYPE_ANY))
+                                        wx.BITMAP_TYPE_ANY))
         self.bitmap_6_copy = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg",
-            wx.BITMAP_TYPE_ANY))
+                                             wx.BITMAP_TYPE_ANY))
         self.bitmap_6 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg",
-            wx.BITMAP_TYPE_ANY))
+                                        wx.BITMAP_TYPE_ANY))
         self.bitmap_5_copy = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg",
-            wx.BITMAP_TYPE_ANY))
+                                             wx.BITMAP_TYPE_ANY))
         self.bitmap_5_copy_1 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg",
-            wx.BITMAP_TYPE_ANY))
+                                               wx.BITMAP_TYPE_ANY))
         self.bitmap_6_copy_copy = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg",
-            wx.BITMAP_TYPE_ANY))
+                                                  wx.BITMAP_TYPE_ANY))
         self.bitmap_6_copy_copy_copy = wx.StaticBitmap(self, wx.ID_ANY,
-            wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg", wx.BITMAP_TYPE_ANY))
+                                                       wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg",
+                                                                 wx.BITMAP_TYPE_ANY))
         self.bitmap_5_copy_2 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg",
-            wx.BITMAP_TYPE_ANY))
+                                               wx.BITMAP_TYPE_ANY))
 
         self.__set_properties()
         self.__do_layout()
@@ -332,11 +332,11 @@ class GUI(wx.Frame):
         sizer_13.Add(self.bitmap_6_copy, 0, 0, 0)
         sizer_13.Add((20, 5), 0, 0, 0)
         grid_sizer_1_copy.Add(GUI.annunciators["uplink_acty"].widget, 0,
-            wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
+                              wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
         grid_sizer_1_copy.Add(GUI.annunciators["temp"].widget, 0,
-            wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
+                              wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
         grid_sizer_1_copy.Add(GUI.annunciators["no_att"].widget, 0,
-            wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
+                              wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
         grid_sizer_1_copy.Add(GUI.annunciators["gimbal_lock"].widget, 0, 0, 0)
         grid_sizer_1_copy.Add(GUI.annunciators["stby"].widget, 0, 0, 0)
         grid_sizer_1_copy.Add(GUI.annunciators["prog"].widget, 0, 0, 0)
@@ -468,35 +468,84 @@ class GUI(wx.Frame):
         sizer_1.Fit(self)
         self.Layout()
 
-    def start_verb_noun_flash(self):
-        GUI.dsky.control_registers["verb"].start_blink()
-        GUI.dsky.control_registers["noun"].start_blink()
+    # @staticmethod
+    # def start_verb_noun_flash():
+    #
+    #     """ Starts the verb/noun flash.
+    #     :return: None
+    #     """
+    #
+    #     GUI.dsky.control_registers["verb"].start_blink()
+    #     GUI.dsky.control_registers["noun"].start_blink()
+    #
+    # @staticmethod
+    # def stop_verb_noun_flash():
+    #
+    #     """ Stops the verb/noun flash.
+    #     :return: None
+    #     """
+    #
+    #     GUI.dsky.control_registers["verb"].stop_blink()
+    #     GUI.dsky.control_registers["noun"].stop_blink()
 
-    def stop_verb_noun_flash(self):
-        GUI.dsky.control_registers["verb"].stop_blink()
-        GUI.dsky.control_registers["noun"].stop_blink()
+    @staticmethod
+    def on():
 
-    def on(self):
+        """ Turns the DSKY on.
+        :return: None
+        """
+
         utils.log("DSKY on")
         for item in GUI.dsky.static_display:
             item.on()
 
-    def off(self):
+    @staticmethod
+    def off():
+
+        """ Turns the DSKY off.
+        :return: None
+        """
+
         utils.log("DSKY off")
         for item in GUI.dsky.static_display:
             item.off()
 
     def settings_menuitem_click(self, event):
+
+        """ Event handler for Settings menu item.
+        :param event: wxPython event (not used)
+        :return: None
+        """
+
         self.settings_dialog.log_level_combobox.SetSelection(config.LOG_LEVELS.index(config.current_log_level))
         self.settings_dialog.Show()
 
     def show_log_menuitem_click(self, event):
+
+        """ Event handler for "Show Log" menu item.
+        :param event: wxPython event (not used)
+        :return: None
+        """
+
         self.log_viewer.Show()
 
-    def quit_menuitem_click(self, event):
+    @staticmethod
+    def quit_menuitem_click(event):
+
+        """ Event handler for Quit menu item.
+        :param event: wxPython event (not used)
+        :return: None
+        """
+
         GUI.computer.quit()
 
-    def about_menuitem_click(self, event):
+    @staticmethod
+    def about_menuitem_click(event):
+
+        """ Event handler for Help/About menu item.
+        :param event: wxPython event (not used)
+        :return: None
+        """
 
         about_dialog = wx.AboutDialogInfo()
 
@@ -512,15 +561,19 @@ class GUI(wx.Frame):
         wx.AboutBox(about_dialog)
 
 
-class basaGCApp(wx.App):
+class BASAGCApp(wx.App):
+
+    """ The main entry point for the GUI. Required by wxPython.
+    """
+
     def OnInit(self):
+
+        """ GUI init.
+        :return: 1
+        """
+
         wx.InitAllImageHandlers()
         dsky = GUI(None, wx.ID_ANY, "")
         self.SetTopWindow(dsky)
         dsky.Show()
         return 1
-
-#if __name__ == "__main__":
-
-    #pydsky = pyDSKYApp(0)
-    #pydsky.MainLoop()

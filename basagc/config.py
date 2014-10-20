@@ -1,8 +1,6 @@
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
-"""
-    This file contains config information common to the whole package
-"""
+""" This file contains config information common to the whole package """
 #  This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
 #  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
 #  This program is free software; you can redistribute it and/or modify
@@ -41,7 +39,7 @@ LOG_LEVELS = [
     "ERROR",
     "CRITICAL",
 ]
-current_log_level = "CRITICAL"
+current_log_level = "DEBUG"
 
 ID_VERBBUTTON = 10
 ID_NOUNBUTTON = 11
@@ -97,8 +95,8 @@ BODIES = {
 }
 OCTAL_BODIES = {int(oct(int(value))): key for key, value in BODIES.iteritems()}
 
-PROGRAM_DESCRIPTION = """{program_name} is a implementation of the Apollo Guidance Computer (AGC) for Kerbal Space Program.
-While not entirely accurate to the real AGC, I have attempted to be as accurate as possible.
+PROGRAM_DESCRIPTION = """{program_name} is a implementation of the Apollo Guidance Computer (AGC) for Kerbal Space
+Program. While not entirely accurate to the real AGC, I have attempted to be as accurate as possible.
 
 {program_name} includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html) by
 Ronald S. Burkey <info@sandroid.org> """.format(program_name=PROGRAM_NAME)

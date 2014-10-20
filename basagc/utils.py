@@ -87,32 +87,32 @@ def seconds_to_time(seconds):
     return days, hours, minutes, seconds
 
 
-def log(message, log_type="DEBUG"):
+def log(message, log_level="DEBUG"):
 
     """ Logs messages to log file and log viewer
     :param message: the message to log
     :type message: string
-    :param log_type: the log level for this message
-    :type log_type: string
+    :param log_level: the log level for this message
+    :typelog_levele: string
     :return: nothing
     """
 
-    if log_type not in config.LOG_LEVELS:
+    if log_level not in config.LOG_LEVELS:
         gc_log.error("Log level does not exist!")
         return
     now = time.strftime("%d/%m/%Y %H:%M:%S")
-    log_level_number = config.LOG_LEVELS.index(log_type)
+    log_level_number = config.LOG_LEVELS.index(log_level)
     if log_level_number >= config.LOG_LEVELS.index(config.current_log_level):
-        LOG_VIEWER.viewer.AppendText(now + ": " + log_type + ": " + message + "\n")
-    if log_type == "DEBUG":
+        LOG_VIEWER.viewer.AppendText(now + ": " + log_level + ": " + message + "\n")
+    if log_level == "DEBUG":
         gc_log.debug(message)
-    elif log_type == "INFO":
+    elif log_level == "INFO":
         gc_log.info(message)
-    elif log_type == "WARNING":
+    elif log_level == "WARNING":
         gc_log.warning(message)
-    elif log_type == "ERROR":
+    elif log_level == "ERROR":
         gc_log.error(message)
-    elif log_type == "CRITICAL":
+    elif log_level == "CRITICAL":
         gc_log.critical(message)
 
 
@@ -127,8 +127,8 @@ class Timer(object):
         self.args = args
         self.kwargs = kwargs
         self.is_running = False
-        #if enable == True:
-            #self._run()
+        if enable:
+            self._run()
 
     def _run(self):
         self.is_running = False

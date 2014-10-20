@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
-
+""" This module contains all programs (major modes) used by the guidance computer.
+"""
 #  This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
 #  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
 #  This program is free software; you can redistribute it and/or modify
@@ -22,8 +23,6 @@
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>
 
-import logging
-
 import utils
 import maneuvers
 import config
@@ -32,14 +31,29 @@ from telemachus import get_telemetry, KSPNotConnected
 gc = None
 dsky = None
 
+
 class Program(object):
 
+    """ Major mode base class.
+    """
+
     def __init__(self, name, number):
+
+        """ Class constructor.
+        :param name: name (description) of the program
+        :param number: program number
+        :return: None
+        """
+
         self.name = name
         self.number = number
 
     def execute(self):
-        """Executes the program"""
+
+        """ Executes the program.
+        :return: None
+        """
+
         utils.log("Executing Program {}: {}".format(self.number, self.name))
         dsky.flash_comp_acty()
         dsky.control_registers["program"].display(str(self.number))
@@ -54,15 +68,35 @@ class Program(object):
         raise ProgramTerminated
 
     def restart(self):
+
+        """ Restarts the program if required by program alarms.
+        :return: None
+        """
+
         #self.terminate()
         self.execute()
 
+
 class Program00(Program):
 
+    """ AGC Idling.
+    :return: None
+    """
+
     def __init__(self):
+
+        """ Class constructor.
+        :return: None
+        """
+
         super(Program00, self).__init__(name="AGC Idling", number="00")
 
     def execute(self):
+
+        """ Executes the program.
+        :return: None
+        """
+
         super(Program00, self).execute()
         dsky.control_registers["program"].display("00")
 
@@ -77,12 +111,27 @@ class Program00(Program):
 
 
 class Program11(Program):
+
+    """ Earth Orbit Insertion Monitor.
+    :return: None
+    """
+
     def __init__(self):
+
+        """ Class constructor.
+        :return: None
+        """
+
         super(Program11, self).__init__(name="Earth Orbit Insertion Monitor", number="11")
 
     def execute(self):
+
+        """ Executes the program.
+        :return: None
+        """
+
         super(Program11, self).execute()
-        log.info("Program 11 executing")
+        utils.log("Program 11 executing", log_level="INFO")
 
         # test if KSP is connected
         try:
@@ -90,7 +139,6 @@ class Program11(Program):
         except KSPNotConnected:
             self.terminate()
             return
-
 
         # --> call average G integration with delta V integration
         gc.run_average_g_routine = True
@@ -102,7 +150,6 @@ class Program11(Program):
         # --> compute initial state vector
         # gc.routines["average_g"]()
 
-
         # --> Display on DSKY:
         # --> V06 N62 (we are going to use V16N62 though, so we can have a updated display
         # --> R1: Velocity
@@ -113,7 +160,16 @@ class Program11(Program):
 
 class Program15(Program):
 
+    """ TMI Initiate/Cutoff.
+    :return: None
+    """
+
     def __init__(self):
+
+        """ Class constructor.
+        :return: None
+        """
+
         super(Program15, self).__init__(name="TMI Initiate/Cutoff", number="15")
         self.delta_v_required = 0.0
         self.time_to_transfer = 0.0
@@ -125,6 +181,10 @@ class Program15(Program):
         self.phase_angle_difference = 0.0
 
     def execute(self):
+
+        """ Executes the program.
+        :return: None
+        """
 
         super(Program15, self).execute()
         self.orbiting_body = get_telemetry("body")
@@ -151,6 +211,11 @@ class Program15(Program):
         gc.object_requesting_data = self.select_target
 
     def select_target(self):
+
+        """ Called ny P15 after user as entered target choice.
+        :return: None
+        """
+
         target = gc.loaded_data[3]
         if target[0] == ("+" or "-"):
             dsky.operator_error("Expected octal input, decimal input provided")
@@ -179,8 +244,8 @@ class Program15(Program):
         if self.phase_angle_difference < 0:
             self.phase_angle_difference = 180 + abs(self.phase_angle_difference)
         try:
-            self.delta_time_to_burn = self.phase_angle_difference /\
-                                 ((360 / orbital_period) - (360 / departure_body_orbital_period))
+            self.delta_time_to_burn = self.phase_angle_difference / ((360 / orbital_period) -
+                                                                     (360 / departure_body_orbital_period))
         except TypeError:  # FIXME
             return
         delta_time = utils.seconds_to_time(self.delta_time_to_burn)
@@ -188,38 +253,27 @@ class Program15(Program):
         utils.log("Phase angle: {}, delta-v for burn: {} m/s, time to transfer: {}".format(
             round(self.phase_angle, 2), int(self.delta_v_required), utils.seconds_to_time(self.time_to_transfer)))
         utils.log("Current Phase Angle: {}, difference: {}".format(current_phase_angle, self.phase_angle_difference))
-        utils.log("Time to burn: {} hours, {} minutes, {} seconds".format(int(delta_time[1]), int(delta_time[2]), round(delta_time[3], 2)))
+        utils.log("Time to burn: {} hours, {} minutes, {} seconds".format(int(delta_time[1]), int(delta_time[2]),
+                                                                          round(delta_time[3], 2)))
         self.time_of_ignition = get_telemetry("missionTime") + self.delta_time_to_burn
         self.reference_delta_v = get_telemetry("orbitalVelocity")
         gc.burn_data["is_active"] = True
         gc.burn_data["data"] = self
         gc.execute_verb(verb=16, noun=79)
         gc.set_attitude("prograde")
+
+
 class ProgramNotImplementedError(Exception):
+
+    """ This exception is raised when the selected program hasn't been implemented yet.
+    """
+
     pass
+
 
 class ProgramTerminated(Exception):
+
+    """ This exception is raised when a program self-terminates.
+    """
+
     pass
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

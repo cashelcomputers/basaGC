@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
-
+""" This module contains code for the DSKY (the guidance computer/user interface)
+"""
 #  This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
 #  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
 #  This program is free software; you can redistribute it and/or modify
@@ -21,7 +22,6 @@
 #
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>import wx
-import logging
 
 import wx
 
@@ -29,11 +29,19 @@ import config
 import verbs
 import utils
 
+
 class DSKY(object):
+
+    """ This class models the DSKY.
+    """
 
     def __init__(self, gui, computer):
 
-        """The constructor for the DSKY object."""
+        """ Class constructor.
+        :param gui: wxPython frame object
+        :param computer: the instance of the guidance computer
+        :return: None
+        """
 
         self.computer = computer
 
@@ -54,26 +62,31 @@ class DSKY(object):
             DSKY.Annunciator(self, image_on="rProgOn.jpg", image_off="rProgOff.jpg", panel=frame.panel_1),
             DSKY.Annunciator(self, image_on="VerbOn.jpg", image_off="VerbOff.jpg", panel=frame.panel_1),
             DSKY.Annunciator(self, image_on="NounOn.jpg", image_off="NounOff.jpg", panel=frame.panel_1),
-            DSKY.Seperator(frame.panel_1),
-            DSKY.Seperator(frame.panel_1),
-            DSKY.Seperator(frame.panel_1),
+            DSKY.Separator(frame.panel_1),
+            DSKY.Separator(frame.panel_1),
+            DSKY.Separator(frame.panel_1),
         ]
         self.annunciators = {
-            "uplink_acty":  DSKY.Annunciator(self, name="uplink_acty", image_on="UplinkActyOn.jpg", image_off="UplinkActyOff.jpg"),
+            "uplink_acty":  DSKY.Annunciator(self, name="uplink_acty", image_on="UplinkActyOn.jpg",
+                                             image_off="UplinkActyOff.jpg"),
             "temp":         DSKY.Annunciator(self, name="temp", image_on="TempOn.jpg", image_off="TempOff.jpg"),
             "no_att":       DSKY.Annunciator(self, name="no_att", image_on="NoAttOn.jpg", image_off="NoAttOff.jpg"),
-            "gimbal_lock":  DSKY.Annunciator(self, name="gimbal_lock", image_on="GimbalLockOn.jpg", image_off="GimbalLockOff.jpg"),
+            "gimbal_lock":  DSKY.Annunciator(self, name="gimbal_lock", image_on="GimbalLockOn.jpg",
+                                             image_off="GimbalLockOff.jpg"),
             "stby":         DSKY.Annunciator(self, name="stby", image_on="StbyOn.jpg", image_off="StbyOff.jpg"),
             "prog":         DSKY.Annunciator(self, name="prog", image_on="ProgOn.jpg", image_off="ProgOff.jpg"),
             "key_rel":      DSKY.Annunciator(self, name="key_rel", image_on="KeyRelOn.jpg", image_off="KeyRelOff.jpg"),
-            "restart":      DSKY.Annunciator(self, name="restart", image_on="RestartOn.jpg", image_off="RestartOff.jpg"),
+            "restart":      DSKY.Annunciator(self, name="restart", image_on="RestartOn.jpg",
+                                             image_off="RestartOff.jpg"),
             "opr_err":      DSKY.Annunciator(self, name="opr_err", image_on="OprErrOn.jpg", image_off="OprErrOff.jpg"),
-            "tracker":      DSKY.Annunciator(self, name="tracker", image_on="TrackerOn.jpg", image_off="TrackerOff.jpg"),
+            "tracker":      DSKY.Annunciator(self, name="tracker", image_on="TrackerOn.jpg",
+                                             image_off="TrackerOff.jpg"),
             "no_dap":       DSKY.Annunciator(self, name="no_dap", image_on="BlankOff.jpg", image_off="BlankOff.jpg"),
             "alt":          DSKY.Annunciator(self, name="alt", image_on="BlankOff.jpg", image_off="BlankOff.jpg"),
             "prio_disp":    DSKY.Annunciator(self, name="prio_disp", image_on="BlankOff.jpg", image_off="BlankOff.jpg"),
             "vel":          DSKY.Annunciator(self, name="vel", image_on="BlankOff.jpg", image_off="BlankOff.jpg"),
-            "comp_acty":    DSKY.Annunciator(self, name="comp_acty", image_on="CompActyOn.jpg", image_off="CompActyOff.jpg", panel=frame.panel_1),
+            "comp_acty":    DSKY.Annunciator(self, name="comp_acty", image_on="CompActyOn.jpg",
+                                             image_off="CompActyOff.jpg", panel=frame.panel_1),
         }
         self.registers = {
             1: DSKY.DataRegister(self),
@@ -106,9 +119,14 @@ class DSKY(object):
             "enter": DSKY.KeyButton(config.ID_ENTRBUTTON, "EntrUp.jpg", self),
             "reset": DSKY.KeyButton(config.ID_RSETBUTTON, "RsetUp.jpg", self),
         }
+
     def operator_error(self, message=None):
 
-        """Called when the astronaut has entered invalid keyboard input."""
+        """ Called when the astronaut has entered invalid keyboard input.
+        :param message: Optional message to send to log
+        :return: None
+        """
+
         if message:
             utils.log("OPERATOR ERROR: " + message)
         self.annunciators["opr_err"].blink_timer.Start(500)
@@ -136,9 +154,22 @@ class DSKY(object):
         }
 
     def stop_comp_acty_flash(self, event):
+
+        """ Stops the COMP ACTY annunciator from flashing.
+        :param event: wxPython event (not used).
+        :return: None
+        """
+
         self.annunciators["comp_acty"].off()
 
     def request_data(self, requesting_object, location):
+
+        """ Requests data entry from the user.
+        :param requesting_object: the object requesting the data
+        :param location: the register that entered data will be displayed in
+        :return: None
+        """
+
         utils.log("{} requesting data".format(requesting_object))
         self.verb_noun_flash_on()
         self.state["object_requesting_data"] = requesting_object
@@ -152,6 +183,10 @@ class DSKY(object):
 
     def verb_noun_flash_on(self):
 
+        """ Starts the verb/noun flash.
+        :return: None
+        """
+
         self.control_registers["verb"].digits[1].start_blink()
         self.control_registers["verb"].digits[2].start_blink()
         self.control_registers["noun"].digits[1].start_blink()
@@ -164,6 +199,11 @@ class DSKY(object):
             #digit.start_blink(digit.value)
 
     def verb_noun_flash_off(self):
+
+        """ Starts the verb/noun flash.
+        :return: None
+        """
+
         for digit in self.control_registers["verb"].digits.itervalues():
             digit.stop_blink()
         for digit in self.control_registers["noun"].digits.itervalues():
@@ -171,7 +211,15 @@ class DSKY(object):
 
     class Digit(object):
 
+        """ Digit base class.
+        """
+
         def __init__(self, dsky):
+
+            """ Class constructor.
+            :param dsky: the DSKY instance
+            :return: None
+            """
 
             self.dsky = dsky
             global frame
@@ -181,25 +229,51 @@ class DSKY(object):
             #self.widget.SetBitmap(self.blank)
             #pass
 
+    class Separator(object):
 
+        """ Display separator.
+        """
 
-    class Seperator(object):
         def __init__(self, panel):
+
+            """ Class constructor.
+            :param panel: the wxPython panel that the separator lives in.
+            :return: None
+            """
+
             self.image_on = wx.Image(config.IMAGES_DIR + "SeparatorOn.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             self.image_off = wx.Image(config.IMAGES_DIR + "Separator.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             self.widget = wx.StaticBitmap(panel, wx.ID_ANY, self.image_off)
 
         def on(self):
+
+            """ Illuminates the separator.
+            :return: None
+            """
+
             self.widget.SetBitmap(self.image_on)
-            self.state = True
 
         def off(self):
+
+            """ Deluminates the separator.
+            :return: None
+            """
+
             self.widget.SetBitmap(self.image_off)
-            self.state = False
 
     class NumericDigit(Digit):
 
+        """ A numeric digit.
+        """
+
         def __init__(self, dsky, panel=None):
+
+            """ Class constructor.
+            :param dsky: the DSKY instance
+            :param panel: the wxPython panel the digit lives in.
+            :return: None
+            """
+
             self.dsky = dsky
             super(DSKY.NumericDigit, self).__init__(self.dsky)
             self.digit_0 = wx.Image(config.IMAGES_DIR + "7Seg-0.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
@@ -219,7 +293,6 @@ class DSKY(object):
             self.blink_value = None
             self.last_value = None
 
-
             # setup blink timers
             self.blink_timer = wx.Timer(frame)
             frame.Bind(wx.EVT_TIMER, self._blink, self.blink_timer)
@@ -231,9 +304,21 @@ class DSKY(object):
             self.current_value = "blank"
 
         def set_tooltip(self, tooltip):
+
+            """ Sets the wxPython tooltip to the provided value.
+            :param tooltip: The tooltip to display.
+            :return: None
+            """
+
             self.widget.SetToolTipString(tooltip)
 
         def start_blink(self, value=None):
+
+            """ Starts the digit blinking.
+            :param value: Value to blink with
+            :return: None
+            """
+
             if value:
                 self.blink_value = value
             else:
@@ -243,6 +328,7 @@ class DSKY(object):
             self.blink_timer.Start(500)
 
         def _blink(self, event):
+
             if self.is_blinking_lit:
                 self.display("blank")
                 self.is_blinking_lit = False
@@ -251,15 +337,31 @@ class DSKY(object):
                 self.is_blinking_lit = True
 
         def stop_blink(self):
+
+            """ Stops the digit blinking.
+            :return: None
+            """
+
             self.blink_timer.Stop()
             self.display(self.blink_value)
             self.blink_value = None
 
         def blank(self):
+
+            """ Blanks the digit.
+            :return: None
+            """
+
             self.last_value = self.current_value
             self.display("blank")
 
         def display(self, new_value):
+
+            """ Displays the required number on the digit.
+            :param new_value: the value to display
+            :return: None
+            """
+
             if new_value == 0:
                 self.widget.SetBitmap(self.digit_0)
             elif new_value == 1:
@@ -287,35 +389,21 @@ class DSKY(object):
                 if new_value != "blank":
                     self.blink_value = new_value
 
-            #if new_value == 0:
-                #self.dsky.display_update_queue.appendleft(self.widget.SetBitmap, self.digit_0)
-            #elif new_value == 1:
-                #self.dsky.display_update_queue.appendleft(self.widget.SetBitmap(self.digit_1))
-            #elif new_value == 2:
-                #self.dsky.display_update_queue.appendleft(self.widget.SetBitmap(self.digit_2))
-            #elif new_value == 3:
-                #self.dsky.display_update_queue.appendleft(self.widget.SetBitmap(self.digit_3))
-            #elif new_value == 4:
-                #self.dsky.display_update_queue.appendleft(self.widget.SetBitmap(self.digit_4))
-            #elif new_value == 5:
-                #self.dsky.display_update_queue.appendleft(self.widget.SetBitmap(self.digit_5))
-            #elif new_value == 6:
-                #self.dsky.display_update_queue.appendleft(self.widget.SetBitmap(self.digit_6))
-            #elif new_value == 7:
-                #self.dsky.display_update_queue.appendleft(self.widget.SetBitmap(self.digit_7))
-            #elif new_value == 8:
-                #self.dsky.display_update_queue.appendleft((self.widget.SetBitmap, self.digit_8))
-            #elif new_value == 9:
-                #self.dsky.display_update_queue.appendleft(self.widget.SetBitmap(self.digit_9))
-            #elif new_value == "blank":
-                #self.dsky.display_update_queue.appendleft(self.widget.SetBitmap(self.blank))
-
-
     class SignDigit(Digit):
 
+        """ A class for a plus or minus digit.
+        """
+
         def __init__(self, dsky, panel=None):
+
+            """ Class constructor.
+            :param dsky: the DSKY instance to use
+            :param panel: wxPython panel to display on
+            :return: None
+            """
+
+            super(DSKY.SignDigit, self).__init__(dsky)
             self.dsky = dsky
-            #super(DSKY.SignDigit, self).__init__(self.dsky)
             self.image_plus = wx.Image(config.IMAGES_DIR + "PlusOn.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             self.image_minus = wx.Image(config.IMAGES_DIR + "MinusOn.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             self.blank = wx.Image(config.IMAGES_DIR + "PlusMinusOff.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
@@ -325,23 +413,54 @@ class DSKY(object):
                 self.widget = wx.StaticBitmap(frame, wx.ID_ANY, self.blank)
 
         def set_tooltip(self, tooltip):
+
+            """ Sets the wxPython tooltip to the provided value.
+            :param tooltip: The tooltip to display.
+            :return: None
+            """
+
             self.widget.SetToolTipString(tooltip)
 
-        def display(self, value):
-            if value == "blank":
-                self.widget.SetBitmap(self.blank)
-
         def plus(self):
+
+            """ Sets the digit to "+"
+            :return: None
+            """
+
             self.widget.SetBitmap(self.image_plus)
 
         def minus(self):
+
+            """ Sets the digit to "-"
+            :return: None
+            """
+
             self.widget.SetBitmap(self.image_minus)
 
         def blank(self):
+
+            """ Blanks the digit.
+            :return: None
+            """
+
             self.widget.SetBitmap(self.blank)
 
     class Annunciator(object):
+
+        """ A class for annunciators.
+        """
+
         def __init__(self, dsky, image_on, image_off, image_orange=None, panel=None, name=None):
+
+            """ Class constructor.
+            :param dsky: the DSKY instance to use
+            :param image_on: filename of the "on" image
+            :param image_off: filename of the "off" image
+            :param image_orange: filename of the "orange on" image
+            :param panel: wxPython panel to display on
+            :param name: Name of the annunciator
+            :return: None
+            """
 
             self.dsky = dsky
             self.name = name
@@ -351,11 +470,10 @@ class DSKY(object):
                 self.image_orange = wx.Image(config.IMAGES_DIR + image_orange, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             self.is_lit = False
             self.requested_state = False
-            #self.old_state = None
 
             # setup blink timer
             self.blink_timer = wx.Timer(frame)
-            frame.Bind(wx.EVT_TIMER, self.blink, self.blink_timer)
+            frame.Bind(wx.EVT_TIMER, self._blink, self.blink_timer)
 
             if panel:
                 self.widget = wx.StaticBitmap(panel, wx.ID_ANY, self.image_off)
@@ -363,12 +481,23 @@ class DSKY(object):
                 self.widget = wx.StaticBitmap(frame, wx.ID_ANY, self.image_off)
 
         def start_blink(self, interval=500):
+
+            """ Starts the annunciator blinking.
+            :param interval: the blink interval
+            :return: None
+            """
+
             self.blink_timer.Start(interval)
 
         def stop_blink(self):
+
+            """ Stops the annunciator blinking.
+            :return: None
+            """
+
             self.blink_timer.Stop()
 
-        def blink(self, event):
+        def _blink(self, event):
             """ Blinks indicator """
 
             if self.is_lit:
@@ -377,23 +506,35 @@ class DSKY(object):
                 self.on()
 
         def on(self):
+
+            """ Illuminates the annunciator.
+            :return: None
+            """
+
             self.widget.SetBitmap(self.image_on)
             self.is_lit = True
 
         def off(self):
+
+            """ Deluminates the annunciator.
+            :return: None
+            """
+
             self.widget.SetBitmap(self.image_off)
             self.is_lit = False
 
-        #def _on(self):
-            #self.widget.SetBitmap(self.image_on)
-            #self.is_lit = True
-
-        #def _off(self):
-            #self.widget.SetBitmap(self.image_off)
-            #self.is_lit = False
-
     class DataRegister(object):
+
+        """ A class for the data registers
+        """
+
         def __init__(self, dsky):
+
+            """ Class constructor.
+            :param dsky: the DSKY instance to use
+            :return: None
+            """
+
             self.dsky = dsky
             self.sign = DSKY.SignDigit(dsky, panel=frame.panel_1)
             self.digits = [
@@ -405,6 +546,13 @@ class DSKY(object):
             ]
 
         def display(self, value, sign=""):
+
+            """ Displays a given value on the whole data register (including sign).
+            :param value: The value to display
+            :param sign: The sign to display
+            :return: None
+            """
+
             if sign == "-":
                 self.sign.minus()
             elif sign == "+":
@@ -415,16 +563,40 @@ class DSKY(object):
                 self.digits[index].display(int(digit))
 
         def blank(self):
-            self.sign.display("blank")
+
+            """ Blanks the whole data register.
+            :return: None
+            """
+
+            self.sign.blank()
             for digit in self.digits:
                 digit.display("blank")
 
         def set_tooltip(self, tooltip):
+
+            """ Sets the wxPython tooltip to the provided value.
+            :param tooltip: The tooltip to display.
+            :return: None
+            """
+
             for digit in self.digits:
                 digit.widget.SetToolTipString(tooltip)
 
     class ControlRegister(object):
+
+        """ A class for the control registers.
+        """
+
         def __init__(self, dsky, name, image_on, image_off):
+
+            """ Class constructor.
+            :param dsky: the DSKY instance to use
+            :param name: Name of the control register.
+            :param image_on: filename of the "on" image
+            :param image_off: filename of the "off" image
+            :return: None
+            """
+
             self.dsky = dsky
             self.name = name
             self.image_on = image_on
@@ -435,6 +607,11 @@ class DSKY(object):
             }
 
         def display(self, value):
+
+            """ Displays the given value on the whole control register.
+            :param value: The value to display.
+            :return:
+            """
 
             if len(value) == 1:
                 self.digits[1].display(int(value))
@@ -450,12 +627,28 @@ class DSKY(object):
                     #utils.log("Too many values to display, silently ignoring further data")
 
         def blank(self):
+
+            """ Blanks the whole control register.
+            :return: None
+            """
+
             for digit in self.digits.itervalues():
                 digit.display("blank")
 
     class KeyButton(object):
 
+        """ A class for the DSKY keyboard buttons.
+        """
+
         def __init__(self, wxid, image, dsky):
+
+            """ Class constructor.
+            :param wxid: wxPython ID
+            :param image: Image file to use
+            :param dsky: instance of the DSKY
+            :return: None
+            """
+
             self.dsky = dsky
             self.image = wx.Bitmap(config.IMAGES_DIR + image, wx.BITMAP_TYPE_ANY)
             self.widget = wx.BitmapButton(frame, wxid, self.image)
@@ -463,7 +656,7 @@ class DSKY(object):
         def press(self, event):
 
             """Called when a keypress event has been received.
-            :param event: wx event
+            :param event: wxPython event
             """
             keypress = event.GetId()
 
@@ -478,10 +671,15 @@ class DSKY(object):
     def charin(self, keypress):
         """
         Handles key input from DSKY keyboard.
-        :param keypress: holds the key code
+        :param keypress: contains the key code
         """
 
         def stop_blink():
+
+            """ Stops the verb/noun flash
+            :return: None
+            """
+
             self.state['is_expecting_data'] = False
             for d in self.control_registers["verb"].digits.itervalues():
                 d.stop_blink()
@@ -489,6 +687,11 @@ class DSKY(object):
                 d.stop_blink()
 
         def handle_data_register_load():
+
+            """ Handles data register loading
+            :return: None
+            """
+
             if self.register_index == 0:
                 if keypress == "+":
                     self.state["display_location_to_load"].sign.plus()
@@ -507,6 +710,11 @@ class DSKY(object):
 
 
         def handle_control_register_load():
+
+            """ Handles control register loading
+            :return: None
+            """
+
             # we are expecting a numeric digit as input
             if keypress > 9:
                 self.operator_error("Expecting numeric input")
@@ -521,6 +729,10 @@ class DSKY(object):
             self.input_data_buffer += str(keypress)
 
         def handle_expected_data():
+
+            """ Handles expected data entry.
+            :return: None
+            """
 
             if keypress == "P":
                 stop_blink()
@@ -559,7 +771,6 @@ class DSKY(object):
                 self.operator_error("Expecting numeric input")
                 return
             else:
-
                 self.input_data_buffer += str(keypress)
 
                 if isinstance(self.state["display_location_to_load"],
@@ -574,7 +785,11 @@ class DSKY(object):
 
         def handle_verb_entry():
 
-            if keypress == "C": # user has pushed CLEAR
+            """ Handles verb entry
+            :return: None
+            """
+
+            if keypress == "C":  # user has pushed CLEAR
                 self.state["verb_position"] = 0
                 self.state["requested_verb"] = 0
                 self.control_registers["verb"].digits[1].display("blank")
@@ -600,6 +815,10 @@ class DSKY(object):
 
         def handle_noun_entry():
 
+            """ Handles noun entry.
+            :return: None
+            """
+
             if keypress == "C":  # user has pushed CLEAR
                 self.state["noun_position"] = 0
                 self.state["requested_noun"] = 0
@@ -622,6 +841,11 @@ class DSKY(object):
                 self.state["noun_position"] = 0
 
         def handle_entr_keypress():
+
+            """ Handles ENTR keypress
+            :return: None
+            """
+
             self.state["is_verb_being_loaded"] = False
             self.state["is_noun_being_loaded"] = False
             if self.state["requested_verb"] in verbs.INVALID_VERBS:
@@ -647,6 +871,11 @@ class DSKY(object):
             return
 
         def handle_reset_keypress():
+
+            """ Handles RSET keypress
+            :return: None
+            """
+
             self.computer.reset_alarm_codes()
             for annunciator in self.annunciators.itervalues():
                 if annunciator.blink_timer.IsRunning():
@@ -654,18 +883,33 @@ class DSKY(object):
                 annunciator.off()
 
         def handle_noun_keypress():
+
+            """ Handles NOUN keypress
+            :return: None
+            """
+
             self.state["is_verb_being_loaded"] = False
             self.state["is_noun_being_loaded"] = True
             self.state["requested_noun"] = 0
             self.control_registers["noun"].blank()
 
         def handle_verb_keypress():
+
+            """ Handles VERB keypress
+            :return: None
+            """
+
             self.state["is_noun_being_loaded"] = False
             self.state["is_verb_being_loaded"] = True
             self.state["requested_verb"] = 0
             self.control_registers["verb"].blank()
 
         def handle_key_release_keypress():
+
+            """ Handles KEY REL keypress
+            :return: None
+            """
+
             if self.state["backgrounded_update"] is not None:
                 self.annunciators["key_rel"].off()
                 self.state["backgrounded_update"].resume()
@@ -698,15 +942,26 @@ class DSKY(object):
         elif keypress == "C":
             pass  # TODO
 
-
         # # if a verb has the display lock, background it
         # if self.state["display_lock"] is not None:
         #     self.state["display_lock"].background()
+
     def flash_comp_acty(self):
+
+        """ Flashes the COMP ACTY annunciator.
+        :return: None
+        """
+
         pass
         # self.annunciators["comp_acty"].on()
         # self.comp_acty_timer.Start(config.COMP_ACTY_FLASH_DURATION, oneShot=True)
 
     def set_noun(self, noun):
+
+        """ Sets the required noun.
+        :param noun: Noun to set
+        :return:
+        """
+
         self.state["requested_noun"] = noun
         self.control_registers["noun"].display(str(noun))
