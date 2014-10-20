@@ -75,6 +75,11 @@ class LogViewerFrame(wx.Frame):
         self.Layout()
 
     def close_button_event(self, event):
+
+        """Event handler for close button
+        :param event: Event object as passed by wxPython
+        """
+
         self.Hide()
 
 
