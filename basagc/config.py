@@ -1,8 +1,6 @@
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
-"""
-    This file contains config information common to the whole package
-"""
+""" This file contains config information common to the whole package """
 #  This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
 #  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
 #  This program is free software; you can redistribute it and/or modify
@@ -26,14 +24,22 @@
 # <info@sandroid.org>
 
 PROGRAM_NAME = "basaGC"
-VERSION = "0.4.0"
+VERSION = "0.5.0"
 IMAGES_DIR = "./images/"
-IP = "http://127.0.0.1:8085"
-URL = IP + "/telemachus/datalink?"
-PORT = 26000
+IP = "127.0.0.1"
+PORT = "8085"
+URL = "http://" + IP + ":" + PORT + "/telemachus/datalink?"
 DISPLAY_UPDATE_INTERVAL = 100
-HOST = "127.0.0.1"
 COMP_ACTY_FLASH_DURATION = 50
+
+LOG_LEVELS = [
+    "DEBUG",
+    "INFO",
+    "WARNING",
+    "ERROR",
+    "CRITICAL",
+]
+current_log_level = "INFO"
 
 ID_VERBBUTTON = 10
 ID_NOUNBUTTON = 11
@@ -89,8 +95,8 @@ BODIES = {
 }
 OCTAL_BODIES = {int(oct(int(value))): key for key, value in BODIES.iteritems()}
 
-PROGRAM_DESCRIPTION = """{program_name} is a implementation of the Apollo Guidance Computer (AGC) for Kerbal Space Program.
-While not entirely accurate to the real AGC, I have attempted to be as accurate as possible.
+PROGRAM_DESCRIPTION = """{program_name} is a implementation of the Apollo Guidance Computer (AGC) for Kerbal Space
+Program. While not entirely accurate to the real AGC, I have attempted to be as accurate as possible.
 
 {program_name} includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html) by
 Ronald S. Burkey <info@sandroid.org> """.format(program_name=PROGRAM_NAME)

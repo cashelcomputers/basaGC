@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
-
+""" This module contains all programs (major modes) used by the guidance computer.
+"""
 #  This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
 #  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
 #  This program is free software; you can redistribute it and/or modify
@@ -22,8 +23,6 @@
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>
 
-import logging
-
 import utils
 import maneuvers
 import config
@@ -31,59 +30,110 @@ from telemachus import get_telemetry, KSPNotConnected
 
 gc = None
 dsky = None
-log = logging.getLogger("Programs")
+
 
 class Program(object):
 
+    """ Major mode base class.
+    """
+
     def __init__(self, name, number):
+
+        """ Class constructor.
+        :param name: name (description) of the program
+        :param number: program number
+        :return: None
+        """
+
         self.name = name
         self.number = number
 
     def execute(self):
-        """Executes the program"""
+
+        """ Executes the program.
+        :return: None
+        """
+
+        utils.log("Executing Program {}: {}".format(self.number, self.name))
         dsky.flash_comp_acty()
         dsky.control_registers["program"].display(str(self.number))
-        gc.running_programs.append(self.number)
+        gc.running_programs.append(self)
         gc.active_program = self.number
 
     def terminate(self):
+
         """Terminates the program"""
-        gc.running_programs.remove(self.number)
+
+        gc.running_programs.remove(self)
         if gc.active_program == self.number:
             gc.active_program = None
         raise ProgramTerminated
 
     def restart(self):
+
+        """ Restarts the program if required by program alarms.
+        :return: None
+        """
+
         #self.terminate()
         self.execute()
 
+
 class Program00(Program):
 
-    def __init__(self, name, number):
-        super(Program00, self).__init__(name, number)
+    """ AGC Idling.
+    :return: None
+    """
+
+    def __init__(self):
+
+        """ Class constructor.
+        :return: None
+        """
+
+        super(Program00, self).__init__(name="AGC Idling", number="00")
 
     def execute(self):
-        #self.init_program()
-        log.debug("Program 00 executing...")
+
+        """ Executes the program.
+        :return: None
+        """
+
+        super(Program00, self).execute()
         dsky.control_registers["program"].display("00")
 
-class Program01(Program):
-    def __init__(self, name, number):
-        super(Program01, self).__init__(name, number)
-
-    def execute(self):
-        super(Program01, self).execute()
-        log.info("Program 01 executing")
-        dsky.annunciators["no_att"].on()
+# class Program01(Program):
+#     def __init__(self, name, number):
+#         super(Program01, self).__init__(name=, number)
+#
+#     def execute(self):
+#         super(Program01, self).execute()
+#         log.info("Program 01 executing")
+#         dsky.annunciators["no_att"].on()
 
 
 class Program11(Program):
-    def __init__(self, name, number):
-        super(Program11, self).__init__(name, number)
+
+    """ Earth Orbit Insertion Monitor.
+    :return: None
+    """
+
+    def __init__(self):
+
+        """ Class constructor.
+        :return: None
+        """
+
+        super(Program11, self).__init__(name="Earth Orbit Insertion Monitor", number="11")
 
     def execute(self):
+
+        """ Executes the program.
+        :return: None
+        """
+
         super(Program11, self).execute()
-        log.info("Program 11 executing")
+        utils.log("Program 11 executing", log_level="INFO")
 
         # test if KSP is connected
         try:
@@ -91,7 +141,6 @@ class Program11(Program):
         except KSPNotConnected:
             self.terminate()
             return
-
 
         # --> call average G integration with delta V integration
         gc.run_average_g_routine = True
@@ -103,7 +152,6 @@ class Program11(Program):
         # --> compute initial state vector
         # gc.routines["average_g"]()
 
-
         # --> Display on DSKY:
         # --> V06 N62 (we are going to use V16N62 though, so we can have a updated display
         # --> R1: Velocity
@@ -114,8 +162,17 @@ class Program11(Program):
 
 class Program15(Program):
 
-    def __init__(self, name, number):
-        super(Program15, self).__init__(name, number)
+    """ TMI Initiate/Cutoff.
+    :return: None
+    """
+
+    def __init__(self):
+
+        """ Class constructor.
+        :return: None
+        """
+
+        super(Program15, self).__init__(name="TMI Initiate/Cutoff", number="15")
         self.delta_v_required = 0.0
         self.time_to_transfer = 0.0
         self.orbiting_body = None
@@ -127,19 +184,23 @@ class Program15(Program):
 
     def execute(self):
 
+        """ Executes the program.
+        :return: None
+        """
+
         super(Program15, self).execute()
         self.orbiting_body = get_telemetry("body")
 
         # check if orbit is circular
         if get_telemetry("eccentricity") > 0.001:
-            gc.program_alarm(224)
+            gc.poodoo_abort(224, "Orbit not circular")
             return
 
         # check if orbit is excessively inclined
         target_inclination = get_telemetry("target_inclination")
         vessel_inclination = get_telemetry("inclination")
         if vessel_inclination > (target_inclination - 0.5) and vessel_inclination > (target_inclination + 0.5):
-            gc.program_alarm(225)
+            gc.poodoo_abort(225, "Vessel and target not in same plane")
             return
 
         # if a body is set as target in KSP, set that body as the target
@@ -152,13 +213,17 @@ class Program15(Program):
         gc.object_requesting_data = self.select_target
 
     def select_target(self):
+
+        """ Called ny P15 after user as entered target choice.
+        :return: None
+        """
+
         target = gc.loaded_data[3]
         if target[0] == ("+" or "-"):
             dsky.operator_error("Expected octal input, decimal input provided")
             self.execute()
             return
         elif int(target) not in config.OCTAL_BODIES:
-            print(int(target))
             gc.poodoo_abort(223)
             return
         target = config.OCTAL_BODIES[int(target)]
@@ -181,51 +246,36 @@ class Program15(Program):
         if self.phase_angle_difference < 0:
             self.phase_angle_difference = 180 + abs(self.phase_angle_difference)
         try:
-            self.delta_time_to_burn = self.phase_angle_difference /\
-                                 ((360 / orbital_period) - (360 / departure_body_orbital_period))
+            self.delta_time_to_burn = self.phase_angle_difference / ((360 / orbital_period) -
+                                                                     (360 / departure_body_orbital_period))
         except TypeError:  # FIXME
             return
-        print
-        print("-----------------")
-        print("P15 calculations:")
-        print("Phase angle: {}, delta-v for burn: {} m/s, time to transfer: {}".format(
-            round(self.phase_angle, 2), int(self.delta_v_required), utils.seconds_to_time(self.time_to_transfer)))
-        print("Current Phase Angle: {}, difference: {}".format(
-            current_phase_angle, self.phase_angle_difference))
         delta_time = utils.seconds_to_time(self.delta_time_to_burn)
-        print("Time to burn: {} hours, {} minutes, {} seconds".format(int(delta_time[1]), int(delta_time[2]), round(delta_time[3], 2)))
-        print("-----------------")
+        utils.log("P15 calculations:")
+        utils.log("Phase angle: {}, delta-v for burn: {} m/s, time to transfer: {}".format(
+            round(self.phase_angle, 2), int(self.delta_v_required), utils.seconds_to_time(self.time_to_transfer)))
+        utils.log("Current Phase Angle: {}, difference: {}".format(current_phase_angle, self.phase_angle_difference))
+        utils.log("Time to burn: {} hours, {} minutes, {} seconds".format(int(delta_time[1]), int(delta_time[2]),
+                                                                          round(delta_time[3], 2)))
         self.time_of_ignition = get_telemetry("missionTime") + self.delta_time_to_burn
         self.reference_delta_v = get_telemetry("orbitalVelocity")
         gc.burn_data["is_active"] = True
         gc.burn_data["data"] = self
         gc.execute_verb(verb=16, noun=79)
         gc.set_attitude("prograde")
+
+
 class ProgramNotImplementedError(Exception):
+
+    """ This exception is raised when the selected program hasn't been implemented yet.
+    """
+
     pass
+
 
 class ProgramTerminated(Exception):
+
+    """ This exception is raised when a program self-terminates.
+    """
+
     pass
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

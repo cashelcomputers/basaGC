@@ -1,8 +1,6 @@
-"""This file contains the guts of the guidance computer,
-"""
-
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
+"""This file contains the guts of the guidance computer"""
 
 #  This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
 #  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
@@ -27,40 +25,35 @@
 #  <info@sandroid.org>
 
 import multiprocessing as mp
-import logging
 
 import wx
 
-from basagc import telemachus
-from basagc import dsky
-from basagc import config
-from basagc import timer
-from basagc import display
-from basagc import verbs
-from basagc import nouns
-from basagc import programs
-from basagc import utils
-from basagc import routines
-
-# import config
-# import timer
-# import display
-# import dsky
-# import verbs
-# import nouns
-# import programs
-# import lib
-# import routines
-
-
-memory_log = logging.getLogger("MEMORY")
+import utils
+import telemachus
+#import config
+#import display
+import dsky
+import verbs
+import nouns
+import programs
+import routines
 
 
 class Computer(object):
+
+    """ This object models the core of the guidance computer.
+    """
+
     def __init__(self, gui):
+
+        """ Class constructor.
+        :param gui: the wxPython frame object
+        :return: None
+        """
+
         self.gui = gui
         self.dsky = dsky.DSKY(self.gui, self)
-        self.loop_timer = timer.Timer(interval=0.5, function=self.main_loop)
+        self.loop_timer = utils.Timer(interval=0.5, function=self.main_loop)
         self.out_queue = mp.Queue()
         self.in_queue = mp.Queue()
         self.is_powered_on = False
@@ -134,17 +127,15 @@ class Computer(object):
         }
 
         self.programs = {
-            "01": programs.Program01(name="Prelaunch or Service -"
-                                          "Initialization Program", number=01),
-            "11": programs.Program11(name="Change Program (Major Mode)",
-                                     number=11),
-            "15": programs.Program15(name="TMI initiate/cutoff", number=15),
+            "00": programs.Program00(),
+            "11": programs.Program11(),
+            "15": programs.Program15(),
         }
 
-        self.routines = {
-            "average_g": routines.average_g,
-            30: routines.routine_30,
-        }
+        # self.routines = {
+        #     "average_g": routines.average_g,
+        #     30: routines.routine_30,
+        # }
 
         self.option_codes = {
             "00001": "",
@@ -157,68 +148,127 @@ class Computer(object):
         self.on()
 
     def quit(self, event=None):
+
+        """ Quits basaGC.
+        :param event: wxPython event (not used)
+        :return: None
+        """
+
         if self.loop_timer.is_running:
             self.loop_timer.stop()
         self.gui.Destroy()
 
-
     def on(self):
+
+        """ Turns the guidance computer on.
+        :return: None
+        """
+
+        utils.log("Computer booting...", log_level="INFO")
         self.loop_timer.start()
         self.is_powered_on = True
         for display_item in self.dsky.static_display:
             display_item.on()
 
     def main_loop(self):
+
+        """ The guidance computer main loop. Not used for much yet.
+        :return: None
+        """
+
         # try:
         #     if self.telemetry.get_memory("is_paused") in [1, 2, 3, 4]:
         #         self.dsky.annunciators["no_att"].on()
         # except KSPNotConnected:
         #     self.dsky.annunciators["no_att"].on()
-        if self.run_average_g_routine:
-            routines.average_g()
+        # if self.run_average_g_routine:
+        #     routines.average_g()
         for item in self.loop_items:
             item()
 
     def execute_verb(self, verb, noun=None):
+
+        """ Executes the specified verb, optionally with the specified noun.
+        :param verb: The verb to execute
+        :param noun: The noun to supply to the verb
+        :return: None
+        """
+
         if noun is not None:
             self.dsky.set_noun(noun)
         self.dsky.control_registers["verb"].display(str(verb))
         self.verbs[verb].execute()
 
     def reset_alarm_codes(self):
+
+        """ Resets the alarm codes.
+        :return: None
+        """
+
         self.alarm_codes[2] = self.alarm_codes[0]
         self.alarm_codes[0] = 0
         self.alarm_codes[1] = 0
 
-    def program_alarm(self, alarm_code):
+    def program_alarm(self, alarm_code, message=None):
 
-        """ sets the program alarm codes in memory and turns the PROG
-            annunciator on
-            alarm_code should be a 3 or 4 digit octal int
+        """ Sets the program alarm codes in memory and turns the PROG annunciator on.
+        :param alarm_code: a 3 or 4 digit octal int of the alarm code to raise
+        :param message: optional message to print to log
+        :return: None
         """
+        alarm_code += 1000
         if self.alarm_codes[0] != 0:
             self.alarm_codes[1] = self.alarm_codes[0]
-        self.alarm_codes[0] = 1000 + alarm_code
+        self.alarm_codes[0] = alarm_code
         self.alarm_codes[2] = self.alarm_codes[0]
         self.dsky.annunciators["prog"].on()
+        if message:
+            utils.log("PROGRAM ALARM {}: {}".format(str(alarm_code), message), log_level="ERROR")
 
-    def poodoo_abort(self, alarm_code):
+    def poodoo_abort(self, alarm_code, message=None):
 
+        """ Terminates the faulty program, and executes Program 00 (P00)
+        :param alarm_code: a 3 or 4 digit octal int of the alarm code to raise
+        :param message: optional message to print to log
+        :return: None
+        """
+
+        alarm_code += 2000
         if self.alarm_codes[0] != 0:
             self.alarm_codes[1] = self.alarm_codes[0]
-        self.alarm_codes[0] = 2000 + alarm_code
+        self.alarm_codes[0] = alarm_code
         self.alarm_codes[2] = self.alarm_codes[0]
         self.dsky.annunciators["prog"].on()
-        for program in self.running_programs:
-            program.terminate()
+        try:
+            self.running_programs[-1].terminate()
+        except programs.ProgramTerminated:
+            # this should happen if the program terminated successfully
+            utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), message), log_level="ERROR")
         self.programs["00"].execute()
 
-    def program_restart(self, alarm_code):
-        # insert terminate and restart program
-        print("Program fresh start not implemented yet... watch this"
-              "space...")
+    def program_restart(self, alarm_code, message=None):
 
-    def computer_restart(self, alarm_code):
+        """ Triggers a program restart.
+        :param alarm_code: a 3 or 4 digit octal int of the alarm code to raise
+        :param message: optional message to print to log
+        :return: None
+        """
+
+        # TODO: insert terminate and restart program
+        utils.log("Program fresh start not implemented yet... watch this space...")
+        if message:
+            utils.log(message, log_level="ERROR")
+
+    def computer_restart(self, alarm_code, message=None):
+
+        """ Triggers a guidance computer hardware restart. The most severe of the errors!
+        :param alarm_code: a 3 or 4 digit octal int of the alarm code to raise
+        :param message: optional message to print to log
+        :return: None
+        """
+
         # insert computer reboot
         # self.fresh_start()
+        if message:
+            utils.log(message, log_level="CRITICAL")
         pass

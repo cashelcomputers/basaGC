@@ -25,6 +25,6 @@
 
 if __name__ == "__main__":
 
-    from basagc.gui import basaGCApp
-    basaGC = basaGCApp(0)
+    from basagc.gui import BASAGCApp
+    basaGC = BASAGCApp(0)
     basaGC.MainLoop()

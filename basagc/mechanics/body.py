@@ -34,7 +34,7 @@ class Body(object):
         try:
             self.id_ = config.BODIES[name]
         except KeyError:
-            print("Body not known: {}".format(name))
+            utils.log("Body not known: {}".format(name))
             return
         self.orbit = orbit.Orbit(name)
         # if name != "Sun":
