@@ -14,3 +14,5 @@ Launch Checklist:
   - R1: Apoapsis altitude (xxx.xx km)
   - R2: Periapsis altitude (xxx.xx km)
   - R3: Time to apoapsis (hmmss)
+
+Sorry, not complete yet! Watch this space :)
