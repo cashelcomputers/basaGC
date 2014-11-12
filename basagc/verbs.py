@@ -256,7 +256,8 @@ class MonitorVerb(DisplayVerb):
             self.terminate()
             return
         except KSPNotConnected:
-            utils.log("KSP not connected, terminating V{}".format(self.number))
+            utils.log("KSP not connected, terminating V{}".format(self.number),
+                      log_level="ERROR")
             computer.program_alarm(110)
             self.terminate()
             raise

@@ -823,8 +823,10 @@ class DSKY(object):
         if keypress == "N":  # user has finished entering verb
             self.is_verb_being_loaded = False
             self.is_noun_being_loaded = True
+            self.verb_position = 0
         elif keypress == "E":
             self.is_verb_being_loaded = False
+            self.verb_position = 0
         elif keypress >= 10:
             self.operator_error("Expected a number for verb choice")
             return
@@ -835,7 +837,8 @@ class DSKY(object):
         elif self.verb_position == 1:
             self.control_registers["verb"].digits[2].display(keypress)
             self.requested_verb += str(keypress)
-            self.verb_position = 0
+            self.verb_position = 2
+
 
     def _handle_noun_entry(self, keypress):
 
@@ -850,8 +853,13 @@ class DSKY(object):
             self.control_registers["noun"].digits[2].display("blank")
             return
 
-        if keypress == "V" or keypress == "E":
+        if keypress == "N":  # user has finished entering noun
             self.is_noun_being_loaded = False
+            self.is_verb_being_loaded = True
+            self.noun_position = 0
+        elif keypress == "E":
+            self.is_noun_being_loaded = False
+            self.noun_position = 0
         elif keypress >= 10:
             self.operator_error("Expected a number for noun choice")
             return
@@ -862,7 +870,7 @@ class DSKY(object):
         elif self.noun_position == 1:
             self.control_registers["noun"].digits[2].display(keypress)
             self.requested_noun += str(keypress)
-            self.noun_position = 0
+            self.noun_position = 2
 
     def _handle_entr_keypress(self, keypress):
 
