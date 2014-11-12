@@ -106,23 +106,48 @@ class NounNotImplementedError(Exception):
 #     raise NounNotImplementedError
 
 
-def noun09(calling_verb):
+class Noun(object):
 
-    """ Alarm codes.
-    :param calling_verb: the verb calling the noun.
-    :return: noun data
-    """
+    def __init__(self, description):
+        self.description = description
 
-    utils.log("Noun 09 requested")
-    alarm_codes = computer.alarm_codes
-    data = {
-        1: alarm_codes[0],
-        2: alarm_codes[1],
-        3: alarm_codes[2],
-        "description": "Alarm codes (first, second, last)",
-        "is_octal": True,
-    }
-    return data
+    def return_data(self):
+        pass
+
+class Noun09(Noun):
+
+    def __init__(self):
+        super(Noun09, self).__init__(description="Alarm Codes")
+
+    def return_data(self):
+
+        utils.log("Noun 09 requested")
+        alarm_codes = computer.alarm_codes
+        data = {
+            1: alarm_codes[0],
+            2: alarm_codes[1],
+            3: alarm_codes[2],
+            "is_octal": True,
+        }
+        return data
+
+
+# def noun09(calling_verb):
+#
+#     """ Alarm codes.
+#     :param calling_verb: the verb calling the noun.
+#     :return: noun data
+#     """
+#     description = "Alarm codes (first, second, last)"
+#     utils.log("Noun 09 requested")
+#     alarm_codes = computer.alarm_codes
+#     data = {
+#         1: alarm_codes[0],
+#         2: alarm_codes[1],
+#         3: alarm_codes[2],
+#         "is_octal": True,
+#     }
+#     return data
 
 # def noun10(calling_verb):
 #     raise NounNotImplementedError
@@ -145,32 +170,58 @@ def noun09(calling_verb):
 # def noun16(calling_verb):
 #     raise NounNotImplementedError
 
+class Noun17(Noun):
 
-def noun17(calling_verb=None):
+    def __init__(self):
+        super(Noun17, self).__init__("Attitude (Roll, Pitch, Yaw)")
 
-    """ Roll, Pitch, Yaw.
-    :param calling_verb: the verb calling the noun.
-    :return: noun data
-    """
+    def return_data(self):
 
-    # FIXME: need to make sure that data is correct length (sometimes drops the last 0 when input is xxx.x rather than
-    # xxx.xx
-    roll = str(round(get_telemetry("roll"), 2))
-    pitch = str(round(get_telemetry("pitch"), 2))
-    yaw = str(round(get_telemetry("heading"), 2))
+        # FIXME: need to make sure that data is correct length (sometimes drops the last 0 when input is xxx.x rather than
+        # xxx.xx
+        roll = str(round(get_telemetry("roll"), 2))
+        pitch = str(round(get_telemetry("pitch"), 2))
+        yaw = str(round(get_telemetry("heading"), 2))
 
-    roll = roll.replace(".", "")
-    pitch = pitch.replace(".", "")
-    yaw = yaw.replace(".", "")
+        roll = roll.replace(".", "")
+        pitch = pitch.replace(".", "")
+        yaw = yaw.replace(".", "")
 
-    data = {
-        1: int(roll),
-        2: int(pitch),
-        3: int(yaw),
-        "description": "Attitude",
-        "is_octal": False,
-    }
-    return data
+        data = {
+            1: int(roll),
+            2: int(pitch),
+            3: int(yaw),
+            "is_octal": False,
+        }
+        return data
+
+
+# def noun17(calling_verb=None):
+#
+#     """ Roll, Pitch, Yaw.
+#     :param calling_verb: the verb calling the noun.
+#     :return: noun data
+#     """
+#
+#     description = "Attitude (Roll, Pitch, Yaw)"
+#
+#     # FIXME: need to make sure that data is correct length (sometimes drops the last 0 when input is xxx.x rather than
+#     # xxx.xx
+#     roll = str(round(get_telemetry("roll"), 2))
+#     pitch = str(round(get_telemetry("pitch"), 2))
+#     yaw = str(round(get_telemetry("heading"), 2))
+#
+#     roll = roll.replace(".", "")
+#     pitch = pitch.replace(".", "")
+#     yaw = yaw.replace(".", "")
+#
+#     data = {
+#         1: int(roll),
+#         2: int(pitch),
+#         3: int(yaw),
+#         "is_octal": False,
+#     }
+#     return data
 
 # def noun18(calling_verb):
 #     raise NounNotImplementedError
@@ -224,33 +275,60 @@ def noun17(calling_verb=None):
 # def noun35(calling_verb):
 #     raise NounNotImplementedError
 
+class Noun36(Noun):
 
-def noun36(calling_verb=None):
+    def __init__(self):
+        super(Noun36, self).__init__("Mission Elapsed Time (MET) (dddhh, bbbmm, bss.ss)")
 
-    """ Mission Elapsed Time.
-    :param calling_verb: the verb calling the noun.
-    :return: noun data
-    """
+    def return_data(self):
+        telemetry = get_telemetry("missionTime")
+        minutes, seconds = divmod(telemetry, 60)
+        hours, minutes = divmod(minutes, 60)
+        days, hours = divmod(hours, 24)
+        milliseconds, seconds = math.modf(seconds)
+        milliseconds *= 100
 
-    telemetry = get_telemetry("missionTime")
-    minutes, seconds = divmod(telemetry, 60)
-    hours, minutes = divmod(minutes, 60)
-    days, hours = divmod(hours, 24)
-    milliseconds, seconds = math.modf(seconds)
-    milliseconds *= 100
+        data = {
+            1: (int(days) * 100) + int(hours),
+            2: int(minutes),
+            3: (int(seconds) * 100) + int(milliseconds),
+            "tooltips": [
+                "Mission Elapsed Time (dddhh)",
+                "Mission Elapsed Time (bbbmm)",
+                "Mission Elapsed Time (bss.ss)",
+            ],
+            "is_octal": False,
+        }
+        return data
 
-    data = {
-        1: (int(days) * 100) + int(hours),
-        2: int(minutes),
-        3: (int(seconds) * 100) + int(milliseconds),
-        "tooltips": [
-            "Mission Elapsed Time (dddhh)",
-            "Mission Elapsed Time (bbbmm)",
-            "Mission Elapsed Time (bss.ss)",
-        ],
-        "is_octal": False,
-    }
-    return data
+# def noun36(calling_verb=None):
+#
+#     """ Mission Elapsed Time.
+#     :param calling_verb: the verb calling the noun.
+#     :return: noun data
+#     """
+#
+#     description = "Mission Elapsed Time (MET) (dddhh, bbbmm, bss.ss)"
+#
+#     telemetry = get_telemetry("missionTime")
+#     minutes, seconds = divmod(telemetry, 60)
+#     hours, minutes = divmod(minutes, 60)
+#     days, hours = divmod(hours, 24)
+#     milliseconds, seconds = math.modf(seconds)
+#     milliseconds *= 100
+#
+#     data = {
+#         1: (int(days) * 100) + int(hours),
+#         2: int(minutes),
+#         3: (int(seconds) * 100) + int(milliseconds),
+#         "tooltips": [
+#             "Mission Elapsed Time (dddhh)",
+#             "Mission Elapsed Time (bbbmm)",
+#             "Mission Elapsed Time (bss.ss)",
+#         ],
+#         "is_octal": False,
+#     }
+#     return data
 
 # def noun37(calling_verb):
 #     raise NounNotImplementedError
@@ -272,58 +350,106 @@ def noun36(calling_verb=None):
 # def noun42(calling_verb):
 #     raise NounNotImplementedError
 
+class Noun43(Noun):
+    def __init__(self):
+        super(Noun43, self).__init__("Geographic Position (Latitude, Longitude, Altitude)")
 
-def noun43(calling_verb=None):
+    def return_data(self):
+        latitude = str(round(get_telemetry("lat"), 2)).replace(".", "")
+        longitude = str(round(get_telemetry("long"), 2)).replace(".", "")
+        altitude = str(round(get_telemetry("altitude") / 1000, 1)).replace(".", "")
 
-    """ Latitude, longitude, altitude.
-    :param calling_verb: the verb calling the noun.
-    :return: noun data
-    """
+        data = {
+            1: int(latitude),
+            2: int(longitude),
+            3: int(altitude),
+            "is_octal": False,
+        }
+        return data
+# def noun43(calling_verb=None):
+#
+#     """ Latitude, longitude, altitude.
+#     :param calling_verb: the verb calling the noun.
+#     :return: noun data
+#     """
+#
+#     description = "Geographic Position (Latitude, Longitude, Altitude)"
+#
+#     latitude = str(round(get_telemetry("lat"), 2)).replace(".", "")
+#     longitude = str(round(get_telemetry("long"), 2)).replace(".", "")
+#     altitude = str(round(get_telemetry("altitude") / 1000, 1)).replace(".", "")
+#
+#     data = {
+#         1: int(latitude),
+#         2: int(longitude),
+#         3: int(altitude),
+#         "is_octal": False,
+#     }
+#     return data
 
-    latitude = str(round(get_telemetry("lat"), 2)).replace(".", "")
-    longitude = str(round(get_telemetry("long"), 2)).replace(".", "")
-    altitude = str(round(get_telemetry("altitude") / 1000, 1)).replace(".", "")
+class Noun44(Noun):
+    def __init__(self):
+        super(Noun44, self).__init__("Apoapsis (xxx.xx km), Periapsis (xxx.xx km), Time To Apoapsis (hmmss)")
 
-    data = {
-        1: int(latitude),
-        2: int(longitude),
-        3: int(altitude),
-        # "description": "Geographic Position",
-        "is_octal": False,
-    }
-    return data
+    def return_data(self):
+        apoapsis = str(round(get_telemetry("ApA") / 100, 1))
+        periapsis = str(round(get_telemetry("PeA") / 100, 1))
+        tff = int(get_telemetry("timeToAp"))
 
-def noun44(calling_verb=None):
+        apoapsis = apoapsis.replace(".", "")
+        periapsis = periapsis.replace(".", "")
 
-    """ Apoapsis altitude, periapsis altitude, time to apoapsis..
-    :param calling_verb: the verb calling the noun.
-    :return: noun data
-    """
+        tff_minutes, tff_seconds = divmod(tff, 60)
+        tff_hours, tff_minutes = divmod(tff_minutes, 60)
 
-    apoapsis = str(round(get_telemetry("ApA") / 100, 1))
-    periapsis = str(round(get_telemetry("PeA") / 100, 1))
-    tff = int(get_telemetry("timeToAp"))
+        tff = str(tff_hours).zfill(2) + str(tff_minutes).zfill(2) + str(tff_seconds).zfill(2)
 
-    apoapsis = apoapsis.replace(".", "")
-    periapsis = periapsis.replace(".", "")
+        data = {
+            1: int(apoapsis),
+            2: int(periapsis),
+            3: int(tff),
+            "tooltips": [
+                "Apoapsis Altitude (xxx.xx km)",
+                "Periapsis Altitude (xxx.xx km)",
+                "Time to Apoapsis (hmmss)"
+            ],
+            "is_octal": False,
+        }
+        return data
 
-    tff_minutes, tff_seconds = divmod(tff, 60)
-    tff_hours, tff_minutes = divmod(tff_minutes, 60)
-
-    tff = str(tff_hours).zfill(2) + str(tff_minutes).zfill(2) + str(tff_seconds).zfill(2)
-
-    data = {
-        1: int(apoapsis),
-        2: int(periapsis),
-        3: int(tff),
-        "tooltips": [
-            "Apoapsis Altitude (xxx.xx km)",
-            "Periapsis Altitude (xxx.xx km)",
-            "Time to Apoapsis (hmmss)"
-        ],
-        "is_octal": False,
-    }
-    return data
+# def noun44(calling_verb=None):
+#
+#     """ Apoapsis altitude, periapsis altitude, time to apoapsis..
+#     :param calling_verb: the verb calling the noun.
+#     :return: noun data
+#     """
+#
+#     description = "Apoapsis (xxx.xx km), Periapsis (xxx.xx km), Time To Apoapsis (hmmss)"
+#
+#     apoapsis = str(round(get_telemetry("ApA") / 100, 1))
+#     periapsis = str(round(get_telemetry("PeA") / 100, 1))
+#     tff = int(get_telemetry("timeToAp"))
+#
+#     apoapsis = apoapsis.replace(".", "")
+#     periapsis = periapsis.replace(".", "")
+#
+#     tff_minutes, tff_seconds = divmod(tff, 60)
+#     tff_hours, tff_minutes = divmod(tff_minutes, 60)
+#
+#     tff = str(tff_hours).zfill(2) + str(tff_minutes).zfill(2) + str(tff_seconds).zfill(2)
+#
+#     data = {
+#         1: int(apoapsis),
+#         2: int(periapsis),
+#         3: int(tff),
+#         "tooltips": [
+#             "Apoapsis Altitude (xxx.xx km)",
+#             "Periapsis Altitude (xxx.xx km)",
+#             "Time to Apoapsis (hmmss)"
+#         ],
+#         "is_octal": False,
+#     }
+#     return data
 
 # def noun45(calling_verb):
 #     raise NounNotImplementedError
@@ -340,31 +466,53 @@ def noun44(calling_verb=None):
 # def noun49(calling_verb):
 #     raise NounNotImplementedError
 
+class Noun50(Noun):
+    def __init__(self):
+        super(Noun50, self).__init__("Surface Velocity Display (X, Y, Z in xxxx.x m/s)")
 
-def noun50(calling_verb=None):
+    def return_data(self):
+        surface_velocity_x = str(round(get_telemetry("surfaceVelocityx"))).replace(".", "")
+        surface_velocity_y = str(round(get_telemetry("surfaceVelocityy"))).replace(".", "")
+        surface_velocity_z = str(round(get_telemetry("surfaceVelocityz"))).replace(".", "")
 
-    """ Surface velocity X, Y, Z.
-    :param calling_verb: the verb calling the noun.
-    :return: noun data
-    """
+        data = {
+            1: int(surface_velocity_x),
+            2: int(surface_velocity_y),
+            3: int(surface_velocity_z),
+            "tooltips": [
+                "Surface Velocity X (xxxx.x m/s)",
+                "Surface Velocity Y (xxxx.x m/s)",
+                "Surface Velocity Z (xxxx.x m/s)"
+            ],
+            "is_octal": False,
+        }
+        return data
 
-    surface_velocity_x = str(round(get_telemetry("surfaceVelocityx"))).replace(".", "")
-    surface_velocity_y = str(round(get_telemetry("surfaceVelocityy"))).replace(".", "")
-    surface_velocity_z = str(round(get_telemetry("surfaceVelocityz"))).replace(".", "")
-
-    data = {
-        1: int(surface_velocity_x),
-        2: int(surface_velocity_y),
-        3: int(surface_velocity_z),
-        "tooltips": [
-            "Surface Velocity X (xxxx.x m/s)",
-            "Surface Velocity Y (xxxx.x m/s)",
-            "Surface Velocity Z (xxxx.x m/s)"
-        ],
-        "description": "Surface Velocity Display",
-        "is_octal": False,
-    }
-    return data
+# def noun50(calling_verb=None):
+#
+#     """ Surface velocity X, Y, Z.
+#     :param calling_verb: the verb calling the noun.
+#     :return: noun data
+#     """
+#
+#     description = "Surface Velocity Display (X, Y, Z in xxxx.x m/s)"
+#
+#     surface_velocity_x = str(round(get_telemetry("surfaceVelocityx"))).replace(".", "")
+#     surface_velocity_y = str(round(get_telemetry("surfaceVelocityy"))).replace(".", "")
+#     surface_velocity_z = str(round(get_telemetry("surfaceVelocityz"))).replace(".", "")
+#
+#     data = {
+#         1: int(surface_velocity_x),
+#         2: int(surface_velocity_y),
+#         3: int(surface_velocity_z),
+#         "tooltips": [
+#             "Surface Velocity X (xxxx.x m/s)",
+#             "Surface Velocity Y (xxxx.x m/s)",
+#             "Surface Velocity Z (xxxx.x m/s)"
+#         ],
+#         "is_octal": False,
+#     }
+#     return data
 
 # def noun51(calling_verb):
 #     raise NounNotImplementedError
@@ -399,30 +547,52 @@ def noun50(calling_verb=None):
 #     raise NounNotImplementedError
 
 
-def noun62(calling_verb=None):
+class Noun62(Noun):
+    def __init__(self):
+        super(Noun62, self).__init__("Surface Velocity, Altitude Rate, Altitude")
 
-    """ Surface Velocity, vertical speed, altitude
-    :param calling_verb: the verb calling the noun.
-    :return: noun data
-    """
+    def return_data(self):
+        surface_velocity = str(round(get_telemetry("surfaceVelocity"), 1))
+        altitude_rate = str(round(get_telemetry("verticalSpeed"), 1))
+        altitude = str(round(get_telemetry("altitude") / 1000, 1))
 
-    surface_velocity = str(round(get_telemetry("surfaceVelocity"), 1))
-    altitude_rate = str(round(get_telemetry("verticalSpeed"), 1))
-    altitude = str(round(get_telemetry("altitude") / 1000, 1))
+        surface_velocity = surface_velocity.replace(".", "")
+        altitude_rate = altitude_rate.replace(".", "")
+        altitude = altitude.replace(".", "")
 
-    surface_velocity = surface_velocity.replace(".", "")
-    altitude_rate = altitude_rate.replace(".", "")
-    altitude = altitude.replace(".", "")
+        data = {
+            1: int(surface_velocity),
+            2: int(altitude_rate),
+            3: int(altitude),
+            "is_octal": False,
+        }
+        return data
 
-
-    data = {
-        1: int(surface_velocity),
-        2: int(altitude_rate),
-        3: int(altitude),
-        #"description": "",
-        "is_octal": False,
-    }
-    return data
+# def noun62(calling_verb=None):
+#
+#     """ Surface Velocity, vertical speed, altitude
+#     :param calling_verb: the verb calling the noun.
+#     :return: noun data
+#     """
+#
+#     description = "Surface Velocity, Altitude Rate, Altitude"
+#
+#     surface_velocity = str(round(get_telemetry("surfaceVelocity"), 1))
+#     altitude_rate = str(round(get_telemetry("verticalSpeed"), 1))
+#     altitude = str(round(get_telemetry("altitude") / 1000, 1))
+#
+#     surface_velocity = surface_velocity.replace(".", "")
+#     altitude_rate = altitude_rate.replace(".", "")
+#     altitude = altitude.replace(".", "")
+#
+#
+#     data = {
+#         1: int(surface_velocity),
+#         2: int(altitude_rate),
+#         3: int(altitude),
+#         "is_octal": False,
+#     }
+#     return data
 
 # def noun63(calling_verb):
 #     raise NounNotImplementedError
