@@ -3,7 +3,7 @@ basaGC changelog
 
 Please note that this file only contains changes from version 0.5.0 onwards.
 
-xx/xx/14: version 0.x.x:
+12/11/14: version 0.5.3:
 - Added help viewer
 - Added user-selectable display update interval
 - Bug fixes
