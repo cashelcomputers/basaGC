@@ -17,6 +17,8 @@ You can enter the noun first if you so wish ie N44V16E is equivalent to V16N44E.
 In this manual, I shall abbreviate the keypresses as follows:
 V16N44E means key in [VERB]16[NOUN]44[ENTR].
 
+*PLEASE NOTE:* the following lists may lag behind the program. For the latest info on verbs, nouns and programs,
+consult the Help menu.
 
 Currently implemented verbs:
 ---------------------------
@@ -88,6 +90,7 @@ its memory and perform a hardware restart.
 Alarm codes currently implemented are listed below:
 
 - 0X110: Error contacting KSP
+- 0X111: Telemetry not available
 - 0X223: Invalid target selected
 - 0X224: Orbit not circular
 - 0X225: Vessel and target orbits inclination too far apart

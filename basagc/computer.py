@@ -37,6 +37,7 @@ import verbs
 import nouns
 import programs
 import routines
+from sortedcontainers import SortedDict
 
 
 class Computer(object):
@@ -86,16 +87,16 @@ class Computer(object):
         programs.dsky = self.dsky
         routines.computer = self
 
-        self.nouns = {
-            "09": nouns.noun09,
-            "17": nouns.noun17,
-            "36": nouns.noun36,
-            "43": nouns.noun43,
-            "44": nouns.noun44,
-            "50": nouns.noun50,
-            "62": nouns.noun62,
-        }
-        self.verbs = {
+        self.nouns = SortedDict({
+            "09": nouns.Noun09(),
+            "17": nouns.Noun17(),
+            "36": nouns.Noun36(),
+            "43": nouns.Noun43(),
+            "44": nouns.Noun44(),
+            "50": nouns.Noun50(),
+            "62": nouns.Noun62(),
+        })
+        self.verbs = SortedDict({
             "01": verbs.Verb1(),
             "02": verbs.Verb2(),
             "03": verbs.Verb3(),
@@ -124,13 +125,13 @@ class Computer(object):
             "75": verbs.Verb75(),
             "82": verbs.Verb82(),
             "99": verbs.Verb99(),
-        }
+        })
 
-        self.programs = {
+        self.programs = SortedDict({
             "00": programs.Program00(),
             "11": programs.Program11(),
             "15": programs.Program15(),
-        }
+        })
 
         # self.routines = {
         #     "average_g": routines.average_g,
@@ -197,7 +198,7 @@ class Computer(object):
         if noun is not None:
             self.dsky.set_noun(noun)
         self.dsky.control_registers["verb"].display(str(verb))
-        self.verbs[verb].execute()
+        self.verbs[str(verb)].execute()
 
     def reset_alarm_codes(self):
 

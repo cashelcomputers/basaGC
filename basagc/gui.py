@@ -29,6 +29,48 @@ import config
 import utils
 
 
+class HelpFrame(wx.Frame):
+    def __init__(self, *args, **kwds):
+        kwds["style"] = wx.DEFAULT_FRAME_STYLE
+        wx.Frame.__init__(self, *args, **kwds)
+        self.panel_2 = wx.Panel(self, wx.ID_ANY)
+        self.viewer = wx.TextCtrl(self.panel_2, wx.ID_ANY, "", style=wx.TE_MULTILINE | wx.TE_READONLY)
+        self.close_button = wx.Button(self.panel_2, wx.ID_CLOSE, "")
+
+        self.__set_properties()
+        self.__do_layout()
+
+        self.Bind(wx.EVT_BUTTON, self.close_button_event, self.close_button)
+        # end wxGlade
+
+    def __set_properties(self):
+        self.SetTitle("")
+        self.viewer.SetMinSize((487, 473))
+        self.close_button.SetFocus()
+
+    def __do_layout(self):
+        sizer_18 = wx.BoxSizer(wx.VERTICAL)
+        sizer_16 = wx.BoxSizer(wx.VERTICAL)
+        grid_sizer_3 = wx.FlexGridSizer(2, 1, 5, 0)
+        grid_sizer_3.Add(self.viewer, 0, wx.EXPAND | wx.ADJUST_MINSIZE, 0)
+        grid_sizer_3.Add(self.close_button, 0, wx.ADJUST_MINSIZE, 0)
+        self.panel_2.SetSizer(grid_sizer_3)
+        grid_sizer_3.AddGrowableRow(0)
+        grid_sizer_3.AddGrowableCol(0)
+        sizer_16.Add(self.panel_2, 1, wx.ALL | wx.EXPAND, 5)
+        sizer_18.Add(sizer_16, 1, wx.EXPAND, 0)
+        self.SetSizer(sizer_18)
+        sizer_18.Fit(self)
+        self.Layout()
+
+    def close_button_event(self, event):
+        """Event handler for close button
+            :param event: Event object as passed by wxPython
+            """
+        self.SetTitle("")
+        self.viewer.Clear()
+        self.Hide()
+
 class SettingsFrame(wx.Frame):
 
     """This frame provides a settings dialog"""
@@ -44,6 +86,8 @@ class SettingsFrame(wx.Frame):
         self.ip_field = wx.TextCtrl(self.panel_3, wx.ID_ANY, config.IP)
         self.label_1 = wx.StaticText(self.panel_3, wx.ID_ANY, "Telemachus port:")
         self.port_field = wx.TextCtrl(self.panel_3, wx.ID_ANY, config.PORT)
+        self.label_3 = wx.StaticText(self.panel_3, wx.ID_ANY, "DSKY Update Interval:")
+        self.display_update_field = wx.TextCtrl(self.panel_3, wx.ID_ANY, str(config.DISPLAY_UPDATE_INTERVAL))
         self.label_2 = wx.StaticText(self.panel_3, wx.ID_ANY, "Log level:")
         self.log_level_combobox = wx.ComboBox(self.panel_3, wx.ID_ANY, choices=config.LOG_LEVELS,
                                               style=wx.CB_DROPDOWN | wx.CB_READONLY)
@@ -76,6 +120,8 @@ class SettingsFrame(wx.Frame):
         grid_sizer_2.Add(self.ip_field, 0, wx.EXPAND | wx.ADJUST_MINSIZE, 0)
         grid_sizer_2.Add(self.label_1, 0, wx.ALIGN_CENTER_VERTICAL | wx.ADJUST_MINSIZE, 0)
         grid_sizer_2.Add(self.port_field, 0, wx.EXPAND | wx.ADJUST_MINSIZE, 0)
+        grid_sizer_2.Add(self.label_3, 0, wx.ALIGN_CENTER_VERTICAL | wx.ADJUST_MINSIZE, 0)
+        grid_sizer_2.Add(self.display_update_field, 0, wx.EXPAND | wx.ADJUST_MINSIZE, 0)
         grid_sizer_2.Add(self.label_2, 0, wx.ALIGN_CENTER_VERTICAL | wx.ADJUST_MINSIZE, 0)
         grid_sizer_2.Add(self.log_level_combobox, 0, wx.ADJUST_MINSIZE, 0)
         grid_sizer_2.AddGrowableRow(0)
@@ -101,10 +147,12 @@ class SettingsFrame(wx.Frame):
         ip_address = self.ip_field.GetValue()
         port = self.port_field.GetValue()
         log_level = self.log_level_combobox.GetValue()
+        display_update_interval = self.display_update_field.GetValue()
         config.IP = ip_address
         config.PORT = port
         config.current_log_level = log_level
         config.URL = "http://" + config.IP + ":" + config.PORT + "/telemachus/datalink?"
+        config.DISPLAY_UPDATE_INTERVAL = int(display_update_interval)
         self.Hide()
 
     def cancel_button_event(self, event):
@@ -178,6 +226,7 @@ class GUI(wx.Frame):
         self.panel_1 = wx.Panel(self, wx.ID_ANY)
 
         self.log_viewer = LogViewerFrame(self)
+        self.help_viewer = HelpFrame(self)
         self.settings_dialog = SettingsFrame(self)
 
         utils.LOG_VIEWER = self.log_viewer
@@ -217,6 +266,15 @@ class GUI(wx.Frame):
         self.file_menu.AppendItem(self.quit_menuitem)
         self.menubar.Append(self.file_menu, "File")
         self.help_menu = wx.Menu()
+        self.help_verbs_menu = wx.MenuItem(self.help_menu, wx.ID_ANY, "Verbs...", "Displays available verbs",
+                                           wx.ITEM_NORMAL)
+        self.help_menu.AppendItem(self.help_verbs_menu)
+        self.help_nouns_menu = wx.MenuItem(self.help_menu, wx.ID_ANY, "Nouns...", "Displays available nouns",
+                                           wx.ITEM_NORMAL)
+        self.help_menu.AppendItem(self.help_nouns_menu)
+        self.help_programs_menu = wx.MenuItem(self.help_menu, wx.ID_ANY, "Programs...",
+                                              "Displays available programs", wx.ITEM_NORMAL)
+        self.help_menu.AppendItem(self.help_programs_menu)
         self.about_menuitem = wx.MenuItem(self.help_menu, wx.ID_ANY, "About...", "", wx.ITEM_NORMAL)
         self.help_menu.AppendItem(self.about_menuitem)
         self.menubar.Append(self.help_menu, "Help")
@@ -269,6 +327,9 @@ class GUI(wx.Frame):
         self.Bind(wx.EVT_MENU, self.show_log_menuitem_click, self.show_log_menuitem)
         self.Bind(wx.EVT_MENU, self.quit_menuitem_click, self.quit_menuitem)
         self.Bind(wx.EVT_MENU, self.about_menuitem_click, self.about_menuitem)
+        self.Bind(wx.EVT_MENU, self.verbs_menuitem_click, self.help_verbs_menu)
+        self.Bind(wx.EVT_MENU, self.nouns_menuitem_click, self.help_nouns_menu)
+        self.Bind(wx.EVT_MENU, self.programs_menuitem_click, self.help_programs_menu)
 
     def __set_properties(self):
 
@@ -559,6 +620,31 @@ class GUI(wx.Frame):
         about_dialog.AddDeveloper(config.DEVELOPERS)
 
         wx.AboutBox(about_dialog)
+
+
+    def verbs_menuitem_click(self, event):
+        self.help_viewer.SetTitle("Verbs Listing")
+        verbs_list = ""
+        for verb_number, verb in self.computer.verbs.iteritems():
+            verbs_list += "Verb " + verb_number + ":\t" + verb.name + "\n"
+        self.help_viewer.viewer.SetValue(verbs_list)
+        self.help_viewer.Show()
+
+    def nouns_menuitem_click(self, event):
+        self.help_viewer.SetTitle("Nouns Listing")
+        nouns_list = ""
+        for noun_number, noun in self.computer.nouns.iteritems():
+            nouns_list += "Noun " + noun_number + ":\t" + noun.description + "\n"
+        self.help_viewer.viewer.SetValue(nouns_list)
+        self.help_viewer.Show()
+
+    def programs_menuitem_click(self, event):
+        self.help_viewer.SetTitle("Programs Listing")
+        programs_list = ""
+        for program_number, program in self.computer.programs.iteritems():
+            programs_list += "Program " + program_number + ":\t" + program.description + "\n"
+        self.help_viewer.viewer.SetValue(programs_list)
+        self.help_viewer.Show()
 
 
 class BASAGCApp(wx.App):

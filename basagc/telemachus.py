@@ -29,6 +29,9 @@ import urllib2
 import utils
 import config
 
+class TelemetryNotAvailable(Exception):
+    """This exception should be raised when we do not have a list of available telemetry"""
+    pass
 
 class KSPNotConnected(Exception):
     """ This exception should be raised when there is no connection to KSP """
@@ -81,6 +84,8 @@ def get_telemetry(data, body_number=None):
     :type body_number: string
     :rtype: string
     """
+    if telemetry is None:
+        raise TelemetryNotAvailable
     try:
         query_string = data + "=" + telemetry[data]
     except KeyError as e:
