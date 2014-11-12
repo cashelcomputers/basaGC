@@ -130,7 +130,7 @@ class Verb(object):
         """
 
         utils.log("Executing Verb {}: {}".format(self.number, self.name))
-        computer.dsky.state["current_verb"] = self.number
+        computer.dsky.current_verb = self.number
 
     # def _activity(self, event):
     #
@@ -236,15 +236,21 @@ class MonitorVerb(DisplayVerb):
     def _send_output(self):
 
         """ Sends the requested output to the DSKY """
+
+        # check if the display update interval needs to be changed
+        if self.timer.GetInterval() != config.DISPLAY_UPDATE_INTERVAL:
+            self.timer.Stop()
+            self.timer.Start(config.DISPLAY_UPDATE_INTERVAL)
+
         if self.requested_noun is None:
-            self.requested_noun = str(computer.dsky.state["requested_noun"])
-        if computer.dsky.state["requested_noun"] in self.illegal_nouns:
+            self.requested_noun = str(computer.dsky.requested_noun)
+        if computer.dsky.requested_noun in self.illegal_nouns:
             raise NounNotAcceptableError
         noun_function = computer.nouns[self.requested_noun]
         try:
             data = noun_function()
         except nouns.NounNotImplementedError:
-            dsky.operator_error("Noun {} not implemented yet. Sorry about that...".format(dsky.state["requested_noun"]))
+            dsky.operator_error("Noun {} not implemented yet. Sorry about that...".format(dsky.requested_noun))
             self.terminate()
             return
         except KSPNotConnected:
@@ -268,9 +274,9 @@ class MonitorVerb(DisplayVerb):
 
         """ Starts the timer to monitor the verb """
 
-        if dsky.state["backgrounded_update"] is not None:
-            dsky.state["backgrounded_update"].terminate()
-        dsky.state["display_lock"] = self
+        # if dsky.backgrounded_update is not None:
+        #     dsky.backgrounded_update.terminate()
+        dsky.display_lock = self
 
         try:
             self._send_output()
@@ -295,8 +301,8 @@ class MonitorVerb(DisplayVerb):
 
         utils.log("Terminating V{}".format(self.number))
         dsky.annunciators["key_rel"].off()
-        dsky.state["display_lock"] = None
-        dsky.state["backgrounded_update"] = None
+        dsky.display_lock = None
+        dsky.backgrounded_update = None
         self.timer.Stop()
         self.requested_noun = None
         # self.activity_timer.Stop()
@@ -307,11 +313,10 @@ class MonitorVerb(DisplayVerb):
         :return: None
         """
 
-        dsky.state["backgrounded_update"] = self
-        dsky.state["display_lock"] = None
+        dsky.backgrounded_update = self
+        dsky.display_lock = None
         self.timer.Stop()
         dsky.annunciators["key_rel"].start_blink()
-        # self.activity_timer.Stop()
 
     def resume(self):
 
@@ -319,8 +324,8 @@ class MonitorVerb(DisplayVerb):
         :return: None
         """
 
-        dsky.state["display_lock"] = self
-        dsky.state["backgrounded_update"] = None
+        dsky.display_lock = self
+        dsky.backgrounded_update = None
         dsky.control_registers["verb"].display(str(self.number))
         dsky.control_registers["noun"].display(self.requested_noun)
         self.start_monitor()

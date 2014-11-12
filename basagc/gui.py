@@ -44,6 +44,8 @@ class SettingsFrame(wx.Frame):
         self.ip_field = wx.TextCtrl(self.panel_3, wx.ID_ANY, config.IP)
         self.label_1 = wx.StaticText(self.panel_3, wx.ID_ANY, "Telemachus port:")
         self.port_field = wx.TextCtrl(self.panel_3, wx.ID_ANY, config.PORT)
+        self.label_3 = wx.StaticText(self.panel_3, wx.ID_ANY, "DSKY Update Interval:")
+        self.display_update_field = wx.TextCtrl(self.panel_3, wx.ID_ANY, str(config.DISPLAY_UPDATE_INTERVAL))
         self.label_2 = wx.StaticText(self.panel_3, wx.ID_ANY, "Log level:")
         self.log_level_combobox = wx.ComboBox(self.panel_3, wx.ID_ANY, choices=config.LOG_LEVELS,
                                               style=wx.CB_DROPDOWN | wx.CB_READONLY)
@@ -76,6 +78,8 @@ class SettingsFrame(wx.Frame):
         grid_sizer_2.Add(self.ip_field, 0, wx.EXPAND | wx.ADJUST_MINSIZE, 0)
         grid_sizer_2.Add(self.label_1, 0, wx.ALIGN_CENTER_VERTICAL | wx.ADJUST_MINSIZE, 0)
         grid_sizer_2.Add(self.port_field, 0, wx.EXPAND | wx.ADJUST_MINSIZE, 0)
+        grid_sizer_2.Add(self.label_3, 0, wx.ALIGN_CENTER_VERTICAL | wx.ADJUST_MINSIZE, 0)
+        grid_sizer_2.Add(self.display_update_field, 0, wx.EXPAND | wx.ADJUST_MINSIZE, 0)
         grid_sizer_2.Add(self.label_2, 0, wx.ALIGN_CENTER_VERTICAL | wx.ADJUST_MINSIZE, 0)
         grid_sizer_2.Add(self.log_level_combobox, 0, wx.ADJUST_MINSIZE, 0)
         grid_sizer_2.AddGrowableRow(0)
@@ -101,10 +105,12 @@ class SettingsFrame(wx.Frame):
         ip_address = self.ip_field.GetValue()
         port = self.port_field.GetValue()
         log_level = self.log_level_combobox.GetValue()
+        display_update_interval = self.display_update_field.GetValue()
         config.IP = ip_address
         config.PORT = port
         config.current_log_level = log_level
         config.URL = "http://" + config.IP + ":" + config.PORT + "/telemachus/datalink?"
+        config.DISPLAY_UPDATE_INTERVAL = int(display_update_interval)
         self.Hide()
 
     def cancel_button_event(self, event):

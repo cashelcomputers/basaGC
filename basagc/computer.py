@@ -197,7 +197,7 @@ class Computer(object):
         if noun is not None:
             self.dsky.set_noun(noun)
         self.dsky.control_registers["verb"].display(str(verb))
-        self.verbs[verb].execute()
+        self.verbs[str(verb)].execute()
 
     def reset_alarm_codes(self):
 
