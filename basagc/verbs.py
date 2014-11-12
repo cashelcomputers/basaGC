@@ -32,7 +32,7 @@ import config
 #import computer as Computer
 from telemachus import KSPNotConnected, TelemetryNotAvailable
 #from telemachus import get_telemetry
-#from mechanics import orbit, body
+#from computer import orbit, body
 import utils
 
 

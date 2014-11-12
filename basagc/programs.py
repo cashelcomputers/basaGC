@@ -142,7 +142,7 @@ class Program11(Program):
             self.terminate()
             return
 
-        # --> call average G integration with delta V integration
+        # --> call average G integration with ΔV integration
         gc.run_average_g_routine = True
 
         # --> terminate gyrocompassing
@@ -252,7 +252,7 @@ class Program15(Program):
             return
         delta_time = utils.seconds_to_time(self.delta_time_to_burn)
         utils.log("P15 calculations:")
-        utils.log("Phase angle: {}, delta-v for burn: {} m/s, time to transfer: {}".format(
+        utils.log("Phase angle: {}, Δv for burn: {} m/s, time to transfer: {}".format(
             round(self.phase_angle, 2), int(self.delta_v_required), utils.seconds_to_time(self.time_to_transfer)))
         utils.log("Current Phase Angle: {}, difference: {}".format(current_phase_angle, self.phase_angle_difference))
         utils.log("Time to burn: {} hours, {} minutes, {} seconds".format(int(delta_time[1]), int(delta_time[2]),

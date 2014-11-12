@@ -128,6 +128,11 @@ class Noun09(Noun):
             2: alarm_codes[1],
             3: alarm_codes[2],
             "is_octal": True,
+            "tooltips": [
+                "First alarm code",
+                "Second alarm code",
+                "Last alarm code",
+            ],
         }
         return data
 
@@ -195,6 +200,11 @@ class Noun17(Noun):
             2: int(pitch),
             3: int(yaw),
             "is_octal": False,
+            "tooltips": [
+                "Roll (xxx.xx°)",
+                "Pitch (xxx.xx°)",
+                "Yaw (xxx.xx°)",
+            ],
         }
         return data
 
@@ -373,6 +383,11 @@ class Noun43(Noun):
             2: int(longitude),
             3: int(altitude),
             "is_octal": False,
+            "tooltips": [
+                "Latitude (xxx.xx°)",
+                "Longitude (xxx.xx°)",
+                "Altitude",  # TODO
+            ],
         }
         return data
 # def noun43(calling_verb=None):
@@ -577,6 +592,11 @@ class Noun62(Noun):
             2: int(altitude_rate),
             3: int(altitude),
             "is_octal": False,
+            "tooltips": [
+                "Surface Velocity (xxxx.x m/s)",
+                "Altitude Rate (xxxx.x m/s)",
+                "Altitude (xxxx.x km)",
+            ],
         }
         return data
 
