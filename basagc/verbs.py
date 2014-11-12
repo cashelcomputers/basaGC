@@ -30,10 +30,11 @@ import wx
 import nouns
 import config
 #import computer as Computer
-from telemachus import KSPNotConnected
+from telemachus import KSPNotConnected, TelemetryNotAvailable
 #from telemachus import get_telemetry
 #from mechanics import orbit, body
 import utils
+
 
 
 computer = None
@@ -217,7 +218,7 @@ class DisplayVerb(DataVerb):
         """
 
         #raise NotImplementedError
-        if computer.dsky.state["requested_noun"] in self.illegal_nouns:
+        if computer.dsky.requested_noun in self.illegal_nouns:
             raise NounNotAcceptableError
 
 
@@ -239,6 +240,7 @@ class MonitorVerb(DisplayVerb):
 
         # check if the display update interval needs to be changed
         if self.timer.GetInterval() != config.DISPLAY_UPDATE_INTERVAL:
+            # stop and start the timer to change the update interval
             self.timer.Stop()
             self.timer.Start(config.DISPLAY_UPDATE_INTERVAL)
 
@@ -248,14 +250,20 @@ class MonitorVerb(DisplayVerb):
             raise NounNotAcceptableError
         noun_function = computer.nouns[self.requested_noun]
         try:
-            data = noun_function()
+            data = noun_function.return_data()
         except nouns.NounNotImplementedError:
             dsky.operator_error("Noun {} not implemented yet. Sorry about that...".format(dsky.requested_noun))
             self.terminate()
             return
         except KSPNotConnected:
             utils.log("KSP not connected, terminating V{}".format(self.number))
-            computer.poodoo_abort(110)
+            computer.program_alarm(110)
+            self.terminate()
+            raise
+        except TelemetryNotAvailable:
+            utils.log("Telemetry not available, terminating V{}".format(self.number),
+                      log_level="ERROR")
+            computer.program_alarm(111)
             self.terminate()
             raise
         output = format_output_data(data)
@@ -280,7 +288,7 @@ class MonitorVerb(DisplayVerb):
 
         try:
             self._send_output()
-        except KSPNotConnected:
+        except KSPNotConnected, TelemetryNotAvailable:
             return
 
         self.timer.Start(config.DISPLAY_UPDATE_INTERVAL)
@@ -492,8 +500,8 @@ class Verb5(DisplayVerb):
 
         utils.log("Executing V05")
         super(Verb5, self).execute()
-        noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
-        noun_data = noun_function(calling_verb=self)
+        noun_function = computer.nouns[computer.dsky.requested_noun]
+        noun_data = noun_function.return_data()
         output = format_output_data(noun_data)
         computer.dsky.registers[1].display(sign=output[0], value=output[1])
         computer.dsky.registers[2].display(sign=output[2], value=output[3])

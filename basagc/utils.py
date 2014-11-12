@@ -93,7 +93,7 @@ def log(message, log_level="DEBUG"):
     :param message: the message to log
     :type message: string
     :param log_level: the log level for this message
-    :typelog_levele: string
+    :type log_level: string
     :return: nothing
     """
 

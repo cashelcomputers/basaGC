@@ -37,15 +37,15 @@ class Program(object):
     """ Major mode base class.
     """
 
-    def __init__(self, name, number):
+    def __init__(self, description, number):
 
         """ Class constructor.
-        :param name: name (description) of the program
+        :param description: description of the program
         :param number: program number
         :return: None
         """
 
-        self.name = name
+        self.description = description
         self.number = number
 
     def execute(self):
@@ -54,7 +54,7 @@ class Program(object):
         :return: None
         """
 
-        utils.log("Executing Program {}: {}".format(self.number, self.name))
+        utils.log("Executing Program {}: {}".format(self.number, self.description))
         dsky.flash_comp_acty()
         dsky.control_registers["program"].display(str(self.number))
         gc.running_programs.append(self)
@@ -91,7 +91,7 @@ class Program00(Program):
         :return: None
         """
 
-        super(Program00, self).__init__(name="AGC Idling", number="00")
+        super(Program00, self).__init__(description="AGC Idling", number="00")
 
     def execute(self):
 
@@ -124,7 +124,7 @@ class Program11(Program):
         :return: None
         """
 
-        super(Program11, self).__init__(name="Earth Orbit Insertion Monitor", number="11")
+        super(Program11, self).__init__(description="Earth Orbit Insertion Monitor", number="11")
 
     def execute(self):
 
@@ -172,7 +172,7 @@ class Program15(Program):
         :return: None
         """
 
-        super(Program15, self).__init__(name="TMI Initiate/Cutoff", number="15")
+        super(Program15, self).__init__(description="TMI Initiate/Cutoff", number="15")
         self.delta_v_required = 0.0
         self.time_to_transfer = 0.0
         self.orbiting_body = None

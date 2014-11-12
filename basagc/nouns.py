@@ -25,7 +25,7 @@
 
 import math
 
-from telemachus import get_telemetry
+from telemachus import get_telemetry, TelemetryNotAvailable
 import utils
 
 computer = None
@@ -179,9 +179,12 @@ class Noun17(Noun):
 
         # FIXME: need to make sure that data is correct length (sometimes drops the last 0 when input is xxx.x rather than
         # xxx.xx
-        roll = str(round(get_telemetry("roll"), 2))
-        pitch = str(round(get_telemetry("pitch"), 2))
-        yaw = str(round(get_telemetry("heading"), 2))
+        try:
+            roll = str(round(get_telemetry("roll"), 2))
+            pitch = str(round(get_telemetry("pitch"), 2))
+            yaw = str(round(get_telemetry("heading"), 2))
+        except TelemetryNotAvailable:
+            raise
 
         roll = roll.replace(".", "")
         pitch = pitch.replace(".", "")
@@ -281,7 +284,10 @@ class Noun36(Noun):
         super(Noun36, self).__init__("Mission Elapsed Time (MET) (dddhh, bbbmm, bss.ss)")
 
     def return_data(self):
-        telemetry = get_telemetry("missionTime")
+        try:
+            telemetry = get_telemetry("missionTime")
+        except TelemetryNotAvailable:
+            raise
         minutes, seconds = divmod(telemetry, 60)
         hours, minutes = divmod(minutes, 60)
         days, hours = divmod(hours, 24)
@@ -355,9 +361,12 @@ class Noun43(Noun):
         super(Noun43, self).__init__("Geographic Position (Latitude, Longitude, Altitude)")
 
     def return_data(self):
-        latitude = str(round(get_telemetry("lat"), 2)).replace(".", "")
-        longitude = str(round(get_telemetry("long"), 2)).replace(".", "")
-        altitude = str(round(get_telemetry("altitude") / 1000, 1)).replace(".", "")
+        try:
+            latitude = str(round(get_telemetry("lat"), 2)).replace(".", "")
+            longitude = str(round(get_telemetry("long"), 2)).replace(".", "")
+            altitude = str(round(get_telemetry("altitude") / 1000, 1)).replace(".", "")
+        except TelemetryNotAvailable:
+            raise
 
         data = {
             1: int(latitude),
@@ -392,9 +401,12 @@ class Noun44(Noun):
         super(Noun44, self).__init__("Apoapsis (xxx.xx km), Periapsis (xxx.xx km), Time To Apoapsis (hmmss)")
 
     def return_data(self):
-        apoapsis = str(round(get_telemetry("ApA") / 100, 1))
-        periapsis = str(round(get_telemetry("PeA") / 100, 1))
-        tff = int(get_telemetry("timeToAp"))
+        try:
+            apoapsis = str(round(get_telemetry("ApA") / 100, 1))
+            periapsis = str(round(get_telemetry("PeA") / 100, 1))
+            tff = int(get_telemetry("timeToAp"))
+        except TelemetryNotAvailable:
+            raise
 
         apoapsis = apoapsis.replace(".", "")
         periapsis = periapsis.replace(".", "")
