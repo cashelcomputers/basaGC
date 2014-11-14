@@ -1,0 +1,4 @@
+- Complete this file :)
+- Finish P15/P?? (Need to do Munar injection burn coding)
+- inclination change maneuver
+- Orbit height maneuver change maneuver (shouldn't be too hard)
