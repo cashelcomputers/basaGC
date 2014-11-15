@@ -628,7 +628,12 @@ class GUI(wx.Frame):
         self.help_viewer.SetTitle("Verbs Listing")
         verbs_list = ""
         for verb_number, verb in self.computer.verbs.iteritems():
-            verbs_list += "Verb " + verb_number + ":\t" + verb.name + "\n"
+            if int(verb_number) < 39:
+                this_verb = verb(None)
+            else:
+                this_verb = verb()
+            verbs_list += "Verb " + verb_number + ":\t" + this_verb.name + "\n"
+            del this_verb
         self.help_viewer.viewer.SetValue(verbs_list)
         self.help_viewer.Show()
 
