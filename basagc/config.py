@@ -39,7 +39,7 @@ LOG_LEVELS = [
     "ERROR",
     "CRITICAL",
 ]
-current_log_level = "INFO"
+current_log_level = "DEBUG"
 
 ID_VERBBUTTON = 10
 ID_NOUNBUTTON = 11

@@ -38,6 +38,7 @@ import nouns
 import programs
 import routines
 from sortedcontainers import SortedDict
+from telemachus import get_telemetry, KSPNotConnected, TelemetryNotAvailable
 
 
 class Computer(object):
@@ -73,13 +74,11 @@ class Computer(object):
             3: "",
         }
         self.target = ""
-
+        self.is_ksp_connected = False
         telemachus.gc = self
-        #verbs.telemetry = telemachus.telemetry
         verbs.computer = self
         verbs.dsky = self.dsky
         verbs.frame = self.gui
-        #nouns.telemetry = telemachus.telemetry
         nouns.computer = self
         nouns.dsky = self.dsky
         nouns.frame = self.gui
@@ -177,11 +176,13 @@ class Computer(object):
         :return: None
         """
 
-        # try:
-        #     if self.telemetry.get_memory("is_paused") in [1, 2, 3, 4]:
-        #         self.dsky.annunciators["no_att"].on()
-        # except KSPNotConnected:
-        #     self.dsky.annunciators["no_att"].on()
+        try:
+            if get_telemetry("is_paused") in [1, 2, 3, 4]:
+                self.dsky.annunciators["no_att"].on()
+        except KSPNotConnected:
+            self.dsky.annunciators["no_att"].on()
+        except TelemetryNotAvailable:
+            self.dsky.annunciators["no_att"].on()
         # if self.run_average_g_routine:
         #     routines.average_g()
         for item in self.loop_items:
@@ -272,4 +273,10 @@ class Computer(object):
         # self.fresh_start()
         if message:
             utils.log(message, log_level="CRITICAL")
+        pass
+
+    def servicer(self):
+        pass
+
+    def check_ksp_connection(self):
         pass
