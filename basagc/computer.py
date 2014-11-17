@@ -38,7 +38,7 @@ import nouns
 import programs
 import routines
 from sortedcontainers import SortedDict
-from telemachus import check_connection
+from telemachus import check_connection, get_telemetry
 
 
 class Computer(object):
@@ -75,6 +75,7 @@ class Computer(object):
         }
         self.target = ""
         self.is_ksp_connected = None
+        self.ksp_paused_state = None
         telemachus.gc = self
         verbs.computer = self
         verbs.dsky = self.dsky
@@ -177,7 +178,10 @@ class Computer(object):
         """
 
         # Check if we have a connection to KSP
+        self.check_ksp_connection()
 
+        # check KSP paused state
+        self.check_paused_state()
 
 
         # if self.run_average_g_routine:
@@ -302,3 +306,28 @@ class Computer(object):
                 self.is_ksp_connected = True
 
     def check_paused_state(self):
+
+        """ Checks the paused state of KSP, and illuminates STBY annunciator and logs state as necessary.
+        """
+
+        if self.is_ksp_connected:
+            paused_state = get_telemetry("paused")
+            # if the paused state hasn't changed, skip any annunciator changes
+            if paused_state != self.ksp_paused_state:
+                if paused_state == 0:
+                    self.dsky.annunciators["stby"].off()
+                    utils.log("KSP unpaused, all systems go", log_level="INFO")
+                elif paused_state == 1:
+                    self.dsky.annunciators["stby"].on()
+                    utils.log("KSP paused", log_level="INFO")
+                elif paused_state == 2:
+                    self.dsky.annunciators["stby"].on()
+                    utils.log("No power to Telemachus antenna", log_level="WARNING")
+                elif paused_state == 3:
+                    self.dsky.annunciators["stby"].on()
+                    utils.log("Telemachus antenna off", log_level="WARNING")
+                elif paused_state == 4:
+                    self.dsky.annunciators["stby"].on()
+                    utils.log("No Telemachus antenna found", log_level="WARNING")
+                self.ksp_paused_state = paused_state
+
