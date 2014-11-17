@@ -40,7 +40,8 @@ class HelpFrame(wx.Frame):
         self.__set_properties()
         self.__do_layout()
 
-        self.Bind(wx.EVT_BUTTON, self.close_button_event, self.close_button)
+        self.Bind(wx.EVT_BUTTON, self.on_close, self.close_button)
+        self.Bind(wx.EVT_CLOSE, self.on_close)
         # end wxGlade
 
     def __set_properties(self):
@@ -63,7 +64,7 @@ class HelpFrame(wx.Frame):
         sizer_18.Fit(self)
         self.Layout()
 
-    def close_button_event(self, event):
+    def on_close(self, event):
         """Event handler for close button
             :param event: Event object as passed by wxPython
             """
@@ -179,7 +180,8 @@ class LogViewerFrame(wx.Frame):
         self.__set_properties()
         self.__do_layout()
 
-        self.Bind(wx.EVT_BUTTON, self.close_button_event, self.close_button)
+        self.Bind(wx.EVT_BUTTON, self.on_close, self.close_button)
+        self.Bind(wx.EVT_CLOSE, self.on_close)
 
     def __set_properties(self):
         self.SetTitle("Log Viewer")
@@ -201,7 +203,7 @@ class LogViewerFrame(wx.Frame):
         self.SetSizer(sizer_16)
         self.Layout()
 
-    def close_button_event(self, event):
+    def on_close(self, event):
 
         """Event handler for close button
         :param event: Event object as passed by wxPython
@@ -626,7 +628,12 @@ class GUI(wx.Frame):
         self.help_viewer.SetTitle("Verbs Listing")
         verbs_list = ""
         for verb_number, verb in self.computer.verbs.iteritems():
-            verbs_list += "Verb " + verb_number + ":\t" + verb.name + "\n"
+            if int(verb_number) < 39:
+                this_verb = verb(None)
+            else:
+                this_verb = verb()
+            verbs_list += "Verb " + verb_number + ":\t" + this_verb.name + "\n"
+            del this_verb
         self.help_viewer.viewer.SetValue(verbs_list)
         self.help_viewer.Show()
 

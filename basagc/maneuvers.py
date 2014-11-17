@@ -51,7 +51,11 @@ def delta_v(departure_altitude, destination_altitude):
     sqrt_2_sum = math.sqrt(2 / (r1 + r2))
     sqrt_mu = math.sqrt(mu)
     dv1 = sqrt_mu / sqrt_r1 * (sqrt_r2 * sqrt_2_sum - 1)
-    return dv1
+    dV2 = sqrt_mu / sqrt_r2 * (1 - sqrt_r1 * sqrt_2_sum)
+    return (dV1, dV2)
+
+
+
 
 
 def time_to_transfer(departure_orbit, destination_orbit, grav_param):

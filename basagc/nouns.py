@@ -498,9 +498,9 @@ class Noun50(Noun):
         super(Noun50, self).__init__("Surface Velocity Display (X, Y, Z in xxxx.x m/s)")
 
     def return_data(self):
-        surface_velocity_x = str(round(get_telemetry("surfaceVelocityx"))).replace(".", "")
-        surface_velocity_y = str(round(get_telemetry("surfaceVelocityy"))).replace(".", "")
-        surface_velocity_z = str(round(get_telemetry("surfaceVelocityz"))).replace(".", "")
+        surface_velocity_x = str(round(get_telemetry("surfaceVelocityx"), 1)).replace(".", "")
+        surface_velocity_y = str(round(get_telemetry("surfaceVelocityy"), 1)).replace(".", "")
+        surface_velocity_z = str(round(get_telemetry("surfaceVelocityz"), 1)).replace(".", "")
 
         data = {
             1: int(surface_velocity_x),
