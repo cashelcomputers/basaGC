@@ -17,6 +17,7 @@ Prerequisites:
 - python 2.7.x
 - wxPython 2.8.x (may work with 3.0, but this is untested. YMMV)
 - Telemachus mod for KSP (tested on 1.4.27)
+- Mechjeb mod
 
 To run basaGC, unzip the download to a folder of your choice. On Linux (since Linux rulz :) in a terminal change to
 that directory and type "./basagc.py", on Windows double-click on the file basagc.py.
