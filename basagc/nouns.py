@@ -28,7 +28,7 @@ import math
 from telemachus import get_telemetry, TelemetryNotAvailable
 import utils
 
-computer = None
+gc = None
 
 
 def octal(value):
@@ -122,7 +122,7 @@ class Noun09(Noun):
     def return_data(self):
 
         utils.log("Noun 09 requested")
-        alarm_codes = computer.alarm_codes
+        alarm_codes = gc.alarm_codes
         data = {
             1: alarm_codes[0],
             2: alarm_codes[1],
@@ -287,6 +287,34 @@ class Noun17(Noun):
 #
 # def noun35(calling_verb):
 #     raise NounNotImplementedError
+
+class Noun33(Noun):
+
+    def __init__(self):
+        super(Noun33, self).__init__("Time of Ignition (00xxx hours, 000xx minutes, 0xx.xx seconds)")
+
+    def return_data(self):
+
+        hours, minutes, seconds = 0, 0, 0
+        try:
+            hours = gc.noun_data["33"][0]
+            minutes = gc.noun_data["33"][1]
+            seconds = gc.noun_data["33"][2]
+        except KeyError:
+            gc.program_alarm(alarm_code=115, message="No burn data loaded")
+        data = {
+            1: hours,
+            2: minutes,
+            3: round(seconds, 2),
+            "tooltips": [
+                "Time Of Ignition (000hh)",
+                "Time Of Ignition (000mm)",
+                "Time Of Ignition (0ss.ss)",
+            ],
+            "is_octal": False,
+        }
+        return data
+
 
 class Noun36(Noun):
 
