@@ -113,8 +113,8 @@ def get_telemetry(data, body_number=None):
     try:
         raw_response = urllib2.urlopen(config.URL + query_string)
     except urllib2.URLError as e:
-        utils.log("Query string: {}".format(query_string))
-        utils.log(e)
+        utils.log("Query string: {}".format(query_string), log_level="ERROR")
+        utils.log("Caught exception urllib2.URLERROR", log_level="ERROR")
         raise KSPNotConnected
     json_response = json.load(raw_response)
     return json_response[data]
