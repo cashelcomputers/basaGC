@@ -24,7 +24,7 @@
 # <info@sandroid.org>
 
 PROGRAM_NAME = "basaGC"
-VERSION = "0.5.3"
+VERSION = "0.5.4"
 IMAGES_DIR = "./images/"
 IP = "127.0.0.1"
 PORT = "8085"
@@ -91,8 +91,16 @@ BODIES = {
     "Pol": "14",
     "Dres": "15",
     "Eeloo": "16",
-
 }
+
+KSP_PAUSED_STATES = {
+    "0": "Flight Scene",
+    "1": "Paused",
+    "2": "No Power",
+    "3": "Telemachus antenna off",
+    "4": "No Telemachus antenna found"
+}
+
 OCTAL_BODIES = {int(oct(int(value))): key for key, value in BODIES.iteritems()}
 
 PROGRAM_DESCRIPTION = """{program_name} is a implementation of the Apollo Guidance Computer (AGC) for Kerbal Space

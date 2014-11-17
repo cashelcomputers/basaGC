@@ -1,15 +1,17 @@
 basaGC changelog
 ----------------
 
-Please note that this file only contains changes from version 0.5.0 onwards.
+Please note that this file only contains changes from version 0.5.0 onwards. All dates are in dd/mm/yy format.
 
-xx/xx/xx: version 0.5.4:
+17/11/14: version 0.5.4:
 - Fixed a but where if user clicked on the log viewer (or help) dialog system close icon the window would get destroyed
 rather than hidden
 - Changed default log level to DEBUG
 - Changed Noun 50 to display the first digit after decimal dot
 - Fixed a bug where a backgrounded Monitor Verb couldn't be recalled with KEY REL button
 - If there is no connection available to KSP, the NO ATT annunciator is illuminated and logged
+- If KSP is paused or there is a problem with the Telemachus antenna, the STBY annunciator will illuminate and details
+will be logged.
 
 12/11/14: version 0.5.3:
 - Added help viewer
