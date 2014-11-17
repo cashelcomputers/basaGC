@@ -749,7 +749,7 @@ class Verb23(LoadVerb):
         """
 
         computer.loaded_data["verb"] = self.number
-        computer.loaded_data["noun"] = dsky.state["current_noun"]
+        computer.loaded_data["noun"] = dsky.current_noun
         computer.loaded_data[3] = data
         if computer.object_requesting_data:
             computer.object_requesting_data()

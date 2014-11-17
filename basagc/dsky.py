@@ -670,6 +670,10 @@ class DSKY(object):
         :param keypress: contains the key code
         """
 
+        if self.is_expecting_data:
+            self._handle_expected_data(keypress)
+            return
+
         if keypress == "R":
             self._handle_reset_keypress()
             return
@@ -689,8 +693,7 @@ class DSKY(object):
 
 
 
-        if self.is_expecting_data:
-            self._handle_expected_data(keypress)
+
 
         if keypress == "E":
             self._handle_entr_keypress(keypress)

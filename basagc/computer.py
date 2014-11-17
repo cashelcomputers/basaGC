@@ -73,14 +73,15 @@ class Computer(object):
             2: "",
             3: "",
         }
-        self.target = ""
+        self.noun_data = {}
         self.is_ksp_connected = None
         self.ksp_paused_state = None
+
         telemachus.gc = self
         verbs.computer = self
         verbs.dsky = self.dsky
         verbs.frame = self.gui
-        nouns.computer = self
+        nouns.gc = self
         nouns.dsky = self.dsky
         nouns.frame = self.gui
         programs.gc = self

@@ -173,7 +173,8 @@ class Program15(Program):
         """
 
         super(Program15, self).__init__(description="TMI Initiate/Cutoff", number="15")
-        self.delta_v_required = 0.0
+        self.delta_v_first_burn = 0.0
+        self.delta_v_second_burn = 0.0
         self.time_to_transfer = 0.0
         self.orbiting_body = None
         self.phase_angle = 0.0
@@ -235,7 +236,7 @@ class Program15(Program):
         departure_body_orbital_period = get_telemetry("body_period", body_number=config.BODIES["Kerbin"])
         grav_param = get_telemetry("body_gravParameter", body_number=config.BODIES[self.orbiting_body])
         current_phase_angle = get_telemetry("body_phaseAngle", body_number=config.BODIES[target])
-        self.delta_v_required = maneuvers.delta_v(departure_altitude, destination_altitude)
+        self.delta_v_first_burn, self.delta_v_second_burn = maneuvers.delta_v(departure_altitude, destination_altitude)
         self.time_to_transfer = maneuvers.time_to_transfer(departure_altitude, destination_altitude, grav_param)
 
         try:
@@ -253,14 +254,19 @@ class Program15(Program):
         delta_time = utils.seconds_to_time(self.delta_time_to_burn)
         utils.log("P15 calculations:")
         utils.log("Phase angle: {}, Δv for burn: {} m/s, time to transfer: {}".format(
-            round(self.phase_angle, 2), int(self.delta_v_required), utils.seconds_to_time(self.time_to_transfer)))
+            round(self.phase_angle, 2), int(self.delta_v_first_burn), utils.seconds_to_time(self.time_to_transfer)))
         utils.log("Current Phase Angle: {}, difference: {}".format(current_phase_angle, self.phase_angle_difference))
         utils.log("Time to burn: {} hours, {} minutes, {} seconds".format(int(delta_time[1]), int(delta_time[2]),
                                                                           round(delta_time[3], 2)))
         self.time_of_ignition = get_telemetry("missionTime") + self.delta_time_to_burn
+        hms_time_of_ignition = utils.seconds_to_time(self.time_of_ignition)
+        gc.noun_data["33"] = [
+            hms_time_of_ignition[0],
+            hms_time_of_ignition[1],
+            hms_time_of_ignition[2],
+        ]
         self.reference_delta_v = get_telemetry("orbitalVelocity")
-        gc.burn_data["is_active"] = True
-        gc.burn_data["data"] = self
+        print(self.time_of_ignition)
         gc.execute_verb(verb=16, noun=79)
         gc.set_attitude("prograde")
 
