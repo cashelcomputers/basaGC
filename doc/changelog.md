@@ -10,6 +10,8 @@ rather than hidden
 - Changed Noun 50 to display the first digit after decimal dot
 - Fixed a bug where a backgrounded Monitor Verb couldn't be recalled with KEY REL button
 - If there is no connection available to KSP, the NO ATT annunciator is illuminated and logged
+- If KSP is paused or there is a problem with the Telemachus antenna, the STBY annunciator will illuminate and details
+will be logged.
 
 12/11/14: version 0.5.3:
 - Added help viewer
