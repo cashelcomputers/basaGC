@@ -400,13 +400,13 @@ class DSKY(object):
 
             super(DSKY.SignDigit, self).__init__(dsky)
             self.dsky = dsky
-            self.image_plus = wx.Image(config.IMAGES_DIR + "PlusOn.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            self.image_minus = wx.Image(config.IMAGES_DIR + "MinusOn.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            self.blank = wx.Image(config.IMAGES_DIR + "PlusMinusOff.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            self._image_plus = wx.Image(config.IMAGES_DIR + "PlusOn.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            self._image_minus = wx.Image(config.IMAGES_DIR + "MinusOn.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            self._blank = wx.Image(config.IMAGES_DIR + "PlusMinusOff.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             if panel:
-                self.widget = wx.StaticBitmap(panel, wx.ID_ANY, self.blank)
+                self.widget = wx.StaticBitmap(panel, wx.ID_ANY, self._blank)
             else:
-                self.widget = wx.StaticBitmap(frame, wx.ID_ANY, self.blank)
+                self.widget = wx.StaticBitmap(frame, wx.ID_ANY, self._blank)
 
         def set_tooltip(self, tooltip):
 
@@ -423,7 +423,7 @@ class DSKY(object):
             :return: None
             """
 
-            self.widget.SetBitmap(self.image_plus)
+            self.widget.SetBitmap(self._image_plus)
 
         def minus(self):
 
@@ -431,7 +431,7 @@ class DSKY(object):
             :return: None
             """
 
-            self.widget.SetBitmap(self.image_minus)
+            self.widget.SetBitmap(self._image_minus)
 
         def blank(self):
 
@@ -439,7 +439,7 @@ class DSKY(object):
             :return: None
             """
 
-            self.widget.SetBitmap(self.blank)
+            self.widget.SetBitmap(self._blank)
 
     class Annunciator(object):
 
