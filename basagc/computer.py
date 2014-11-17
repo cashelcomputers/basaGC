@@ -177,18 +177,7 @@ class Computer(object):
         """
 
         # Check if we have a connection to KSP
-        if not check_connection():
-            if self.is_ksp_connected:
-            # we have just lost the connection, illuminate NO ATT annunciator and log it
-                self.dsky.annunciators["no_att"].on()
-                utils.log("No connection to KSP, navigation functions unavailable", log_level="ERROR")
-                self.is_ksp_connected = False
-        else:
-            if self.is_ksp_connected == (False or None):
-                # have just regained connection, deluminate NO ATT annunciator and log it
-                self.dsky.annunciators["no_att"].off()
-                utils.log("Connection to KSP established", log_level="INFO")
-                self.is_ksp_connected = True
+
 
 
         # if self.run_average_g_routine:
@@ -287,19 +276,29 @@ class Computer(object):
         pass
 
     def servicer(self):
+
+        """ For future use. The servicer updates the spacecrafts state vector.
+        """
+
         pass
 
-    # def check_ksp_connection(self):
-    #     try:
-    #         if get_telemetry("is_paused") in [1, 2, 3, 4]:
-    #             self.dsky.annunciators["no_att"].on()
-    #             utils.log("No attitude data available - no connection to KSP", log_level="WARNING")
-    #             return False
-    #         else:
-    #             return True
-    #     except KSPNotConnected:
-    #         self.dsky.annunciators["no_att"].on()
-    #         return False
-    #     except TelemetryNotAvailable:
-    #         self.dsky.annunciators["no_att"].on()
-    #         return False
+    def check_ksp_connection(self):
+
+        """ checks if we have a connection to Telemachus / KSP
+        Returns nothing.
+        """
+
+        if not check_connection():
+            if self.is_ksp_connected:
+                # we have just lost the connection, illuminate NO ATT annunciator and log it
+                self.dsky.annunciators["no_att"].on()
+                utils.log("No connection to KSP, navigation functions unavailable", log_level="ERROR")
+                self.is_ksp_connected = False
+        else:
+            if self.is_ksp_connected == (False or None):
+                # have just regained connection, deluminate NO ATT annunciator and log it
+                self.dsky.annunciators["no_att"].off()
+                utils.log("Connection to KSP established", log_level="INFO")
+                self.is_ksp_connected = True
+
+    def check_paused_state(self):
