@@ -8,6 +8,8 @@ xx/xx/xx: version 0.5.4:
 rather than hidden
 - Changed default log level to DEBUG
 - Changed Noun 50 to display the first digit after decimal dot
+- Fixed a bug where a backgrounded Monitor Verb couldn't be recalled with KEY REL button
+- If there is no connection available to KSP, the NO ATT annunciator is illuminated and logged
 
 12/11/14: version 0.5.3:
 - Added help viewer
