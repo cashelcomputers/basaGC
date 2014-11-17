@@ -38,7 +38,7 @@ import nouns
 import programs
 import routines
 from sortedcontainers import SortedDict
-from telemachus import get_telemetry, KSPNotConnected, TelemetryNotAvailable
+from telemachus import check_connection
 
 
 class Computer(object):
@@ -74,7 +74,7 @@ class Computer(object):
             3: "",
         }
         self.target = ""
-        self.is_ksp_connected = False
+        self.is_ksp_connected = None
         telemachus.gc = self
         verbs.computer = self
         verbs.dsky = self.dsky
@@ -96,34 +96,34 @@ class Computer(object):
             "62": nouns.Noun62(),
         })
         self.verbs = SortedDict({
-            "01": verbs.Verb1(),
-            "02": verbs.Verb2(),
-            "03": verbs.Verb3(),
-            "04": verbs.Verb4(),
-            "05": verbs.Verb5(),
-            "06": verbs.Verb6(),
-            "07": verbs.Verb7(),
-            "11": verbs.Verb11(),
-            "12": verbs.Verb12(),
-            "13": verbs.Verb13(),
-            "14": verbs.Verb14(),
-            "15": verbs.Verb15(),
-            "16": verbs.Verb16(),
-            "17": verbs.Verb17(),
-            "21": verbs.Verb21(),
-            "22": verbs.Verb22(),
-            "23": verbs.Verb23(),
-            "24": verbs.Verb24(),
-            "25": verbs.Verb25(),
-            "32": verbs.Verb32(),
-            "33": verbs.Verb33(),
-            "34": verbs.Verb34(),
-            "35": verbs.Verb35(),
-            "36": verbs.Verb36(),
-            "37": verbs.Verb37(),
-            "75": verbs.Verb75(),
-            "82": verbs.Verb82(),
-            "99": verbs.Verb99(),
+            "01": verbs.Verb1,
+            "02": verbs.Verb2,
+            "03": verbs.Verb3,
+            "04": verbs.Verb4,
+            "05": verbs.Verb5,
+            "06": verbs.Verb6,
+            "07": verbs.Verb7,
+            "11": verbs.Verb11,
+            "12": verbs.Verb12,
+            "13": verbs.Verb13,
+            "14": verbs.Verb14,
+            "15": verbs.Verb15,
+            "16": verbs.Verb16,
+            "17": verbs.Verb17,
+            "21": verbs.Verb21,
+            "22": verbs.Verb22,
+            "23": verbs.Verb23,
+            "24": verbs.Verb24,
+            "25": verbs.Verb25,
+            "32": verbs.Verb32,
+            "33": verbs.Verb33,
+            "34": verbs.Verb34,
+            "35": verbs.Verb35,
+            "36": verbs.Verb36,
+            "37": verbs.Verb37,
+            "75": verbs.Verb75,
+            "82": verbs.Verb82,
+            "99": verbs.Verb99,
         })
 
         self.programs = SortedDict({
@@ -176,13 +176,21 @@ class Computer(object):
         :return: None
         """
 
-        try:
-            if get_telemetry("is_paused") in [1, 2, 3, 4]:
+        # Check if we have a connection to KSP
+        if not check_connection():
+            if self.is_ksp_connected:
+            # we have just lost the connection, illuminate NO ATT annunciator and log it
                 self.dsky.annunciators["no_att"].on()
-        except KSPNotConnected:
-            self.dsky.annunciators["no_att"].on()
-        except TelemetryNotAvailable:
-            self.dsky.annunciators["no_att"].on()
+                utils.log("No connection to KSP, navigation functions unavailable", log_level="ERROR")
+                self.is_ksp_connected = False
+        else:
+            if self.is_ksp_connected == (False or None):
+                # have just regained connection, deluminate NO ATT annunciator and log it
+                self.dsky.annunciators["no_att"].off()
+                utils.log("Connection to KSP established", log_level="INFO")
+                self.is_ksp_connected = True
+
+
         # if self.run_average_g_routine:
         #     routines.average_g()
         for item in self.loop_items:
@@ -198,8 +206,11 @@ class Computer(object):
 
         if noun is not None:
             self.dsky.set_noun(noun)
+        verb = str(verb)
+        noun = str(noun)
         self.dsky.control_registers["verb"].display(str(verb))
-        self.verbs[str(verb)].execute()
+        verb_to_execute = self.verbs[verb](noun)
+        verb_to_execute.execute()
 
     def reset_alarm_codes(self):
 
@@ -278,5 +289,17 @@ class Computer(object):
     def servicer(self):
         pass
 
-    def check_ksp_connection(self):
-        pass
+    # def check_ksp_connection(self):
+    #     try:
+    #         if get_telemetry("is_paused") in [1, 2, 3, 4]:
+    #             self.dsky.annunciators["no_att"].on()
+    #             utils.log("No attitude data available - no connection to KSP", log_level="WARNING")
+    #             return False
+    #         else:
+    #             return True
+    #     except KSPNotConnected:
+    #         self.dsky.annunciators["no_att"].on()
+    #         return False
+    #     except TelemetryNotAvailable:
+    #         self.dsky.annunciators["no_att"].on()
+    #         return False

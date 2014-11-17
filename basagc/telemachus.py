@@ -29,13 +29,29 @@ import urllib2
 import utils
 import config
 
+
 class TelemetryNotAvailable(Exception):
     """This exception should be raised when we do not have a list of available telemetry"""
     pass
 
+
 class KSPNotConnected(Exception):
     """ This exception should be raised when there is no connection to KSP """
     pass
+
+
+def check_connection():
+
+    """ Checks if there is a connection available to Telemachus
+    Returns True if so, False otherwise
+    """
+
+    try:
+        urllib2.urlopen(config.URL + "paused=p.paused")
+    except urllib2.URLError:
+        return False
+    else:
+        return True
 
 
 def _get_api_listing():
