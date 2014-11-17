@@ -490,6 +490,9 @@ class Verb5(DisplayVerb):
         super(Verb5, self).execute()
         noun_function = computer.nouns[computer.dsky.requested_noun]
         noun_data = noun_function.return_data()
+        if noun_data == False:
+            # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
+            return
         output = format_output_data(noun_data)
         computer.dsky.registers[1].display(sign=output[0], value=output[1])
         computer.dsky.registers[2].display(sign=output[2], value=output[3])

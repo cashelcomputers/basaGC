@@ -91,6 +91,7 @@ class Computer(object):
         self.nouns = SortedDict({
             "09": nouns.Noun09(),
             "17": nouns.Noun17(),
+            "33": nouns.Noun33(),
             "36": nouns.Noun36(),
             "43": nouns.Noun43(),
             "44": nouns.Noun44(),

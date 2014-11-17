@@ -554,7 +554,7 @@ class DSKY(object):
             elif sign == "+":
                 self.sign.plus()
             elif sign == "":
-                self.sign.widget.SetBitmap(self.sign.blank)
+                self.sign.blank()
             for index, digit in enumerate(value):
                 self.digits[index].display(int(digit))
 

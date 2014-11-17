@@ -297,15 +297,17 @@ class Noun33(Noun):
 
         hours, minutes, seconds = 0, 0, 0
         try:
-            hours = gc.noun_data["33"][0]
-            minutes = gc.noun_data["33"][1]
-            seconds = gc.noun_data["33"][2]
+            hours = str(gc.noun_data["33"][0])
+            minutes = str(gc.noun_data["33"][1])
+            seconds = str(round(gc.noun_data["33"][2], 2))
         except KeyError:
             gc.program_alarm(alarm_code=115, message="No burn data loaded")
+            return False
+        seconds = seconds.replace(".", "")
         data = {
-            1: hours,
-            2: minutes,
-            3: round(seconds, 2),
+            1: int(hours),
+            2: int(minutes),
+            3: int(seconds),
             "tooltips": [
                 "Time Of Ignition (000hh)",
                 "Time Of Ignition (000mm)",
