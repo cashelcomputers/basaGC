@@ -670,34 +670,38 @@ class DSKY(object):
         :param keypress: contains the key code
         """
 
+        if keypress == "R":
+            self._handle_reset_keypress()
+            return
+
+        if keypress == "K":
+            self._handle_key_release_keypress(keypress)
+            return
+
         if self.display_lock:
             self.display_lock.background()
 
-        elif keypress == "K":
-            self._handle_key_release_keypress(keypress)
-
-        elif keypress == "R":
-            self._handle_reset_keypress()
-
-        elif self.is_expecting_data:
-            self._handle_expected_data(keypress)
-
-        elif keypress == "E":
-            self._handle_entr_keypress(keypress)
-
-        elif keypress == "V":
-            self._handle_verb_keypress()
-
-        elif keypress == "N":
-            self._handle_noun_keypress()
-
-        elif self.is_verb_being_loaded:
+        if self.is_verb_being_loaded:
             self._handle_verb_entry(keypress)
 
         elif self.is_noun_being_loaded:
             self._handle_noun_entry(keypress)
 
-        elif keypress == "C":
+
+
+        if self.is_expecting_data:
+            self._handle_expected_data(keypress)
+
+        if keypress == "E":
+            self._handle_entr_keypress(keypress)
+
+        if keypress == "V":
+            self._handle_verb_keypress()
+
+        if keypress == "N":
+            self._handle_noun_keypress()
+
+        if keypress == "C":
             pass  # TODO
 
 
@@ -878,24 +882,29 @@ class DSKY(object):
         :return: None
         """
 
-        self.is_verb_being_loaded = False
-        self.is_noun_being_loaded = False
+        this_verb = None
         if self.requested_verb in verbs.INVALID_VERBS:
             self.operator_error(
                 "Verb {} does not exist, please try a different verb".format(self.requested_verb))
             return
         try:
-            self.computer.verbs[str(self.requested_verb)].execute()
+
+            if int(self.requested_verb) < 40:
+                this_verb = self.computer.verbs[str(self.requested_verb)](self.requested_noun)
+            else:
+                this_verb = self.computer.verbs[str(self.requested_verb)]()
+        except IndexError:
+            utils.log("Verb {} not in verb list".format(self.requested_verb), "ERROR")
+            self.operator_error()
+        try:
+            this_verb.execute()
         except NotImplementedError:
             self.operator_error(
                 "Verb {} is not implemented yet. Sorry about that...".format(self.requested_verb))
         except verbs.NounNotAcceptableError:
             self.operator_error(
                 "Noun {} can't be used with verb {}".format(self.requested_noun, self.requested_verb))
-        # except IndexError:
-        # utils.log(type(self.state["requested_verb"]))
-        # utils.log("Verb {} not in verb list".format(self.state["requested_verb"]))
-        #     self.operator_error("Requested verb {} does not exist in list of verbs :(".format(self.state["requested_verb"]))
+
         return
 
     def _handle_reset_keypress(self):
@@ -937,10 +946,14 @@ class DSKY(object):
         """ Handles KEY REL keypress
         :return: None
         """
-
+        print(self.backgrounded_update)
         if self.backgrounded_update:
+            if self.display_lock:
+                self.display_lock.terminate()
+                print(self.backgrounded_update)
             self.annunciators["key_rel"].stop_blink()
             self.backgrounded_update.resume()
+            self.backgrounded_update = None
             self.is_verb_being_loaded = False
             self.is_noun_being_loaded = False
             self.is_data_being_loaded = False
@@ -949,7 +962,6 @@ class DSKY(object):
             self.noun_position = 0
             self.requested_verb = 0
             self.requested_noun = 0
-
             return
 
         # if the computer is off, we only want to accept the PRO key input,
