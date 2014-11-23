@@ -66,13 +66,13 @@ INVALID_VERBS = [
 ]
 
 
-def format_output_data(data):
+def _format_output_data(data):
 
     """ Formats data for output to the DSKY.
     :param data: data to display
     :type data: dict
     :return: DSKY formatted output
-    :rtype: string
+    :rtype: list of strings
     """
 
     output = []
@@ -82,7 +82,6 @@ def format_output_data(data):
         if data["is_octal"]:
             output.append("")
         elif item < 0:
-            #item = ~item + 1
             output.append("-")
             item = abs(item)
         else:
@@ -241,9 +240,9 @@ class MonitorVerb(DisplayVerb):
             self.requested_noun = str(computer.dsky.requested_noun)
         if computer.dsky.requested_noun in self.illegal_nouns:
             raise NounNotAcceptableError
-        noun_function = computer.nouns[self.requested_noun]
+        noun = computer.nouns[self.requested_noun]
         try:
-            data = noun_function.return_data()
+            data = noun.return_data()
         except nouns.NounNotImplementedError:
             dsky.operator_error("Noun {} not implemented yet. Sorry about that...".format(dsky.requested_noun))
             self.terminate()
@@ -260,7 +259,7 @@ class MonitorVerb(DisplayVerb):
             computer.program_alarm(111)
             self.terminate()
             raise
-        output = format_output_data(data)
+        output = _format_output_data(data)
 
         # set tooltips
         computer.dsky.registers[1].set_tooltip(data["tooltips"][0])
@@ -380,7 +379,7 @@ class Verb1(DisplayVerb):
         if noun_data is False:
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
             return
-        output = format_output_data(noun_data)
+        output = _format_output_data(noun_data)
         computer.dsky.registers[1].display(sign=output[0], value=output[1])
 
 class Verb2(DisplayVerb):
@@ -405,7 +404,7 @@ class Verb2(DisplayVerb):
         #else:
             #noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
             #self.noun_data = noun_function(calling_verb=self, data=self.data, base=8)
-            #output = format_output_data(self.noun_data)
+            #output = _format_output_data(self.noun_data)
             #computer.dsky.registers[1].display(output[2], output[3])
             #self.data = None
 
@@ -432,7 +431,7 @@ class Verb3(DisplayVerb):
         #else:
             #noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
             #self.noun_data = noun_function(calling_verb=self, data=self.data, base=8)
-            #output = format_output_data(self.noun_data)
+            #output = _format_output_data(self.noun_data)
             #computer.dsky.registers[1].display(output[4], output[5])
             #self.data = None
 
@@ -459,7 +458,7 @@ class Verb4(DisplayVerb):
         super(Verb4, self).execute()
         noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
         noun_data = noun_function(calling_verb=self)
-        output = format_output_data(noun_data)
+        output = _format_output_data(noun_data)
         computer.dsky.registers[1].display(output[0], output[1])
         computer.dsky.registers[2].display(output[2], output[3])
 
@@ -490,7 +489,7 @@ class Verb5(DisplayVerb):
         if noun_data == False:
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
             return
-        output = format_output_data(noun_data)
+        output = _format_output_data(noun_data)
         computer.dsky.registers[1].display(sign=output[0], value=output[1])
         computer.dsky.registers[2].display(sign=output[2], value=output[3])
         computer.dsky.registers[3].display(sign=output[4], value=output[5])
@@ -524,7 +523,7 @@ class Verb6(DisplayVerb):
         # else:
         #     noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
         #     noun_data = noun_function()
-        #     output = format_output_data(noun_data)
+        #     output = _format_output_data(noun_data)
         #     computer.dsky.registers[1].display(sign=output[0], value=output[1])
         #     computer.dsky.registers[2].display(sign=output[2], value=output[3])
         #     computer.dsky.registers[3].display(sign=output[4], value=output[5])

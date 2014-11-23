@@ -42,12 +42,12 @@ class Digit(object):
         """
 
         self.dsky = dsky
-        global frame
         self.state = None
 
     #def blank(self):
         #self.widget.SetBitmap(self.blank)
         #pass
+
 
 class Separator(object):
 
@@ -81,6 +81,7 @@ class Separator(object):
 
         self.widget.SetBitmap(self.image_off)
 
+
 class NumericDigit(Digit):
 
     """ A numeric digit.
@@ -96,17 +97,17 @@ class NumericDigit(Digit):
 
         self.dsky = dsky
         super(NumericDigit, self).__init__(self.dsky)
-        self.digit_0 = wx.Image(config.IMAGES_DIR + "7Seg-0.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self.digit_1 = wx.Image(config.IMAGES_DIR + "7Seg-1.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self.digit_2 = wx.Image(config.IMAGES_DIR + "7Seg-2.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self.digit_3 = wx.Image(config.IMAGES_DIR + "7Seg-3.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self.digit_4 = wx.Image(config.IMAGES_DIR + "7Seg-4.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self.digit_5 = wx.Image(config.IMAGES_DIR + "7Seg-5.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self.digit_6 = wx.Image(config.IMAGES_DIR + "7Seg-6.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self.digit_7 = wx.Image(config.IMAGES_DIR + "7Seg-7.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self.digit_8 = wx.Image(config.IMAGES_DIR + "7Seg-8.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self.digit_9 = wx.Image(config.IMAGES_DIR + "7Seg-9.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self.blank_digit = wx.Image(config.IMAGES_DIR + "7SegOff.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        self._digit_0 = wx.Image(config.IMAGES_DIR + "7Seg-0.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        self._digit_1 = wx.Image(config.IMAGES_DIR + "7Seg-1.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        self._digit_2 = wx.Image(config.IMAGES_DIR + "7Seg-2.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        self._digit_3 = wx.Image(config.IMAGES_DIR + "7Seg-3.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        self._digit_4 = wx.Image(config.IMAGES_DIR + "7Seg-4.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        self._digit_5 = wx.Image(config.IMAGES_DIR + "7Seg-5.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        self._digit_6 = wx.Image(config.IMAGES_DIR + "7Seg-6.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        self._digit_7 = wx.Image(config.IMAGES_DIR + "7Seg-7.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        self._digit_8 = wx.Image(config.IMAGES_DIR + "7Seg-8.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        self._digit_9 = wx.Image(config.IMAGES_DIR + "7Seg-9.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        self._digit_blank = wx.Image(config.IMAGES_DIR + "7SegOff.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         self.current_value = None
         self.is_blinking = False
         self.is_blinking_lit = True
@@ -118,9 +119,9 @@ class NumericDigit(Digit):
         frame.Bind(wx.EVT_TIMER, self._blink, self.blink_timer)
 
         if panel:
-            self.widget = wx.StaticBitmap(panel, wx.ID_ANY, self.blank_digit)
+            self.widget = wx.StaticBitmap(panel, wx.ID_ANY, self._digit_blank)
         else:
-            self.widget = wx.StaticBitmap(frame, wx.ID_ANY, self.blank_digit)
+            self.widget = wx.StaticBitmap(frame, wx.ID_ANY, self._digit_blank)
         self.current_value = "blank"
 
     def set_tooltip(self, tooltip):
@@ -183,31 +184,32 @@ class NumericDigit(Digit):
         """
 
         if new_value == 0:
-            self.widget.SetBitmap(self.digit_0)
+            self.widget.SetBitmap(self._digit_0)
         elif new_value == 1:
-            self.widget.SetBitmap(self.digit_1)
+            self.widget.SetBitmap(self._digit_1)
         elif new_value == 2:
-            self.widget.SetBitmap(self.digit_2)
+            self.widget.SetBitmap(self._digit_2)
         elif new_value == 3:
-            self.widget.SetBitmap(self.digit_3)
+            self.widget.SetBitmap(self._digit_3)
         elif new_value == 4:
-            self.widget.SetBitmap(self.digit_4)
+            self.widget.SetBitmap(self._digit_4)
         elif new_value == 5:
-            self.widget.SetBitmap(self.digit_5)
+            self.widget.SetBitmap(self._digit_5)
         elif new_value == 6:
-            self.widget.SetBitmap(self.digit_6)
+            self.widget.SetBitmap(self._digit_6)
         elif new_value == 7:
-            self.widget.SetBitmap(self.digit_7)
+            self.widget.SetBitmap(self._digit_7)
         elif new_value == 8:
-            self.widget.SetBitmap(self.digit_8)
+            self.widget.SetBitmap(self._digit_8)
         elif new_value == 9:
-            self.widget.SetBitmap(self.digit_9)
+            self.widget.SetBitmap(self._digit_9)
         elif new_value == "blank":
-            self.widget.SetBitmap(self.blank_digit)
+            self.widget.SetBitmap(self._digit_blank)
         self.current_value = new_value
         if self.is_blinking:
             if new_value != "blank":
                 self.blink_value = new_value
+
 
 class SignDigit(Digit):
 
@@ -284,10 +286,10 @@ class Annunciator(object):
 
         self.dsky = dsky
         self.name = name
-        self.image_on = wx.Image(config.IMAGES_DIR + image_on, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self.image_off = wx.Image(config.IMAGES_DIR + image_off, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        self._image_on = wx.Image(config.IMAGES_DIR + image_on, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        self._image_off = wx.Image(config.IMAGES_DIR + image_off, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         if image_orange:
-            self.image_orange = wx.Image(config.IMAGES_DIR + image_orange, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            self._image_orange = wx.Image(config.IMAGES_DIR + image_orange, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         self.is_lit = False
         self.requested_state = False
 
@@ -296,9 +298,9 @@ class Annunciator(object):
         frame.Bind(wx.EVT_TIMER, self._blink, self.blink_timer)
 
         if panel:
-            self.widget = wx.StaticBitmap(panel, wx.ID_ANY, self.image_off)
+            self.widget = wx.StaticBitmap(panel, wx.ID_ANY, self._image_off)
         else:
-            self.widget = wx.StaticBitmap(frame, wx.ID_ANY, self.image_off)
+            self.widget = wx.StaticBitmap(frame, wx.ID_ANY, self._image_off)
 
     def start_blink(self, interval=500):
 
@@ -331,7 +333,7 @@ class Annunciator(object):
         :return: None
         """
 
-        self.widget.SetBitmap(self.image_on)
+        self.widget.SetBitmap(self._image_on)
         self.is_lit = True
 
     def off(self):
@@ -340,7 +342,7 @@ class Annunciator(object):
         :return: None
         """
 
-        self.widget.SetBitmap(self.image_off)
+        self.widget.SetBitmap(self._image_off)
         self.is_lit = False
 
 class DataRegister(object):
@@ -356,7 +358,7 @@ class DataRegister(object):
         """
 
         self.dsky = dsky
-        self.sign = DSKY.SignDigit(dsky, panel=frame.panel_1)
+        self.sign = SignDigit(dsky, panel=frame.panel_1)
         self.digits = [
             NumericDigit(dsky, panel=frame.panel_1),
             NumericDigit(dsky, panel=frame.panel_1),
@@ -605,7 +607,6 @@ class DSKY(object):
         if message:
             utils.log("OPERATOR ERROR: " + message)
         self.annunciators["opr_err"].blink_timer.Start(500)
-
 
     def stop_comp_acty_flash(self, event):
 
