@@ -270,8 +270,24 @@ class Noun17(Noun):
 # def noun29(calling_verb):
 #     raise NounNotImplementedError
 #
-# def noun30(calling_verb=None):
-#     raise NounNotImplementedError
+class Noun30(Noun):
+    def __init__(self):
+        super(Noun30, self).__init__("Octal Target ID (000XX)")
+
+    def return_data(self):
+        target_id = gc.noun_data["30"]
+        print(target_id)
+        data = {
+            1: target_id,
+            2: None,
+            3: None,
+            "tooltips": ["Target Octal ID"],
+            "is_octal": True,
+        }
+        return data
+
+    def receive_data(self, data):
+        gc.noun_data["30"] = data
 #
 # def noun31(calling_verb):
 #     raise NounNotImplementedError
