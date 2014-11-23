@@ -23,6 +23,8 @@
 # (http://www.ibiblio.org/apollo/index.html) by Ronald S. Burkey
 # <info@sandroid.org>
 
+from sortedcontainers import SortedDict
+
 PROGRAM_NAME = "basaGC"
 VERSION = "0.5.4"
 IMAGES_DIR = "./images/"
@@ -94,7 +96,7 @@ TELEMACHUS_BODY_IDS = {
     "Eeloo": "16",
 }
 
-ALARM_CODES = {
+ALARM_CODES = SortedDict({
     110: "Error contacting KSP",
     111: "Telemetry not available",
     115: "No burn data loaded",
@@ -102,7 +104,7 @@ ALARM_CODES = {
     224: "Orbit not circular",
     225: "Vessel and target orbits inclination too far apart",
     310: "Program hasn't been finished yet, watch this space :)",
-}
+})
 
 OCTAL_BODY_IDS = {key: str(int(oct(int(value)))) for key, value in TELEMACHUS_BODY_IDS.iteritems()} # FIXME: abomination
 OCTAL_BODY_NAMES = {value: key for key, value in OCTAL_BODY_IDS.iteritems()}

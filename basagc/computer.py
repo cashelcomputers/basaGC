@@ -261,8 +261,7 @@ class Computer(object):
             self.running_programs[-1].terminate()
         except programs.ProgramTerminated:
             # this should happen if the program terminated successfully
-            utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), config.ALARM_CODES[alarm_message]),
-                      log_level="ERROR")
+            utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), alarm_message), log_level="ERROR")
         poo = self.programs["00"]()
         poo.execute()
 
