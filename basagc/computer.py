@@ -27,17 +27,15 @@
 import multiprocessing as mp
 
 import wx
+from sortedcontainers import SortedDict
 
+import config
 import utils
-import telemachus
-#import config
-#import display
 import dsky
 import verbs
 import nouns
 import programs
 import routines
-from sortedcontainers import SortedDict
 from telemachus import check_connection, get_telemetry
 import telemachus
 
@@ -134,9 +132,9 @@ class Computer(object):
         })
 
         self.programs = SortedDict({
-            "00": programs.Program00(),
-            "11": programs.Program11(),
-            "15": programs.Program15(),
+            "00": programs.Program00,
+            "11": programs.Program11,
+            "15": programs.Program15,
         })
 
         # self.routines = {
@@ -244,7 +242,7 @@ class Computer(object):
         if message:
             utils.log("PROGRAM ALARM {}: {}".format(str(alarm_code), message), log_level="ERROR")
 
-    def poodoo_abort(self, alarm_code, message=None):
+    def poodoo_abort(self, alarm_code):
 
         """ Terminates the faulty program, and executes Program 00 (P00)
         :param alarm_code: a 3 or 4 digit octal int of the alarm code to raise
@@ -252,6 +250,7 @@ class Computer(object):
         :return: None
         """
 
+        alarm_message = config.ALARM_CODES[alarm_code]
         alarm_code += 2000
         if self.alarm_codes[0] != 0:
             self.alarm_codes[1] = self.alarm_codes[0]
@@ -262,8 +261,10 @@ class Computer(object):
             self.running_programs[-1].terminate()
         except programs.ProgramTerminated:
             # this should happen if the program terminated successfully
-            utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), message), log_level="ERROR")
-        self.programs["00"].execute()
+            utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), config.ALARM_CODES[alarm_message]),
+                      log_level="ERROR")
+        poo = self.programs["00"]()
+        poo.execute()
 
     def program_restart(self, alarm_code, message=None):
 

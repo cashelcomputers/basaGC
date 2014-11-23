@@ -24,17 +24,12 @@
 #  by Ronald S. Burkey <info@sandroid.org> (thanks Ronald!)
 
 import logging
-
 import wx
 
 import nouns
 import config
-#import computer as Computer
 from telemachus import KSPNotConnected, TelemetryNotAvailable
-#from telemachus import get_telemetry
-#from computer import orbit, body
 import utils
-
 
 computer = None
 dsky = None
@@ -64,32 +59,6 @@ INVALID_VERBS = [
     95,
     98,
 ]
-
-
-def _format_output_data(data):
-
-    """ Formats data for output to the DSKY.
-    :param data: data to display
-    :type data: dict
-    :return: DSKY formatted output
-    :rtype: list of strings
-    """
-
-    output = []
-    raw_data = [data[1], data[2], data[3]]
-
-    for item in raw_data:
-        if data["is_octal"]:
-            output.append("")
-        elif item < 0:
-            output.append("-")
-            item = abs(item)
-        else:
-            output.append("+")
-        d = str(item).zfill(5)
-        output.append(d)
-    return output
-
 
 class NounNotAcceptableError(Exception):
 
@@ -122,6 +91,30 @@ class Verb(object):
         #frame.Bind(wx.EVT_TIMER, self._activity, self.activity_timer)
         self.data = []
         self.requested_noun = noun
+
+    def _format_output_data(self, data):
+
+        """ Formats data for output to the DSKY.
+        :param data: data to display
+        :type data: dict
+        :return: DSKY formatted output
+        :rtype: list of strings
+        """
+
+        output = []
+        raw_data = [data[1], data[2], data[3]]
+
+        for item in raw_data:
+            if data["is_octal"]:
+                output.append("")
+            elif item < 0:
+                output.append("-")
+                item = abs(item)
+            else:
+                output.append("+")
+            d = str(item).zfill(5)
+            output.append(d)
+        return output
 
     def execute(self):
 
@@ -259,7 +252,7 @@ class MonitorVerb(DisplayVerb):
             computer.program_alarm(111)
             self.terminate()
             raise
-        output = _format_output_data(data)
+        output = self._format_output_data(data)
 
         # set tooltips
         computer.dsky.registers[1].set_tooltip(data["tooltips"][0])
@@ -379,8 +372,9 @@ class Verb1(DisplayVerb):
         if noun_data is False:
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
             return
-        output = _format_output_data(noun_data)
+        output = self._format_output_data(noun_data)
         computer.dsky.registers[1].display(sign=output[0], value=output[1])
+
 
 class Verb2(DisplayVerb):
 
@@ -458,7 +452,7 @@ class Verb4(DisplayVerb):
         super(Verb4, self).execute()
         noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
         noun_data = noun_function(calling_verb=self)
-        output = _format_output_data(noun_data)
+        output = self._format_output_data(noun_data)
         computer.dsky.registers[1].display(output[0], output[1])
         computer.dsky.registers[2].display(output[2], output[3])
 
@@ -486,10 +480,10 @@ class Verb5(DisplayVerb):
         super(Verb5, self).execute()
         noun_function = computer.nouns[computer.dsky.requested_noun]
         noun_data = noun_function.return_data()
-        if noun_data == False:
+        if not noun_data:
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
             return
-        output = _format_output_data(noun_data)
+        output = self._format_output_data(noun_data)
         computer.dsky.registers[1].display(sign=output[0], value=output[1])
         computer.dsky.registers[2].display(sign=output[2], value=output[3])
         computer.dsky.registers[3].display(sign=output[4], value=output[5])
@@ -1011,23 +1005,13 @@ class Verb37(Verb):
         :param data: the data from DSKY
         :return: None
         """
-
-        computer.programs[data].execute()
-
-    def data_load_done(self):
-
-        """ Called when the data load is complete
-        :return: None
-        """
-
-        dsky.verb_noun_flash_off()
-        data = self.data.pop()
-        number_of_digits = len(data)
-        if number_of_digits != 2:
-            dsky.operator_error("Expected exactly two digits, received {}".format(number_of_digits))
+        if len(data) != 2:
+            dsky.operator_error("Expected exactly two digits, received {}".format(len(data)))
             self.terminate()
             return
-        computer.programs[int(data)].execute()
+        #computer.programs[data].execute()
+        program = computer.programs[data]()
+        program.execute()
 
 #-------------------------------BEGIN EXTENDED VERBS----------------------------
 

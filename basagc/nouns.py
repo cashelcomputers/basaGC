@@ -112,7 +112,7 @@ class Noun(object):
         self.description = description
 
     def return_data(self):
-        pass
+        raise NounNotImplementedError
 
 class Noun09(Noun):
 
@@ -717,8 +717,10 @@ class Noun62(Noun):
 # def noun78(calling_verb):
 #     raise NounNotImplementedError
 #
-# def noun79(calling_verb):
-#     raise NounNotImplementedError
+# class Noun79(Noun):
+#
+#     def __init__(self):
+#         super(Noun79, self).__init__("FILL ME IN")
 #
 # def noun80(calling_verb):
 #     raise NounNotImplementedError

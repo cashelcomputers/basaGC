@@ -39,6 +39,7 @@ LOG_LEVELS = [
     "ERROR",
     "CRITICAL",
 ]
+
 current_log_level = "DEBUG"
 
 ID_VERBBUTTON = 10
@@ -73,7 +74,7 @@ KEY_IDS = {
     18: "R",
 }
 
-BODIES = {
+TELEMACHUS_BODY_IDS = {
     "Kerbol": "0",
     "Kerbin": "1",
     "Mun": "2",
@@ -93,7 +94,20 @@ BODIES = {
     "Eeloo": "16",
 }
 
-OCTAL_BODIES = {key: str(int(oct(int(value)))) for key, value in BODIES.iteritems()}
+ALARM_CODES = {
+    110: "Error contacting KSP",
+    111: "Telemetry not available",
+    115: "No burn data loaded",
+    223: "Invalid target selected",
+    224: "Orbit not circular",
+    225: "Vessel and target orbits inclination too far apart",
+    310: "Program hasn't been finished yet, watch this space :)",
+}
+
+OCTAL_BODY_IDS = {key: str(int(oct(int(value)))) for key, value in TELEMACHUS_BODY_IDS.iteritems()} # FIXME: abomination
+OCTAL_BODY_NAMES = {value: key for key, value in OCTAL_BODY_IDS.iteritems()}
+for key, body in OCTAL_BODY_IDS.iteritems():
+    print(key, body)
 PROGRAM_DESCRIPTION = """{program_name} is a implementation of the Apollo Guidance Computer (AGC) for Kerbal Space Program. While not entirely accurate to the real AGC, I have attempted to be as accurate as possible.
 
 {program_name} includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html) by
@@ -110,7 +124,7 @@ You should have received a copy of the GNU General Public License along with thi
 Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.""".format(PROGRAM_NAME)
 
 COPYRIGHT = "(C) 2014 Tim Buchanan (cashelcomputers@gmail.com)"
-WEBSITE = "https://github.com/cashelcomputers/basaGC"
+WEBSITE = "https://github.com/cashelcomputers/basaGC/"
 DEVELOPERS = "Tim Buchanan"
 ICON = IMAGES_DIR + "icon.png"
 

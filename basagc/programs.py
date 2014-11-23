@@ -24,7 +24,7 @@
 #  by Ronald S. Burkey <info@sandroid.org>
 
 import utils
-import maneuvers
+from maneuvers import hohmann_transfer
 import config
 from telemachus import get_telemetry, KSPNotConnected
 
@@ -183,24 +183,27 @@ class Program15(Program):
         self.reference_delta_v = 0.0
         self.phase_angle_difference = 0.0
         self.target_octal_id = ""
+        self.departure_body = get_telemetry("body")
 
     def check_orbital_parameters(self):
+
+        """ Checks to see if current orbital parameters are within an acceptable range to plot maneuver
+        :return: Bool
+        """
 
         # check if orbit is circular
         if get_telemetry("eccentricity") > 0.001:
             gc.poodoo_abort(224, "Orbit not circular")
             return False
+
         # check if orbit is excessively inclined
         target_inclination = float(get_telemetry("target_inclination"))
         vessel_inclination = get_telemetry("inclination")
-        if vessel_inclination > (target_inclination - 0.5) and vessel_inclination > (target_inclination + 0.5):
+        if (vessel_inclination > (target_inclination - 0.5)) and (vessel_inclination > (target_inclination + 0.5)):
             gc.poodoo_abort(225, "Vessel and target not in same plane")
             return False
         else:
             return True
-
-    def terminate(self):
-        pass
 
     def check_target(self):
 
@@ -212,10 +215,9 @@ class Program15(Program):
 
         if get_telemetry("target_name") == u"No Target Selected.":
             utils.log("No target selected in KSP, defaulting to Mun", log_level="WARNING")
-            return "00002"
-            #self.target_octal_id = "2"
+            return config.OCTAL_BODY_IDS["Mun"].zfill(5)
         else:
-            return str(config.OCTAL_BODIES[get_telemetry("target_name")]).zfill(5)
+            return config.OCTAL_BODY_IDS[get_telemetry("target_name")].zfill(5)
 
     def execute(self):
 
@@ -234,36 +236,40 @@ class Program15(Program):
         gc.dsky.request_data(requesting_object=self.select_target, location=dsky.registers[1],
                              is_proceed_available=True)
 
-
     def select_target(self, target):
 
         """ Called by P15 after user as entered target choice.
+        :param target: string of octal target code
         :return: None
         """
 
         if target == "proceed":
-            target = self.target_octal_id
+            target = self.target_octal_id.lstrip("0")
+        else:
+            target = target.lstrip("0")
         if target[0] == ("+" or "-"):
             dsky.operator_error("Expected octal input, decimal input provided")
             self.execute()
             return
-        elif target not in config.OCTAL_BODIES.values():
-            gc.poodoo_abort(223)
+        elif target not in config.OCTAL_BODY_IDS.values():
+            utils.log("{} {} is not a valid target".format(target, type(target)), log_level="DEBUG")
+            gc.poodoo_abort(223, message="Target not valid")
             return
-        target = config.OCTAL_BODIES[int(target)]
+        target = config.OCTAL_BODY_NAMES[target]
         destination_altitude = 0
         if target == "Mun":
             destination_altitude = 12250000
         departure_altitude = get_telemetry("altitude")
         orbital_period = get_telemetry("period")
-        departure_body_orbital_period = get_telemetry("body_period", body_number=config.BODIES["Kerbin"])
-        grav_param = get_telemetry("body_gravParameter", body_number=config.BODIES[self.orbiting_body])
-        current_phase_angle = get_telemetry("body_phaseAngle", body_number=config.BODIES[target])
-        self.delta_v_first_burn, self.delta_v_second_burn = maneuvers.delta_v(departure_altitude, destination_altitude)
-        self.time_to_transfer = maneuvers.time_to_transfer(departure_altitude, destination_altitude, grav_param)
+        departure_body_orbital_period = get_telemetry("body_period", body_number=config.TELEMACHUS_BODY_IDS["Kerbin"])
+        grav_param = get_telemetry("body_gravParameter", body_number=config.TELEMACHUS_BODY_IDS[self.orbiting_body])
+        current_phase_angle = get_telemetry("body_phaseAngle", body_number=config.TELEMACHUS_BODY_IDS[target])
+        self.delta_v_first_burn, self.delta_v_second_burn = hohmann_transfer.delta_v(departure_altitude,
+                                                                                     destination_altitude,)
+        self.time_to_transfer = hohmann_transfer.time_to_transfer(departure_altitude, destination_altitude, grav_param)
 
         try:
-            self.phase_angle = maneuvers.phase_angle(departure_altitude, destination_altitude, grav_param)
+            self.phase_angle = hohmann_transfer.phase_angle(departure_altitude, destination_altitude, grav_param)
         except ProgramTerminated:
             return
         self.phase_angle_difference = current_phase_angle - self.phase_angle
@@ -290,8 +296,9 @@ class Program15(Program):
         ]
         self.reference_delta_v = get_telemetry("orbitalVelocity")
         print(self.time_of_ignition)
-        gc.execute_verb(verb=16, noun=79)
-        gc.set_attitude("prograde")
+        gc.poodoo_abort(310)
+        # gc.execute_verb(verb=16, noun=79)
+        # gc.set_attitude("prograde")
 
 
 class ProgramNotImplementedError(Exception):

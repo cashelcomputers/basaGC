@@ -31,6 +31,7 @@ import config
 
 telemetry = None
 
+
 class TelemetryNotAvailable(Exception):
     """This exception should be raised when we do not have a list of available telemetry"""
     pass
