@@ -6,7 +6,7 @@ from distutils.core import setup
 setup(
     name='basaGC',
     version='0.5.3',
-    packages=['basagc', 'basagc.mechanics'],
+    packages=['basagc'],
     url='https://github.com/cashelcomputers/basaGC',
     license='GPL',
     author='Tim Buchanan',
