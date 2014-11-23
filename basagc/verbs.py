@@ -371,19 +371,17 @@ class Verb1(DisplayVerb):
         """
 
         super(Verb1, self).__init__(name="Display Octal component 1 in R1", verb_number=1, noun=noun)
-    #def execute(self):
-        #super(Verb1, self).execute()
-        #if self.data == None:
-            #noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
-            #noun_function(calling_verb=self, base=8)
-            #return
-        #else:
-            #noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
-            #self.noun_data = noun_function(calling_verb=self, data=self.data, base=8)
-            #output = format_output_data(self.noun_data)
-            #computer.dsky.registers[1].display(output[0], output[1])
-            #self.data = None
 
+    def execute(self):
+
+        super(Verb1, self).execute()
+        noun_function = computer.nouns[computer.dsky.requested_noun]
+        noun_data = noun_function.return_data()
+        if noun_data is False:
+            # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
+            return
+        output = format_output_data(noun_data)
+        computer.dsky.registers[1].display(sign=output[0], value=output[1])
 
 class Verb2(DisplayVerb):
 
@@ -486,7 +484,6 @@ class Verb5(DisplayVerb):
         :return: None
         """
 
-        utils.log("Executing V05")
         super(Verb5, self).execute()
         noun_function = computer.nouns[computer.dsky.requested_noun]
         noun_data = noun_function.return_data()

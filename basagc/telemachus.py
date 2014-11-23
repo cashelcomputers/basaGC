@@ -29,6 +29,7 @@ import urllib2
 import utils
 import config
 
+telemetry = None
 
 class TelemetryNotAvailable(Exception):
     """This exception should be raised when we do not have a list of available telemetry"""
@@ -54,7 +55,7 @@ def check_connection():
         return True
 
 
-def _get_api_listing():
+def get_api_listing():
 
     """ Gets the list of API calls provided by Telemachus
     :rtype: dict
@@ -62,8 +63,7 @@ def _get_api_listing():
 
     try:
         response = urllib2.urlopen(config.URL + "api=a.api")
-    except urllib2.URLError as e:
-        print(e)
+    except urllib2.URLError:
         raise KSPNotConnected
     data = json.load(response)
     telemetry_available = {}
@@ -83,12 +83,6 @@ def _get_api_listing():
                 name = b["apistring"].rsplit(".", 1)[1]
             telemetry_available[name] = b["apistring"]
     return telemetry_available
-
-try:
-    telemetry = _get_api_listing()
-except KSPNotConnected:
-    telemetry = None
-    print("Could not construct telemetry information - no contact with KSP")
 
 
 def get_telemetry(data, body_number=None):
@@ -112,7 +106,7 @@ def get_telemetry(data, body_number=None):
 
     try:
         raw_response = urllib2.urlopen(config.URL + query_string)
-    except urllib2.URLError as e:
+    except urllib2.URLError:
         utils.log("Query string: {}".format(query_string), log_level="ERROR")
         utils.log("Caught exception urllib2.URLERROR", log_level="ERROR")
         raise KSPNotConnected

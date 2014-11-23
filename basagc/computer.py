@@ -39,6 +39,7 @@ import programs
 import routines
 from sortedcontainers import SortedDict
 from telemachus import check_connection, get_telemetry
+import telemachus
 
 
 class Computer(object):
@@ -73,7 +74,9 @@ class Computer(object):
             2: "",
             3: "",
         }
-        self.noun_data = {}
+        self.noun_data = {
+            "30": None,
+        }
         self.is_ksp_connected = None
         self.ksp_paused_state = None
 
@@ -91,6 +94,7 @@ class Computer(object):
         self.nouns = SortedDict({
             "09": nouns.Noun09(),
             "17": nouns.Noun17(),
+            "30": nouns.Noun30(),
             "33": nouns.Noun33(),
             "36": nouns.Noun36(),
             "43": nouns.Noun43(),
@@ -166,8 +170,15 @@ class Computer(object):
         """ Turns the guidance computer on.
         :return: None
         """
-
         utils.log("Computer booting...", log_level="INFO")
+
+        # attempt to load telemetry listing
+        try:
+            telemachus.telemetry = telemachus.get_api_listing()
+        except telemachus.KSPNotConnected:
+            utils.log("Cannot retrieve telemetry listing - no connection to KSP", log_level="WARNING")
+        else:
+            utils.log("Retrieved telemetry listing", log_level="INFO")
         self.loop_timer.start()
         self.is_powered_on = True
         for display_item in self.dsky.static_display:
@@ -301,11 +312,13 @@ class Computer(object):
                 utils.log("No connection to KSP, navigation functions unavailable", log_level="ERROR")
                 self.is_ksp_connected = False
         else:
-            if self.is_ksp_connected == (False or None):
+            if not self.is_ksp_connected:
                 # have just regained connection, deluminate NO ATT annunciator and log it
                 self.dsky.annunciators["no_att"].off()
                 utils.log("Connection to KSP established", log_level="INFO")
                 self.is_ksp_connected = True
+            if not telemachus.telemetry:
+                telemachus.telemetry = telemachus.get_api_listing()
 
     def check_paused_state(self):
 

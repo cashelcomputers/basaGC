@@ -58,7 +58,6 @@ class DSKY(object):
         self.is_verb_being_loaded = False
         self.is_noun_being_loaded = False
         self.is_data_being_loaded = False
-        self.register_focus = None
         self.verb_position = 0
         self.noun_position = 0
         self.requested_verb = 0
@@ -68,14 +67,12 @@ class DSKY(object):
         self.current_program = 0
         self.display_lock = None
         self.backgrounded_update = None
-        self.is_display_released = True
         self.is_expecting_data = False
+        self.is_expecting_proceed = False
         self.object_requesting_data = None
         self.display_location_to_load = None
-        self.data_load_index = None
 
         self.static_display = [
-
             DSKY.Annunciator(self, image_on="rProgOn.jpg", image_off="rProgOff.jpg", panel=frame.panel_1),
             DSKY.Annunciator(self, image_on="VerbOn.jpg", image_off="VerbOff.jpg", panel=frame.panel_1),
             DSKY.Annunciator(self, image_on="NounOn.jpg", image_off="NounOff.jpg", panel=frame.panel_1),
@@ -83,6 +80,7 @@ class DSKY(object):
             DSKY.Separator(frame.panel_1),
             DSKY.Separator(frame.panel_1),
         ]
+
         self.annunciators = {
             "uplink_acty":  DSKY.Annunciator(self, name="uplink_acty", image_on="UplinkActyOn.jpg",
                                              image_off="UplinkActyOff.jpg"),
@@ -105,16 +103,19 @@ class DSKY(object):
             "comp_acty":    DSKY.Annunciator(self, name="comp_acty", image_on="CompActyOn.jpg",
                                              image_off="CompActyOff.jpg", panel=frame.panel_1),
         }
+
         self.registers = {
             1: DSKY.DataRegister(self),
             2: DSKY.DataRegister(self),
             3: DSKY.DataRegister(self),
         }
+
         self.control_registers = {
             "program": DSKY.ControlRegister(self, "program", "rProgOn.jpg", "rProgOff.jpg"),
             "verb": DSKY.ControlRegister(self, "verb", "VerbOn.jpg", "VerbOff.jpg"),
             "noun": DSKY.ControlRegister(self, "noun", "NounOn.jpg", "NounOff.jpg"),
         }
+
         self.keyboard = {
             "verb": DSKY.KeyButton(config.ID_VERBBUTTON, "VerbUp.jpg", self),
             "noun": DSKY.KeyButton(config.ID_NOUNBUTTON, "NounUp.jpg", self),
@@ -158,11 +159,26 @@ class DSKY(object):
 
         self.annunciators["comp_acty"].off()
 
-    def request_data(self, requesting_object, location):
+    # def request_proceed_or_data(self, requesting_object, location):
+    #
+    #     utils.log("{} requesting PROCEED or data".format(requesting_object))
+    #     self.verb_noun_flash_on()
+    #     self.object_requesting_data = requesting_object
+    #     self.is_expecting_data = True
+    #     self.display_location_to_load = location
+    #
+    # def request_proceed(self, requesting_object):
+    #     utils.log("{} requesting PROCEED or data".format(requesting_object))
+    #     self.verb_noun_flash_on()
+    #     self.object_requesting_data = requesting_object
+    #     self.is_expecting_data = True
+
+    def request_data(self, requesting_object, location, is_proceed_available=False):
 
         """ Requests data entry from the user.
         :param requesting_object: the object requesting the data
         :param location: the register that entered data will be displayed in
+        :param is_proceed_available: True if the user can key in PROCEED instead of data
         :return: None
         """
 
@@ -171,11 +187,13 @@ class DSKY(object):
         self.object_requesting_data = requesting_object
         self.is_expecting_data = True
         self.display_location_to_load = location
-        if isinstance(location, DSKY.DataRegister):
-            for register in self.registers.itervalues():
-                register.blank()
-        else:
-            location.blank()
+        # if PROCEED is a valid option, don't blank the data register (user needs to be able to see value :)
+        if not is_proceed_available:
+            if isinstance(location, DSKY.DataRegister):
+                for register in self.registers.itervalues():
+                    register.blank()
+            else:
+                location.blank()
 
     def verb_noun_flash_on(self):
 
@@ -187,12 +205,6 @@ class DSKY(object):
         self.control_registers["verb"].digits[2].start_blink()
         self.control_registers["noun"].digits[1].start_blink()
         self.control_registers["noun"].digits[2].start_blink()
-        #for digit in self.control_registers["verb"].digits.itervalues():
-            ##digit.blink_value = digit.value
-            #digit.start_blink(digit.value)
-        #for digit in self.control_registers["noun"].digits.itervalues():
-            ##digit.blink_value = digit.value
-            #digit.start_blink(digit.value)
 
     def verb_noun_flash_off(self):
 
@@ -769,7 +781,7 @@ class DSKY(object):
         """
 
         if keypress == "P":
-            stop_blink()
+            self.stop_blink()
             utils.log("Proceeding without input, calling {}(proceed)".format(
                 self.object_requesting_data))
             self.object_requesting_data("proceed")
@@ -960,7 +972,6 @@ class DSKY(object):
             self.is_verb_being_loaded = False
             self.is_noun_being_loaded = False
             self.is_data_being_loaded = False
-            self.register_focus = None
             self.verb_position = 0
             self.noun_position = 0
             self.requested_verb = 0

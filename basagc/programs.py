@@ -182,6 +182,40 @@ class Program15(Program):
         self.delta_time_to_burn = 0.0
         self.reference_delta_v = 0.0
         self.phase_angle_difference = 0.0
+        self.target_octal_id = ""
+
+    def check_orbital_parameters(self):
+
+        # check if orbit is circular
+        if get_telemetry("eccentricity") > 0.001:
+            gc.poodoo_abort(224, "Orbit not circular")
+            return False
+        # check if orbit is excessively inclined
+        target_inclination = float(get_telemetry("target_inclination"))
+        vessel_inclination = get_telemetry("inclination")
+        if vessel_inclination > (target_inclination - 0.5) and vessel_inclination > (target_inclination + 0.5):
+            gc.poodoo_abort(225, "Vessel and target not in same plane")
+            return False
+        else:
+            return True
+
+    def terminate(self):
+        pass
+
+    def check_target(self):
+
+        """Checks if a target exists, it not, returns the default target, else returns the selected target number
+        Returns: octal target code
+        :rtype: str
+
+        """
+
+        if get_telemetry("target_name") == u"No Target Selected.":
+            utils.log("No target selected in KSP, defaulting to Mun", log_level="WARNING")
+            return "00002"
+            #self.target_octal_id = "2"
+        else:
+            return str(config.OCTAL_BODIES[get_telemetry("target_name")]).zfill(5)
 
     def execute(self):
 
@@ -192,39 +226,28 @@ class Program15(Program):
         super(Program15, self).execute()
         self.orbiting_body = get_telemetry("body")
 
-        # check if orbit is circular
-        if get_telemetry("eccentricity") > 0.001:
-            gc.poodoo_abort(224, "Orbit not circular")
+        if not self.check_orbital_parameters():
             return
+        gc.noun_data["30"] = self.check_target()
+        self.target_octal_id = self.check_target()
+        gc.execute_verb(verb="01", noun="30")
+        gc.dsky.request_data(requesting_object=self.select_target, location=dsky.registers[1],
+                             is_proceed_available=True)
 
-        # check if orbit is excessively inclined
-        target_inclination = get_telemetry("target_inclination")
-        vessel_inclination = get_telemetry("inclination")
-        if vessel_inclination > (target_inclination - 0.5) and vessel_inclination > (target_inclination + 0.5):
-            gc.poodoo_abort(225, "Vessel and target not in same plane")
-            return
 
-        # if a body is set as target in KSP, set that body as the target
-        if get_telemetry("target_type") == "CelestialBody":
+    def select_target(self, target):
 
-            target_id = utils.octal(config.BODIES[get_telemetry("target_name")])
-            gc.loaded_data[3] = str(target_id).zfill(5)
-
-        gc.execute_verb(verb=23, noun=30)
-        gc.object_requesting_data = self.select_target
-
-    def select_target(self):
-
-        """ Called ny P15 after user as entered target choice.
+        """ Called by P15 after user as entered target choice.
         :return: None
         """
 
-        target = gc.loaded_data[3]
+        if target == "proceed":
+            target = self.target_octal_id
         if target[0] == ("+" or "-"):
             dsky.operator_error("Expected octal input, decimal input provided")
             self.execute()
             return
-        elif int(target) not in config.OCTAL_BODIES:
+        elif target not in config.OCTAL_BODIES.values():
             gc.poodoo_abort(223)
             return
         target = config.OCTAL_BODIES[int(target)]

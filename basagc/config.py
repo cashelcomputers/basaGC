@@ -93,18 +93,8 @@ BODIES = {
     "Eeloo": "16",
 }
 
-KSP_PAUSED_STATES = {
-    "0": "Flight Scene",
-    "1": "Paused",
-    "2": "No Power",
-    "3": "Telemachus antenna off",
-    "4": "No Telemachus antenna found"
-}
-
-OCTAL_BODIES = {int(oct(int(value))): key for key, value in BODIES.iteritems()}
-
-PROGRAM_DESCRIPTION = """{program_name} is a implementation of the Apollo Guidance Computer (AGC) for Kerbal Space
-Program. While not entirely accurate to the real AGC, I have attempted to be as accurate as possible.
+OCTAL_BODIES = {key: str(int(oct(int(value)))) for key, value in BODIES.iteritems()}
+PROGRAM_DESCRIPTION = """{program_name} is a implementation of the Apollo Guidance Computer (AGC) for Kerbal Space Program. While not entirely accurate to the real AGC, I have attempted to be as accurate as possible.
 
 {program_name} includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html) by
 Ronald S. Burkey <info@sandroid.org> """.format(program_name=PROGRAM_NAME)

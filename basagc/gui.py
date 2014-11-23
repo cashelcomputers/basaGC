@@ -171,7 +171,7 @@ class LogViewerFrame(wx.Frame):
     """This frame provides a log viewer"""
 
     def __init__(self, *args, **kwds):
-        kwds["style"] = wx.CLOSE_BOX | wx.MINIMIZE_BOX
+        kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
         self.panel_2 = wx.Panel(self, wx.ID_ANY)
         self.viewer = wx.TextCtrl(self.panel_2, wx.ID_ANY, "", style=wx.TE_MULTILINE | wx.TE_READONLY)
