@@ -75,7 +75,7 @@ class Program(object):
         :return: None
         """
 
-        #self.terminate()
+        # self.terminate()
         self.execute()
 
 
@@ -252,7 +252,7 @@ class Program15(Program):
             self.execute()
             return
         elif target not in config.OCTAL_BODY_IDS.values():
-            utils.log("{} {} is not a valid target".format(target, type(target)), log_level="DEBUG")
+            utils.log("{} {} is not a valid target".format(target, type(target)))
             gc.poodoo_abort(223, message="Target not valid")
             return
         target = config.OCTAL_BODY_NAMES[target]

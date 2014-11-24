@@ -60,6 +60,7 @@ INVALID_VERBS = [
     98,
 ]
 
+
 class NounNotAcceptableError(Exception):
 
     """ This exception is raised when the noun selected is not available with the verb selected.
@@ -67,7 +68,7 @@ class NounNotAcceptableError(Exception):
 
     pass
 
-#------------------------BEGIN BASE CLASS DEFINITIONS---------------------------
+# ------------------------BEGIN BASE CLASS DEFINITIONS---------------------------
 
 
 class Verb(object):
@@ -87,8 +88,8 @@ class Verb(object):
         self.name = name
         self.number = verb_number
         self.illegal_nouns = []
-        #self.activity_timer = wx.Timer(frame)  # TODO: convert to utils.Timer object
-        #frame.Bind(wx.EVT_TIMER, self._activity, self.activity_timer)
+        # self.activity_timer = wx.Timer(frame)  # TODO: convert to utils.Timer object
+        # frame.Bind(wx.EVT_TIMER, self._activity, self.activity_timer)
         self.data = []
         self.requested_noun = noun
 
@@ -203,7 +204,7 @@ class DisplayVerb(DataVerb):
         :return: None
         """
 
-        #raise NotImplementedError
+        # raise NotImplementedError
         if computer.dsky.requested_noun in self.illegal_nouns:
             raise NounNotAcceptableError
 
@@ -300,7 +301,7 @@ class MonitorVerb(DisplayVerb):
         utils.log("Terminating V{}".format(self.number))
         dsky.annunciators["key_rel"].off()
         dsky.display_lock = None
-        #dsky.backgrounded_update = None
+        # dsky.backgrounded_update = None
         self.timer.Stop()
         self.requested_noun = None
         # self.activity_timer.Stop()

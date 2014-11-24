@@ -57,6 +57,7 @@ def delta_v(departure_altitude, destination_altitude, departure_body="Kerbin"):
     delta_v_2 = sqrt_mu / sqrt_r2 * (1 - sqrt_r1 * sqrt_2_sum)
     return delta_v_1, delta_v_2
 
+
 def time_to_transfer(departure_orbit, destination_orbit, grav_param):
     """
     Calculates the time to transfer from one orbit to another,
@@ -67,6 +68,7 @@ def time_to_transfer(departure_orbit, destination_orbit, grav_param):
     """
     tH = math.pi * math.sqrt(math.pow(departure_orbit + destination_orbit, 3) / (8 * grav_param))
     return tH
+
 
 def phase_angle(departure_orbit, destination_orbit, grav_param):
 

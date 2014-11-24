@@ -27,7 +27,7 @@ import logging
 import threading
 import time
 
-import simplevector
+# import simplevector
 
 import config
 
@@ -42,35 +42,35 @@ logging.basicConfig(level=logging.DEBUG,
 gc_log = logging.getLogger()
 
 
-class StateVector(object):
-
-    """ This class represents a state vector. Not currently used by any code!
-    """
-
-    def __init__(self):
-
-        """ Class constructor
-        """
-
-        self.position_vector = {
-            "lat": 0.0,
-            "long": 0.0,
-            "alt": 0.0,
-        }
-        self.velocity_vector = simplevector.Vector(0, 0, 0)
-        self.time = 0.0
-
-
-class Attitude(object):
-
-    """ This class represents a spacecraft attitude. Not currently used by any code!
-    """
-
-    def __init__(self, pitch=0.0, roll=0.0, yaw=0.0):
-        self.pitch = pitch
-        self.roll = roll
-        self.yaw = yaw
-
+# class StateVector(object):
+#
+#     """ This class represents a state vector. Not currently used by any code!
+#     """
+#
+#     def __init__(self):
+#
+#         """ Class constructor
+#         """
+#
+#         self.position_vector = {
+#             "lat": 0.0,
+#             "long": 0.0,
+#             "alt": 0.0,
+#         }
+#         self.velocity_vector = simplevector.Vector(0, 0, 0)
+#         self.time = 0.0
+#
+#
+# class Attitude(object):
+#
+#     """ This class represents a spacecraft attitude. Not currently used by any code!
+#     """
+#
+#     def __init__(self, pitch=0.0, roll=0.0, yaw=0.0):
+#         self.pitch = pitch
+#         self.roll = roll
+#         self.yaw = yaw
+#
 
 def seconds_to_time(seconds):
 

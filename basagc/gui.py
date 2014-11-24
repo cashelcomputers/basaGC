@@ -72,6 +72,7 @@ class HelpFrame(wx.Frame):
         self.viewer.Clear()
         self.Hide()
 
+
 class SettingsFrame(wx.Frame):
 
     """This frame provides a settings dialog"""

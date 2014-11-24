@@ -50,7 +50,7 @@ class NounNotImplementedError(Exception):
 
     pass
 
-#-----------------------BEGIN NORMAL NOUNS--------------------------------------
+# -----------------------BEGIN NORMAL NOUNS--------------------------------------
 
 # no noun 00
 
@@ -113,6 +113,7 @@ class Noun(object):
 
     def return_data(self):
         raise NounNotImplementedError
+
 
 class Noun09(Noun):
 
@@ -182,8 +183,8 @@ class Noun17(Noun):
 
     def return_data(self):
 
-        # FIXME: need to make sure that data is correct length (sometimes drops the last 0 when input is xxx.x rather than
-        # xxx.xx
+        # FIXME: need to make sure that data is correct length (sometimes drops the last 0 when input is xxx.x rather
+        # then xxx.xx
         try:
             roll = str(round(get_telemetry("roll"), 2))
             pitch = str(round(get_telemetry("pitch"), 2))

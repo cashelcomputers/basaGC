@@ -58,7 +58,7 @@ class Computer(object):
         self.out_queue = mp.Queue()
         self.in_queue = mp.Queue()
         self.is_powered_on = False
-        self.state_vector = utils.StateVector()
+        # self.state_vector = utils.StateVector()
         self.loop_items = []
         self.gui.Bind(wx.EVT_CLOSE, self.quit)
         self.alarm_codes = [0, 0, 0]
@@ -193,7 +193,6 @@ class Computer(object):
 
         # check KSP paused state
         self.check_paused_state()
-
 
         # if self.run_average_g_routine:
         #     routines.average_g()

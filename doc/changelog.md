@@ -3,6 +3,10 @@ basaGC changelog
 
 Please note that this file only contains changes from version 0.5.0 onwards. All dates are in dd/mm/yy format.
 
+xx/xx/xx: version 0.5.5:
+- Added alarm codes to help menu
+- Many small bug fixes
+
 17/11/14: version 0.5.4:
 - Fixed a but where if user clicked on the log viewer (or help) dialog system close icon the window would get destroyed
 rather than hidden

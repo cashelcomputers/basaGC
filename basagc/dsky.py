@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 """ This module contains code for the DSKY (the guidance computer/user interface)
 """
-#  This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
+# This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
 #  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -29,13 +29,12 @@ import config
 import verbs
 import utils
 
-class Digit(object):
 
+class Digit(object):
     """ Digit base class.
     """
 
     def __init__(self, dsky):
-
         """ Class constructor.
         :param dsky: the DSKY instance
         :return: None
@@ -44,18 +43,16 @@ class Digit(object):
         self.dsky = dsky
         self.state = None
 
-    #def blank(self):
-        #self.widget.SetBitmap(self.blank)
-        #pass
+        # def blank(self):
+        # self.widget.SetBitmap(self.blank)
+        # pass
 
 
 class Separator(object):
-
     """ Display separator.
     """
 
     def __init__(self, panel):
-
         """ Class constructor.
         :param panel: the wxPython panel that the separator lives in.
         :return: None
@@ -66,7 +63,6 @@ class Separator(object):
         self.widget = wx.StaticBitmap(panel, wx.ID_ANY, self.image_off)
 
     def on(self):
-
         """ Illuminates the separator.
         :return: None
         """
@@ -74,7 +70,6 @@ class Separator(object):
         self.widget.SetBitmap(self.image_on)
 
     def off(self):
-
         """ Deluminates the separator.
         :return: None
         """
@@ -83,7 +78,6 @@ class Separator(object):
 
 
 class NumericDigit(Digit):
-
     """ A numeric digit.
     """
 
@@ -212,7 +206,6 @@ class NumericDigit(Digit):
 
 
 class SignDigit(Digit):
-
     """ A class for a plus or minus digit.
     """
 
@@ -267,8 +260,8 @@ class SignDigit(Digit):
 
         self.widget.SetBitmap(self._blank)
 
-class Annunciator(object):
 
+class Annunciator(object):
     """ A class for annunciators.
     """
 
@@ -345,8 +338,8 @@ class Annunciator(object):
         self.widget.SetBitmap(self._image_off)
         self.is_lit = False
 
-class DataRegister(object):
 
+class DataRegister(object):
     """ A class for the data registers
     """
 
@@ -404,8 +397,8 @@ class DataRegister(object):
         for digit in self.digits:
             digit.widget.SetToolTipString(tooltip)
 
-class ControlRegister(object):
 
+class ControlRegister(object):
     """ A class for the control registers.
     """
 
@@ -441,12 +434,12 @@ class ControlRegister(object):
             self.digits[1].display(int(value[0]))
             self.digits[2].display(int(value[1]))
 
-        #for index, digit in enumerate(self.digits, start=1):
+            #for index, digit in enumerate(self.digits, start=1):
             #try:
-                #self.digits[index].display(int(value[index]))
+            #self.digits[index].display(int(value[index]))
             #except IndexError:
-                #utils.log(value, index)
-                #utils.log("Too many values to display, silently ignoring further data")
+            #utils.log(value, index)
+            #utils.log("Too many values to display, silently ignoring further data")
 
     def blank(self):
 
@@ -457,8 +450,8 @@ class ControlRegister(object):
         for digit in self.digits.itervalues():
             digit.display("blank")
 
-class KeyButton(object):
 
+class KeyButton(object):
     """ A class for the DSKY keyboard buttons.
     """
 
@@ -490,8 +483,8 @@ class KeyButton(object):
         self.dsky.charin(keypress)
         return
 
-class DSKY(object):
 
+class DSKY(object):
     """ This class models the DSKY.
     """
 
@@ -674,7 +667,6 @@ class DSKY(object):
             digit.stop_blink()
         for digit in self.control_registers["noun"].digits.itervalues():
             digit.stop_blink()
-
 
 
     def charin(self, keypress):
