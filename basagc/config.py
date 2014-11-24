@@ -109,8 +109,7 @@ ALARM_CODES = SortedDict({
 OCTAL_BODY_IDS = {key: str(int(oct(int(value)))) for key, value in
                   TELEMACHUS_BODY_IDS.iteritems()}  # FIXME: abomination
 OCTAL_BODY_NAMES = {value: key for key, value in OCTAL_BODY_IDS.iteritems()}
-for key, body in OCTAL_BODY_IDS.iteritems():
-    print(key, body)
+
 PROGRAM_DESCRIPTION = """{program_name} is a implementation of the Apollo Guidance Computer (AGC) for Kerbal Space \
 Program. While not entirely accurate to the real AGC, I have attempted to be as accurate as possible.
 

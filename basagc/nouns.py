@@ -186,15 +186,17 @@ class Noun17(Noun):
         # FIXME: need to make sure that data is correct length (sometimes drops the last 0 when input is xxx.x rather
         # then xxx.xx
         try:
-            roll = str(round(get_telemetry("roll"), 2))
-            pitch = str(round(get_telemetry("pitch"), 2))
-            yaw = str(round(get_telemetry("heading"), 2))
+            roll = str(round(get_telemetry("roll"), 1))
+            pitch = str(round(get_telemetry("pitch"), 1))
+            yaw = str(round(get_telemetry("heading"), 1))
         except TelemetryNotAvailable:
             raise
 
-        roll = roll.replace(".", "")
-        pitch = pitch.replace(".", "")
-        yaw = yaw.replace(".", "")
+        roll = roll.replace(".", "").zfill(5)
+        pitch = pitch.replace(".", "").zfill(5)
+        yaw = yaw.replace(".", "").zfill(5)
+
+        print(pitch)
 
         data = {
             1: int(roll),
@@ -202,9 +204,9 @@ class Noun17(Noun):
             3: int(yaw),
             "is_octal": False,
             "tooltips": [
-                "Roll (xxx.xx°)",
-                "Pitch (xxx.xx°)",
-                "Yaw (xxx.xx°)",
+                "Roll (0xxx.x°)",
+                "Pitch (0xxx.x°)",
+                "Yaw (0xxx.x°)",
             ],
         }
         return data
