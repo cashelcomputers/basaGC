@@ -33,6 +33,7 @@ PORT = "8085"
 URL = "http://" + IP + ":" + PORT + "/telemachus/datalink?"
 DISPLAY_UPDATE_INTERVAL = 100
 COMP_ACTY_FLASH_DURATION = 50
+LOOP_TIMER_INTERVAL = 50
 
 LOG_LEVELS = [
     "DEBUG",
@@ -64,16 +65,25 @@ ID_KEYRELBUTTON = 16
 ID_ENTRBUTTON = 17
 ID_RSETBUTTON = 18
 
+DIRECTIONS = [
+    "prograde",
+    "retrograde",
+    "normalplus",
+    "normalminus",
+    "radialplus",
+    "radialminus",
+]
+
 KEY_IDS = {
-    10: "V",
-    11: "N",
-    12: "+",
-    13: "-",
-    14: "C",
-    15: "P",
-    16: "K",
-    17: "E",
-    18: "R",
+    "10": "V",
+    "11": "N",
+    "12": "+",
+    "13": "-",
+    "14": "C",
+    "15": "P",
+    "16": "K",
+    "17": "E",
+    "18": "R",
 }
 
 TELEMACHUS_BODY_IDS = {
@@ -104,6 +114,7 @@ ALARM_CODES = SortedDict({
     224: "Orbit not circular",
     225: "Vessel and target orbits inclination too far apart",
     310: "Program hasn't been finished yet, watch this space :)",
+    410: "Autopilot error",
 })
 
 OCTAL_BODY_IDS = {key: str(int(oct(int(value)))) for key, value in

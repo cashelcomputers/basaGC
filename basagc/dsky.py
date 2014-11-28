@@ -173,31 +173,33 @@ class NumericDigit(Digit):
     def display(self, new_value):
 
         """ Displays the required number on the digit.
-        :param new_value: the value to display
+        :param new_value: the value to display (string)
         :return: None
         """
 
-        if new_value == 0:
+        if new_value == "0":
             self.widget.SetBitmap(self._digit_0)
-        elif new_value == 1:
+        elif new_value == "1":
             self.widget.SetBitmap(self._digit_1)
-        elif new_value == 2:
+        elif new_value == "2":
             self.widget.SetBitmap(self._digit_2)
-        elif new_value == 3:
+        elif new_value == "3":
             self.widget.SetBitmap(self._digit_3)
-        elif new_value == 4:
+        elif new_value == "4":
             self.widget.SetBitmap(self._digit_4)
-        elif new_value == 5:
+        elif new_value == "5":
             self.widget.SetBitmap(self._digit_5)
-        elif new_value == 6:
+        elif new_value == "6":
             self.widget.SetBitmap(self._digit_6)
-        elif new_value == 7:
+        elif new_value == "7":
             self.widget.SetBitmap(self._digit_7)
-        elif new_value == 8:
+        elif new_value == "8":
             self.widget.SetBitmap(self._digit_8)
-        elif new_value == 9:
+        elif new_value == "9":
             self.widget.SetBitmap(self._digit_9)
         elif new_value == "blank":
+            self.widget.SetBitmap(self._digit_blank)
+        elif new_value == "b":
             self.widget.SetBitmap(self._digit_blank)
         self.current_value = new_value
         if self.is_blinking:
@@ -311,6 +313,7 @@ class Annunciator(object):
         """
 
         self.blink_timer.Stop()
+        self.off()
 
     def _blink(self, event):
         """ Blinks indicator """
@@ -375,7 +378,7 @@ class DataRegister(object):
         elif sign == "":
             self.sign.blank()
         for index, digit in enumerate(value):
-            self.digits[index].display(int(digit))
+            self.digits[index].display(digit)
 
     def blank(self):
 
@@ -429,10 +432,10 @@ class ControlRegister(object):
         """
 
         if len(value) == 1:
-            self.digits[1].display(int(value))
+            self.digits[1].display(value)
         else:
-            self.digits[1].display(int(value[0]))
-            self.digits[2].display(int(value[1]))
+            self.digits[1].display(value[0])
+            self.digits[2].display(value[1])
 
             #for index, digit in enumerate(self.digits, start=1):
             #try:
@@ -473,12 +476,11 @@ class KeyButton(object):
         """Called when a keypress event has been received.
         :param event: wxPython event
         """
-        keypress = event.GetId()
+        keypress = str(event.GetId())
 
         # set up the correct key codes for non-numeric keys
         if keypress in config.KEY_IDS:
             keypress = config.KEY_IDS[keypress]
-
         # call the actual handler
         self.dsky.charin(keypress)
         return
@@ -624,11 +626,11 @@ class DSKY(object):
     #     self.object_requesting_data = requesting_object
     #     self.is_expecting_data = True
 
-    def request_data(self, requesting_object, location, is_proceed_available=False):
+    def request_data(self, requesting_object, display_location, is_proceed_available=False):
 
         """ Requests data entry from the user.
         :param requesting_object: the object requesting the data
-        :param location: the register that entered data will be displayed in
+        :param display_location: the register that entered data will be displayed in
         :param is_proceed_available: True if the user can key in PROCEED instead of data
         :return: None
         """
@@ -637,14 +639,14 @@ class DSKY(object):
         self.verb_noun_flash_on()
         self.object_requesting_data = requesting_object
         self.is_expecting_data = True
-        self.display_location_to_load = location
+        self.display_location_to_load = display_location
         # if PROCEED is a valid option, don't blank the data register (user needs to be able to see value :)
         if not is_proceed_available:
-            if isinstance(location, DataRegister):
+            if isinstance(display_location, DataRegister):
                 for register in self.registers.itervalues():
                     register.blank()
             else:
-                location.blank()
+                display_location.blank()
 
     def verb_noun_flash_on(self):
 
@@ -741,7 +743,7 @@ class DSKY(object):
                 self.register_index = 0
             else:
                 self.register_index += 1
-        self.input_data_buffer += str(keypress)
+        self.input_data_buffer += keypress
 
 
     def _handle_control_register_load(self, keypress):
@@ -751,7 +753,7 @@ class DSKY(object):
         """
 
         # we are expecting a numeric digit as input
-        if keypress > 9:
+        if keypress.isalpha():
             self.operator_error("Expecting numeric input")
             return
         # otherwise, add the input to buffer
@@ -761,7 +763,7 @@ class DSKY(object):
         elif self.register_index == 1:
             self.display_location_to_load.digits[2].display(keypress)
             self.register_index = 0
-        self.input_data_buffer += str(keypress)
+        self.input_data_buffer += keypress
 
     def _handle_expected_data(self, keypress):
 
@@ -796,7 +798,7 @@ class DSKY(object):
 
         # if the user as entered anything other than a numeric d,
         # trigger a OPR ERR and recycle program
-        elif keypress > 9:
+        elif keypress.isalpha():
             # if a program is running, recycle it
             # INSERT TRY HERE!!!
             # computer.get_state("running_program").terminate()
@@ -806,7 +808,7 @@ class DSKY(object):
             self.operator_error("Expecting numeric input")
             return
         else:
-            self.input_data_buffer += str(keypress)
+            self.input_data_buffer += keypress
 
             if isinstance(self.display_location_to_load, DataRegister):
                 self.display_location_to_load.display(sign="", value=self.input_data_buffer)
@@ -835,16 +837,16 @@ class DSKY(object):
         elif keypress == "E":
             self.is_verb_being_loaded = False
             self.verb_position = 0
-        elif keypress >= 10:
+        elif keypress.isalpha():
             self.operator_error("Expected a number for verb choice")
             return
         elif self.verb_position == 0:
             self.control_registers["verb"].digits[1].display(keypress)
-            self.requested_verb = str(keypress)
+            self.requested_verb = keypress
             self.verb_position = 1
         elif self.verb_position == 1:
             self.control_registers["verb"].digits[2].display(keypress)
-            self.requested_verb += str(keypress)
+            self.requested_verb += keypress
             self.verb_position = 2
 
 
@@ -868,16 +870,16 @@ class DSKY(object):
         elif keypress == "E":
             self.is_noun_being_loaded = False
             self.noun_position = 0
-        elif keypress >= 10:
+        elif keypress.isalpha():
             self.operator_error("Expected a number for noun choice")
             return
         elif self.noun_position == 0:
             self.control_registers["noun"].digits[1].display(keypress)
-            self.requested_noun = str(keypress)
+            self.requested_noun = keypress
             self.noun_position = 1
         elif self.noun_position == 1:
             self.control_registers["noun"].digits[2].display(keypress)
-            self.requested_noun += str(keypress)
+            self.requested_noun += keypress
             self.noun_position = 2
 
     def _handle_entr_keypress(self, keypress):
@@ -894,9 +896,9 @@ class DSKY(object):
         try:
 
             if int(self.requested_verb) < 40:
-                this_verb = self.computer.verbs[str(self.requested_verb)](self.requested_noun)
+                this_verb = self.computer.verbs[self.requested_verb](self.requested_noun)
             else:
-                this_verb = self.computer.verbs[str(self.requested_verb)]()
+                this_verb = self.computer.verbs[self.requested_verb]()
         except IndexError:
             utils.log("Verb {} not in verb list".format(self.requested_verb), "ERROR")
             self.operator_error()
@@ -950,11 +952,9 @@ class DSKY(object):
         """ Handles KEY REL keypress
         :return: None
         """
-        print(self.backgrounded_update)
         if self.backgrounded_update:
             if self.display_lock:
                 self.display_lock.terminate()
-                print(self.backgrounded_update)
             self.annunciators["key_rel"].stop_blink()
             self.backgrounded_update.resume()
             self.backgrounded_update = None
@@ -993,4 +993,4 @@ class DSKY(object):
         """
 
         self.requested_noun = noun
-        self.control_registers["noun"].display(str(noun))
+        self.control_registers["noun"].display(noun)

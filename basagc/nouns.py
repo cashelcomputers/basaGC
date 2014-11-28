@@ -276,8 +276,8 @@ class Noun30(Noun):
         super(Noun30, self).__init__("Octal Target ID (000XX)")
 
     def return_data(self):
+
         target_id = gc.noun_data["30"]
-        print(target_id)
         data = {
             1: target_id,
             2: None,
@@ -768,8 +768,33 @@ class Noun62(Noun):
 # def noun94(calling_verb):
 #     raise NounNotImplementedError
 #
-# def noun95(calling_verb):
-#     raise NounNotImplementedError
+class Noun95(Noun):
+
+    def __init__(self):
+        super(Noun95, self).__init__(description="Hohmann Transfer Data Display")
+
+    def return_data(self):
+
+        time_to_ignition = gc.noun_data["95"][0]
+        minutes_to_ignition = str(int(time_to_ignition[2])).zfill(2)
+        seconds_to_ignition = str(int(time_to_ignition[3])).zfill(2)
+        delta_v = str(int(gc.noun_data["95"][1])).zfill(5)
+        velocity_at_cutoff = str(int(gc.noun_data["95"][2]))
+
+
+        data = {
+            1: minutes_to_ignition + "b" + seconds_to_ignition,
+            2: delta_v,
+            3: velocity_at_cutoff,
+            "is_octal": False,
+            "tooltips": [
+                "Time To Ignition (TIG) (xxbxx mins, seconds)",
+                "Δv (xxxxx m/s)",
+                "Velocity at cutoff (xxxxx m/s)",
+            ],
+        }
+        return data
+
 #
 # def noun96(calling_verb):
 #     raise NounNotImplementedError
