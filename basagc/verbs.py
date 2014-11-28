@@ -679,7 +679,7 @@ class Verb21(LoadVerb):
         :return: None
         """
 
-        #dsky.request_data(self.accept_input, dsky.registers[3])
+        # dsky.request_data(self.accept_input, dsky.registers[3])
         pass
 
     def accept_input(self, data):

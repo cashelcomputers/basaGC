@@ -184,6 +184,7 @@ class Program15(Program):
         self.phase_angle_difference = 0.0
         self.target_octal_id = ""
         self.departure_body = get_telemetry("body")
+        self.timebase6_begins = 0.0
 
     def check_orbital_parameters(self):
 
@@ -193,14 +194,14 @@ class Program15(Program):
 
         # check if orbit is circular
         if get_telemetry("eccentricity") > 0.001:
-            gc.poodoo_abort(224, "Orbit not circular")
+            gc.poodoo_abort(224)
             return False
 
         # check if orbit is excessively inclined
         target_inclination = float(get_telemetry("target_inclination"))
         vessel_inclination = get_telemetry("inclination")
         if (vessel_inclination > (target_inclination - 0.5)) and (vessel_inclination > (target_inclination + 0.5)):
-            gc.poodoo_abort(225, "Vessel and target not in same plane")
+            gc.poodoo_abort(225)
             return False
         else:
             return True
@@ -233,10 +234,10 @@ class Program15(Program):
         gc.noun_data["30"] = self.check_target()
         self.target_octal_id = self.check_target()
         gc.execute_verb(verb="01", noun="30")
-        gc.dsky.request_data(requesting_object=self.select_target, location=dsky.registers[1],
+        gc.dsky.request_data(requesting_object=self.accept_target_input, location=dsky.registers[1],
                              is_proceed_available=True)
 
-    def select_target(self, target):
+    def accept_target_input(self, target):
 
         """ Called by P15 after user as entered target choice.
         :param target: string of octal target code

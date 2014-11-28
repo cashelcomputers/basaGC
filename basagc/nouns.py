@@ -196,8 +196,6 @@ class Noun17(Noun):
         pitch = pitch.replace(".", "").zfill(5)
         yaw = yaw.replace(".", "").zfill(5)
 
-        print(pitch)
-
         data = {
             1: int(roll),
             2: int(pitch),
