@@ -83,7 +83,7 @@ class Verb(object):
         :param name: the name (or description) of the verb
         :type name: string
         :param verb_number: the number of the verb. Valid ranges are 01 to 99 with some verb numbers not used
-        :type verb_number: int
+        :type verb_number: str
         """
 
         self.name = name
@@ -102,21 +102,22 @@ class Verb(object):
         :return: DSKY formatted output
         :rtype: list of strings
         """
-
+        # FIXME: this func is broken :(
         output = []
         raw_data = [data[1], data[2], data[3]]
-
+        out_data = []
         for item in raw_data:
+
             if data["is_octal"]:
-                output.append("")
-            elif item < 0:
-                output.append("-")
-                item = abs(item)
+                output[0] = "b"
+            elif item[0] == "-":
+                output = "-"
             else:
-                output.append("+")
-            d = str(item).zfill(5)
-            output.append(d)
-        return output
+                output = "+"
+            output += item
+            print(output)
+            out_data.append(output)
+        return out_data
 
     def execute(self):
 
@@ -233,12 +234,12 @@ class MonitorVerb(DisplayVerb):
             self.timer.Start(config.DISPLAY_UPDATE_INTERVAL)
 
         if self.noun is None:
-            self.noun = str(gc.dsky.requested_noun)
-        if gc.dsky.requested_noun in self.illegal_nouns:
+            self.noun = gc.dsky.requested_noun
+        if self.noun in self.illegal_nouns:
             raise NounNotAcceptableError
-        noun = gc.nouns[self.noun]
+        noun_function = gc.nouns[self.noun]
         try:
-            data = noun.return_data()
+            data = noun_function.return_data()
         except nouns.NounNotImplementedError:
             dsky.operator_error("Noun {} not implemented yet. Sorry about that...".format(dsky.requested_noun))
             self.terminate()
@@ -263,9 +264,8 @@ class MonitorVerb(DisplayVerb):
         gc.dsky.registers[3].set_tooltip(data["tooltips"][2])
 
         # display data on DSKY registers
-        gc.dsky.registers[1].display(sign=output[0], value=output[1])
-        gc.dsky.registers[2].display(sign=output[2], value=output[3])
-        gc.dsky.registers[3].display(sign=output[4], value=output[5])
+        for index, display_line in enumerate(output, start=1):
+            gc.dsky.registers[index].display(display_line)
 
         dsky.flash_comp_acty()
 
@@ -387,7 +387,8 @@ class Verb1(DisplayVerb):
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
             return
         output = self._format_output_data(noun_data)
-        gc.dsky.registers[1].display(sign=output[0], value=output[1])
+        print(output)
+        gc.dsky.registers[1].display(output[0])
 
 
 class Verb2(DisplayVerb):
@@ -467,8 +468,8 @@ class Verb4(DisplayVerb):
         noun_function = gc.nouns[gc.dsky.state["requested_noun"]]
         noun_data = noun_function(calling_verb=self)
         output = self._format_output_data(noun_data)
-        gc.dsky.registers[1].display(sign=output[0], value=output[1])
-        gc.dsky.registers[2].display(sign=output[2], value=output[3])
+        gc.dsky.registers[1].display(output[0])
+        gc.dsky.registers[2].display(output[1])
 
 
 class Verb5(DisplayVerb):
@@ -498,9 +499,9 @@ class Verb5(DisplayVerb):
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
             return
         output = self._format_output_data(noun_data)
-        gc.dsky.registers[1].display(sign=output[0], value=output[1])
-        gc.dsky.registers[2].display(sign=output[2], value=output[3])
-        gc.dsky.registers[3].display(sign=output[4], value=output[5])
+        gc.dsky.registers[1].display(output[0])
+        gc.dsky.registers[2].display(output[1])
+        gc.dsky.registers[3].display(output[2])
 
 
 class Verb6(DisplayVerb):
@@ -530,9 +531,9 @@ class Verb6(DisplayVerb):
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
             return
         output = self._format_output_data(noun_data)
-        gc.dsky.registers[1].display(sign=output[0], value=output[1])
-        gc.dsky.registers[2].display(sign=output[2], value=output[3])
-        gc.dsky.registers[3].display(sign=output[4], value=output[5])
+        gc.dsky.registers[1].display(output[0])
+        gc.dsky.registers[2].display(output[1])
+        gc.dsky.registers[3].display(output[2])
 
         # if self.data is None:
         #     noun_function = computer.nouns[computer.dsky.state["requested_noun"]]

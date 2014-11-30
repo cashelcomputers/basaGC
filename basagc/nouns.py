@@ -314,21 +314,23 @@ class Noun33(Noun):
 
         hours, minutes, seconds = 0, 0, 0
         try:
-            hours = str(gc.noun_data["33"][0])
-            minutes = str(gc.noun_data["33"][1])
-            seconds = str(round(gc.noun_data["33"][2], 2))
+            burn = gc.burn_data[0]
         except KeyError:
             gc.program_alarm(alarm_code=115, message="No burn data loaded")
             return False
-        seconds = seconds.replace(".", "")
+        time_of_ignition = utils.seconds_to_time(burn.start_time)
+        hours = str(int(time_of_ignition["hours"]))
+        minutes = str(int(time_of_ignition["minutes"]))
+        seconds = str(time_of_ignition["seconds"]).replace(".", "")
+
         data = {
-            1: int(hours),
-            2: int(minutes),
-            3: int(seconds),
+            1: "-bbb" + hours,
+            2: "-bbb" + minutes,
+            3: "-b" + seconds,
             "tooltips": [
-                "Time Of Ignition (000hh)",
-                "Time Of Ignition (000mm)",
-                "Time Of Ignition (0ss.ss)",
+                "Time Of Ignition (hhhhh)",
+                "Time Of Ignition (bbbmm)",
+                "Time Of Ignition (bss.ss)",
             ],
             "is_octal": False,
         }

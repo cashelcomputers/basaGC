@@ -27,6 +27,7 @@ import utils
 from maneuvers import hohmann_transfer
 import config
 from telemachus import get_telemetry, KSPNotConnected
+from maneuvers.burn import Burn
 
 gc = None
 dsky = None
@@ -175,7 +176,6 @@ class Program15(Program):
         # V37E15E
         # Flashing V01N30 displays target octal ID
         # PRO to accept, V21 to change
-        # Display V06N95: Time from TMI Ignition, Velocity to be gained, Velocity_magnitude
         # Display blanks for 5 seconds at TIG - 105 seconds
         # Display V16N95
         # at TIG - 10 seconds: Flashing V99
@@ -184,15 +184,18 @@ class Program15(Program):
         # FIXME: this program should only *calculate* the maneuver, the actual execution of the burn should be
         # FIXME: performed by P40
 
+        # TODO: scale final altitude based on crafts TWR
+        # TODO: request twr from user
+
         super(Program15, self).__init__(description="TMI Initiate/Cutoff", number="15")
         self.delta_v_first_burn = 0.0
         self.delta_v_second_burn = 0.0
         self.time_to_transfer = 0.0
         self.orbiting_body = None
         self.phase_angle_required = 0.0
-        self.time_of_ignition = 0.0
+        self.time_of_ignition_first_burn = 0.0
+        self.time_of_ignition_second_burn = 0.0
         self.delta_time_to_burn = 0.0
-        self.reference_delta_v = 0.0
         self.phase_angle_difference = 0.0
         self.target_octal_id = ""
         self.departure_body = get_telemetry("body")
@@ -202,12 +205,25 @@ class Program15(Program):
         self.orbital_period = 0
         self.departure_body_orbital_period = 0
         self.is_display_blanked = False
+        self.first_burn = None
+        self.second_burn = None
 
     def calculate_maneuver(self):
 
+        """ Calculates the maneuver parameters and creates a Burn object
+        :return: Nothing
+        """
+
+        # load target
         target = config.OCTAL_BODY_NAMES[self.target_octal_id]
-        if target == "Mun":
-            self.destination_altitude = 12250000
+        target_apoapsis = get_telemetry("body_ApA", body_number=config.TELEMACHUS_BODY_IDS[target])
+
+        # set destination altitude
+        self.destination_altitude = target_apoapsis # + 100000
+        # if target == "Mun":
+        #     self.destination_altitude = 12750000
+
+        # obtain parameters to calculate burn
         self.departure_altitude = get_telemetry("altitude")
         self.orbital_period = get_telemetry("period")
         self.departure_body_orbital_period = get_telemetry("body_period", body_number=config.TELEMACHUS_BODY_IDS[
@@ -215,49 +231,81 @@ class Program15(Program):
         self.grav_param = get_telemetry("body_gravParameter", body_number=config.TELEMACHUS_BODY_IDS[
             self.orbiting_body])
         current_phase_angle = get_telemetry("body_phaseAngle", body_number=config.TELEMACHUS_BODY_IDS[target])
+
+        # calculate the first and second burn Δv parameters
         self.delta_v_first_burn, self.delta_v_second_burn = hohmann_transfer.delta_v(self.departure_altitude,
                                                                                      self.destination_altitude)
+
+        # calculate the time to complete the Hohmann transfer
         self.time_to_transfer = hohmann_transfer.time_to_transfer(self.departure_altitude, self.destination_altitude,
                                                                   self.grav_param)
 
-        try:
-            self.phase_angle_required = hohmann_transfer.phase_angle(self.departure_altitude, self.destination_altitude,
-                                                            self.grav_param)
-        except ProgramTerminated:
-            return
+        # calculate the correct phase angle for the start of the burn
+        # note that the burn impulse is calculated as a instantaneous burn, to be correct the burn should be halfway
+        # complete at this calculated time
+
+        self.phase_angle_required = hohmann_transfer.phase_angle(self.departure_altitude, self.destination_altitude,
+                                                                     self.grav_param)
+
+        # calculate the current difference in phase angle required and current phase angle
         self.phase_angle_difference = current_phase_angle - self.phase_angle_required
         if self.phase_angle_difference < 0:
             self.phase_angle_difference = 180 + abs(self.phase_angle_difference)
-        try:
-            self.delta_time_to_burn = self.phase_angle_difference / ((360 / self.orbital_period) -
-                                                                     (360 / self.departure_body_orbital_period))
-        except TypeError:  # FIXME
-            return
+
+        # calculate time of ignition (TIG)
+        self.delta_time_to_burn = self.phase_angle_difference / ((360 / self.orbital_period) -
+                                                                 (360 / self.departure_body_orbital_period))
+
+        # convert the raw value in seconds to HMS
         delta_time = utils.seconds_to_time(self.delta_time_to_burn)
+
+        # log the maneuver calculations
         utils.log("P15 calculations:")
         utils.log("Phase angle: {}, Δv for burn: {} m/s, time to transfer: {}".format(
-            round(self.phase_angle_required, 2), int(self.delta_v_first_burn), utils.seconds_to_time(self.time_to_transfer)))
-        utils.log("Current Phase Angle: {}, difference: {}".format(current_phase_angle, self.phase_angle_difference))
-        utils.log("Time to burn: {} hours, {} minutes, {} seconds".format(int(delta_time[1]), int(delta_time[2]),
-                                                                          round(delta_time[3], 2)))
-        self.time_of_ignition = get_telemetry("missionTime") + self.delta_time_to_burn
-        hms_time_of_ignition = utils.seconds_to_time(self.time_of_ignition)
-        gc.noun_data["33"] = [
-            hms_time_of_ignition[0],
-            hms_time_of_ignition[1],
-            hms_time_of_ignition[2],
-        ]
+            round(self.phase_angle_required, 2),
+            int(self.delta_v_first_burn),
+            utils.seconds_to_time(self.time_to_transfer)))
+        utils.log("Current Phase Angle: {}, difference: {}".format(
+            current_phase_angle,
+            self.phase_angle_difference))
+        utils.log("Time to burn: {} hours, {} minutes, {} seconds".format(
+            int(delta_time["hours"]),
+            int(delta_time["minutes"]),
+            delta_time["seconds"]))
+
+        # calculate the Δt from now of TIG for both burns
+        self.time_of_ignition_first_burn = get_telemetry("missionTime") + self.delta_time_to_burn
+        self.time_of_ignition_second_burn = self.time_of_ignition_first_burn + self.time_to_transfer
+
+        # create a Burn object for the outbound burn
+        self.first_burn = Burn(delta_v=self.delta_v_first_burn,
+                              direction=config.DIRECTIONS["prograde"],
+                              time_of_ignition=self.time_of_ignition_first_burn)
+
+        # create a Burn object for the outbound burn
+        self.second_burn = Burn(delta_v=self.delta_v_second_burn,
+                                direction=config.DIRECTIONS["retrograde"],
+                                time_of_ignition=self.time_of_ignition_second_burn)
+
+        # load the burn data for both burns into computer
+        gc.burn_data.append(self.first_burn)
+        gc.burn_data.append(self.second_burn)
+
+        #hms_time_of_ignition = utils.seconds_to_time(self.time_of_ignition_first_burn)
+        # gc.noun_data["33"] = [
+        #     hms_time_of_ignition[0],
+        #     hms_time_of_ignition[1],
+        #     hms_time_of_ignition[2],
+        # ]
         gc.noun_data["95"] = [
             delta_time,
             self.delta_v_first_burn,
             get_telemetry("orbitalVelocity") + self.delta_v_first_burn,
         ]
-        self.reference_delta_v = get_telemetry("orbitalVelocity")
 
     def burn_start_time_monitor(self):
         if float(self.delta_time_to_burn) < 0.1:
             # start thrusting and stop the programs running tasks
-            print(gc.loop_items)
             if self.recalculate_maneuver in gc.loop_items:
                 gc.loop_items.remove(self.recalculate_maneuver)
             if self.check_time_to_burn in gc.loop_items:
@@ -301,6 +349,7 @@ class Program15(Program):
 
         # at TIG - 10, execute verb 99
         if int(self.delta_time_to_burn) == 10:
+            gc.loop_items.remove(self.check_time_to_burn)
             gc.execute_verb(99, object_requesting_proceed=self.execute_burn)
 
 

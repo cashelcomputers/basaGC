@@ -84,7 +84,12 @@ def seconds_to_time(seconds):
     minutes, seconds = divmod(seconds, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
-    return days, hours, minutes, seconds
+    return {
+        "days": days,
+        "hours": hours,
+        "minutes": minutes,
+        "seconds": round(seconds, 2),
+    }
 
 
 def log(message, log_level="DEBUG"):

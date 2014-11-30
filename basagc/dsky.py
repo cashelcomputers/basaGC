@@ -363,7 +363,7 @@ class DataRegister(object):
             NumericDigit(dsky, panel=frame.panel_1),
         ]
 
-    def display(self, value, sign=""):
+    def display(self, value):
 
         """ Displays a given value on the whole data register (including sign).
         :param value: The value to display
@@ -371,12 +371,32 @@ class DataRegister(object):
         :return: None
         """
 
-        if sign == "-":
+        # some value length checks
+        value_length = len(value)
+        if value_length > 6:
+            utils.log("Too many digits passed to display(), got {} digits".format(value_length), log_level="ERROR")
+            return
+        elif value_length == 5:
+            utils.log("display() received only 5 digits, assuming sign is blank", log_level="WARNING")
+
+        elif value_length < 5:
+            utils.log("display() received {} digits, padding with zeros to the left".format(value_length),
+                      log_level="WARNING")
+            value.zfill(5)
+
+        if value[0] == "-":
             self.sign.minus()
-        elif sign == "+":
+            value = value[1:]
+        elif value[0] == "+":
             self.sign.plus()
-        elif sign == "":
+            value = value[1:]
+        elif value[0] == "b":
             self.sign.blank()
+            value = value[1:]
+        else:
+            self.sign.blank()
+
+        # display each digit
         for index, digit in enumerate(value):
             self.digits[index].display(digit)
 
@@ -399,6 +419,14 @@ class DataRegister(object):
 
         for digit in self.digits:
             digit.widget.SetToolTipString(tooltip)
+
+    def start_blink(self):
+        for digit in self.digits:
+            digit.start_blink()
+
+    def stop_blink(self):
+        for digit in self.digits:
+            digit.stop_blink()
 
 
 class ControlRegister(object):
@@ -452,6 +480,10 @@ class ControlRegister(object):
 
         for digit in self.digits.itervalues():
             digit.display("blank")
+
+    def start_blink(self):
+        for digit in self.digits.itervalues():
+            digit.start_blink()
 
 
 class KeyButton(object):

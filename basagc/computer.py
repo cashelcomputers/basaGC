@@ -77,6 +77,7 @@ class Computer(object):
         self.noun_data = {
             "30": [],
         }
+        self.burn_data = []
         self.is_ksp_connected = None
         self.ksp_paused_state = None
         self.is_direction_autopilot_engaged = False
@@ -172,7 +173,7 @@ class Computer(object):
         initial_speed = get_telemetry("orbitalVelocity")
         self.is_thrust_autopilot_engaged = True
         thrust_reduced_20 = [False]
-        thrust_reduced_5 = [False]
+        # thrust_reduced_5 = [False]
         delta_v_required = delta_v_required
         accumulated_speed = [0]
 
@@ -181,25 +182,23 @@ class Computer(object):
 
         def thrust_monitor():
 
-            utils.log("Accumulated Δv: {}, Δv to go: {}".format(accumulated_speed[0], delta_v_required -
-                                                                accumulated_speed[0]))
-
             if accumulated_speed[0] > (delta_v_required - 20) and not thrust_reduced_20[0]:
                 utils.log("Setting thrust to 20%", log_level="DEBUG")
                 telemachus.set_throttle(20)
                 thrust_reduced_20[0] = True
-            elif accumulated_speed[0] > (delta_v_required - 5) and not thrust_reduced_5[0]:
-                utils.log("Setting thrust to 5%", log_level="DEBUG")
-                telemachus.set_throttle(5)
-                thrust_reduced_5[0] = True
-            elif accumulated_speed[0] > (delta_v_required - 0.5):
+            # elif accumulated_speed[0] > (delta_v_required - 5) and not thrust_reduced_5[0]:
+            #     utils.log("Setting thrust to 5%", log_level="DEBUG")
+            #     telemachus.set_throttle(5)
+            #     thrust_reduced_5[0] = True
+            if accumulated_speed[0] > (delta_v_required - 0.5):
                 telemachus.cut_throttle()
                 utils.log("Closing throttle, burn complete!", log_level="DEBUG")
                 self.loop_items.remove(thrust_monitor)
 
-
             current_speed = get_telemetry("orbitalVelocity")
             accumulated_speed[0] = current_speed - initial_speed
+            utils.log("Accumulated Δv: {}, Δv to go: {}".format(accumulated_speed[0], delta_v_required -
+                                                                accumulated_speed[0]))
 
         self.loop_items.append(thrust_monitor)
 
