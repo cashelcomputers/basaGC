@@ -302,9 +302,9 @@ class Program15(Program):
                                 time_of_ignition=self.time_of_ignition_second_burn,
                                 calling_maneuver=self)
 
-        # load the burn data for both burns into computer
-        gc.burn_data.append(self.first_burn)
-        gc.burn_data.append(self.second_burn)
+        # begin first burn monitor
+        self.first_burn.execute()
+
 
         # load the burn monitor into the computer main loop
         gc.loop_items.append(self.first_burn.coarse_start_time_monitor)
