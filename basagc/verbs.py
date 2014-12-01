@@ -109,11 +109,13 @@ class Verb(object):
             output = ""
             if data["is_octal"]:
                 output = "b"
-            # elif item[0] == "-":
-            #     output = "-"
+                output += item.zfill(5)
+            elif item[0] == "-":
+                output += item.zfill(6)
             elif item[0].isdigit():
                 output = "+"
-            output += item
+                output += item.zfill(5)
+
             print("item: " + item, "output: " + output)
             out_data.append(output)
         return out_data

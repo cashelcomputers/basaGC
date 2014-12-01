@@ -125,9 +125,9 @@ class Noun09(Noun):
         utils.log("Noun 09 requested")
         alarm_codes = gc.alarm_codes
         data = {
-            1: alarm_codes[0],
-            2: alarm_codes[1],
-            3: alarm_codes[2],
+            1: str(alarm_codes[0]),
+            2: str(alarm_codes[1]),
+            3: str(alarm_codes[2]),
             "is_octal": True,
             "tooltips": [
                 "First alarm code",
@@ -442,22 +442,10 @@ class Noun43(Noun):
             print("Adding 0 to end")
             longitude += "0"
 
-        print(latitude, longitude, altitude)
+        latitude = latitude.replace(".", "")
+        longitude = longitude.replace(".", "")
+        altitude = altitude.replace(".", "")
 
-        if latitude[0].isdigit():
-            latitude = latitude.replace(".", "").zfill(5)
-        else:
-            latitude = latitude.replace(".", "").zfill(6)
-        if longitude[0].isdigit():
-            longitude = longitude.replace(".", "").zfill(5)
-        else:
-            longitude = longitude.replace(".", "").zfill(6)
-        if altitude[0].isdigit():
-            altitude = altitude.replace(".", "").zfill(5)
-        else:
-            altitude = altitude.replace(".", "").zfill(6)
-
-        print(latitude, longitude, altitude)
         data = {
             1: latitude,
             2: longitude,
@@ -470,26 +458,6 @@ class Noun43(Noun):
             ],
         }
         return data
-# def noun43(calling_verb=None):
-#
-#     """ Latitude, longitude, altitude.
-#     :param calling_verb: the verb calling the noun.
-#     :return: noun data
-#     """
-#
-#     description = "Geographic Position (Latitude, Longitude, Altitude)"
-#
-#     latitude = str(round(get_telemetry("lat"), 2)).replace(".", "")
-#     longitude = str(round(get_telemetry("long"), 2)).replace(".", "")
-#     altitude = str(round(get_telemetry("altitude") / 1000, 1)).replace(".", "")
-#
-#     data = {
-#         1: int(latitude),
-#         2: int(longitude),
-#         3: int(altitude),
-#         "is_octal": False,
-#     }
-#     return data
 
 class Noun44(Noun):
     def __init__(self):
@@ -509,12 +477,12 @@ class Noun44(Noun):
         tff_minutes, tff_seconds = divmod(tff, 60)
         tff_hours, tff_minutes = divmod(tff_minutes, 60)
 
-        tff = str(tff_hours).zfill(2) + str(tff_minutes).zfill(2) + str(tff_seconds).zfill(2)
+        tff = str(tff_hours).zfill(1) + str(tff_minutes).zfill(2) + str(tff_seconds).zfill(2)
 
         data = {
-            1: int(apoapsis),
-            2: int(periapsis),
-            3: int(tff),
+            1: apoapsis,
+            2: periapsis,
+            3: tff,
             "tooltips": [
                 "Apoapsis Altitude (xxx.xx km)",
                 "Periapsis Altitude (xxx.xx km)",
@@ -583,9 +551,9 @@ class Noun50(Noun):
         surface_velocity_z = str(round(get_telemetry("surfaceVelocityz"), 1)).replace(".", "")
 
         data = {
-            1: int(surface_velocity_x),
-            2: int(surface_velocity_y),
-            3: int(surface_velocity_z),
+            1: surface_velocity_x,
+            2: surface_velocity_y,
+            3: surface_velocity_z,
             "tooltips": [
                 "Surface Velocity X (xxxx.x m/s)",
                 "Surface Velocity Y (xxxx.x m/s)",
@@ -668,9 +636,9 @@ class Noun62(Noun):
         altitude = altitude.replace(".", "")
 
         data = {
-            1: int(surface_velocity),
-            2: int(altitude_rate),
-            3: int(altitude),
+            1: surface_velocity,
+            2: altitude_rate,
+            3: altitude,
             "is_octal": False,
             "tooltips": [
                 "Surface Velocity (xxxx.x m/s)",
