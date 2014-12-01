@@ -192,9 +192,9 @@ class Noun17(Noun):
         except TelemetryNotAvailable:
             raise
 
-        roll = roll.replace(".", "").zfill(5)
-        pitch = pitch.replace(".", "").zfill(5)
-        yaw = yaw.replace(".", "").zfill(5)
+        roll = roll.replace(".", "")
+        pitch = pitch.replace(".", "")
+        yaw = yaw.replace(".", "")
 
         data = {
             1: roll,
@@ -308,14 +308,14 @@ class Noun30(Noun):
 class Noun33(Noun):
 
     def __init__(self):
-        super(Noun33, self).__init__("Time of Ignition (00xxx hours, 000xx minutes, 0xx.xx seconds)")
+        super(Noun33, self).__init__("Time to Ignition (00xxx hours, 000xx minutes, 0xx.xx seconds)")
 
     def return_data(self):
 
         hours, minutes, seconds = 0, 0, 0
         try:
             burn = gc.burn_data[0]
-        except KeyError:
+        except IndexError:
             gc.program_alarm(alarm_code=115, message="No burn data loaded")
             return False
         time_of_ignition = utils.seconds_to_time(burn.start_time)
@@ -324,13 +324,13 @@ class Noun33(Noun):
         seconds = str(time_of_ignition["seconds"]).replace(".", "")
 
         data = {
-            1: "-bbb" + hours,
+            1: "-" + hours,
             2: "-bbb" + minutes,
             3: "-b" + seconds,
             "tooltips": [
-                "Time Of Ignition (hhhhh)",
-                "Time Of Ignition (bbbmm)",
-                "Time Of Ignition (bss.ss)",
+                "Time To Ignition (hhhhh)",
+                "Time To Ignition (bbbmm)",
+                "Time To Ignition (bss.ss)",
             ],
             "is_octal": False,
         }
@@ -436,10 +436,8 @@ class Noun43(Noun):
 
         # the following fixes a problem that round() will discard a trailing 0 eg 100.10 becomes 100.1
         if latitude[-2] == ".":
-            print("Adding 0 to end")
             latitude += "0"
         if longitude[-2] == ".":
-            print("Adding 0 to end")
             longitude += "0"
 
         latitude = latitude.replace(".", "")
@@ -776,11 +774,12 @@ class Noun95(Noun):
 
     def return_data(self):
 
-        time_to_ignition = gc.noun_data["95"][0]
-        minutes_to_ignition = str(int(time_to_ignition[2])).zfill(2)
-        seconds_to_ignition = str(int(time_to_ignition[3])).zfill(2)
-        delta_v = str(int(gc.noun_data["95"][1])).zfill(5)
-        velocity_at_cutoff = str(int(gc.noun_data["95"][2]))
+        # time_to_ignition = gc.noun_data["95"][0]
+        time_to_ignition = utils.seconds_to_time(gc.burn_data[0].time_until_ignition)
+        minutes_to_ignition = str(int(time_to_ignition["minutes"])).zfill(2)
+        seconds_to_ignition = str(int(time_to_ignition["seconds"])).zfill(2)
+        delta_v = str(int(gc.burn_data[0].delta_v))
+        velocity_at_cutoff = str(int(gc.burn_data[0].velocity_at_cutoff))
 
 
         data = {

@@ -24,13 +24,69 @@
 #  (http://www.ibiblio.org/apollo/index.html) by Ronald S. Burkey
 #  <info@sandroid.org>
 
+from ..telemachus import get_telemetry
+from ..utils import log
+
+gc = None
+
 class Burn(object):
 
-    def __init__(self, delta_v, direction, time_of_ignition):
+    def __init__(self, delta_v, direction, time_of_ignition, calling_maneuver, recalc=None):
 
         self.delta_v = delta_v
         self.direction = direction
-        self.start_time = time_of_ignition
+        self.time_of_ignition = time_of_ignition
+        self.calling_maneuver = calling_maneuver
+        self.is_display_blanked = False
+        self.is_verb_99_executed = False
+        self.recalculation_function = recalc
+        self.time_until_ignition = self.time_of_ignition - get_telemetry("missionTime")
+        self.velocity_at_cutoff = get_telemetry("orbitalVelocity") + self.delta_v
 
-    def start_monitor(self):
-        pass
+
+
+    def coarse_start_time_monitor(self):
+        current_time = get_telemetry("missionTime")
+        self.time_until_ignition = self.time_of_ignition - current_time
+
+        # ensure we only blank display first time through the loop
+        if int(self.time_until_ignition) <= 105 and not self.is_display_blanked:
+            gc.dsky.current_verb.terminate()
+            for register in gc.dsky.control_registers.itervalues():
+                register.blank()
+            for register in gc.dsky.registers.itervalues():
+                register.blank()
+            self.is_display_blanked = True
+        # after 5 seconds, reenable display and enable autopilot
+        if self.is_display_blanked and int(self.time_until_ignition) <= 100:
+            gc.execute_verb(verb="16", noun="95")
+            self.is_display_blanked = False
+            gc.enable_direction_autopilot(self.direction)
+
+        # at TIG - 10, execute verb 99
+        if int(self.time_until_ignition) <= 10 and not self.is_verb_99_executed:
+            self.is_verb_99_executed = True
+            gc.loop_items.remove(self)
+            gc.execute_verb(99, object_requesting_proceed=self.execute_burn)
+
+    def execute_burn(self, data):
+        if data == "proceed":
+            log("Go for burn!", log_level="INFO")
+        else:
+            return
+        gc.loop_items.append(self.fine_start_time_monitor)
+        gc.execute_verb(verb="16", noun="95")
+
+    def fine_start_time_monitor(self):
+
+        current_time = get_telemetry("missionTime")
+        self.time_until_ignition = self.time_of_ignition - current_time
+        if float(self.time_until_ignition) < 0.1:
+            # start thrusting and stop the programs running tasks
+            # if self.calling_maneuver.recalculate_maneuver in gc.loop_items:
+            #     gc.loop_items.remove(self.calling_maneuver.recalculate_maneuver)
+            # if self.calling_maneuver.check_time_to_burn in gc.loop_items:
+            #     gc.loop_items.remove(self.calling_maneuver.check_time_to_burn)
+            gc.loop_items.remove(self.fine_start_time_monitor)
+            gc.enable_thrust_autopilot(delta_v_required=self.delta_v)
+            log("Thrusting", log_level="DEBUG")

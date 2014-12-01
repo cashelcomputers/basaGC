@@ -38,6 +38,7 @@ import programs
 import routines
 from telemachus import check_connection, get_telemetry
 import telemachus
+from maneuvers import burn
 
 
 class Computer(object):
@@ -84,6 +85,7 @@ class Computer(object):
         self.is_thrust_autopilot_engaged = False
         self.active_program = None
 
+        burn.gc = self
         telemachus.gc = self
         verbs.gc = self
         verbs.dsky = self.dsky

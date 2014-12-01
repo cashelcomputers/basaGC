@@ -106,6 +106,8 @@ class Verb(object):
         raw_data = [data[1], data[2], data[3]]
         out_data = []
         for item in raw_data:
+            if not item:
+                continue
             output = ""
             if data["is_octal"]:
                 output = "b"
@@ -115,8 +117,6 @@ class Verb(object):
             elif item[0].isdigit():
                 output = "+"
                 output += item.zfill(5)
-
-            print("item: " + item, "output: " + output)
             out_data.append(output)
         return out_data
 
@@ -257,7 +257,13 @@ class MonitorVerb(DisplayVerb):
             gc.program_alarm(111)
             self.terminate()
             raise
+        if not data:
+            # if the noun returns False, the noun *should* have already raised a program alarm, so we just need to
+            # terminate and return
+            self.terminate()
+            return
         output = self._format_output_data(data)
+
 
         # set tooltips
         gc.dsky.registers[1].set_tooltip(data["tooltips"][0])
@@ -388,7 +394,6 @@ class Verb1(DisplayVerb):
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
             return
         output = self._format_output_data(noun_data)
-        print(output)
         gc.dsky.registers[1].display(output[0])
 
 
@@ -906,10 +911,12 @@ class Verb34(Verb):
         """
 
         if dsky.backgrounded_update:
+            utils.log("Terminating backgrounded update")
             dsky.backgrounded_update.terminate()
             if dsky.annunciators["key_rel"].blink_timer.IsRunning():
                 dsky.annunciators["key_rel"].stop_blink()
         if gc.active_program:
+            utils.log("Terminating active program {}".format(gc.active_program.number))
             # have to use try block to catch and ignore expected ProgramTerminated exception
             try:
                 gc.active_program.terminate()
