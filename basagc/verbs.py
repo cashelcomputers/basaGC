@@ -102,20 +102,19 @@ class Verb(object):
         :return: DSKY formatted output
         :rtype: list of strings
         """
-        # FIXME: this func is broken :(
-        output = []
+
         raw_data = [data[1], data[2], data[3]]
         out_data = []
         for item in raw_data:
-
+            output = ""
             if data["is_octal"]:
-                output[0] = "b"
-            elif item[0] == "-":
-                output = "-"
-            else:
+                output = "b"
+            # elif item[0] == "-":
+            #     output = "-"
+            elif item[0].isdigit():
                 output = "+"
             output += item
-            print(output)
+            print("item: " + item, "output: " + output)
             out_data.append(output)
         return out_data
 

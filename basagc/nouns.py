@@ -197,9 +197,9 @@ class Noun17(Noun):
         yaw = yaw.replace(".", "").zfill(5)
 
         data = {
-            1: int(roll),
-            2: int(pitch),
-            3: int(yaw),
+            1: roll,
+            2: pitch,
+            3: yaw,
             "is_octal": False,
             "tooltips": [
                 "Roll (0xxx.x°)",
@@ -347,18 +347,22 @@ class Noun36(Noun):
             telemetry = get_telemetry("missionTime")
         except TelemetryNotAvailable:
             raise
+
         minutes, seconds = divmod(telemetry, 60)
         hours, minutes = divmod(minutes, 60)
         days, hours = divmod(hours, 24)
-        milliseconds, seconds = math.modf(seconds)
-        milliseconds *= 100
+
+        days = str(int(days)).zfill(2)
+        hours = str(int(hours)).zfill(2)
+        minutes = str(int(minutes)).zfill(2)
+        seconds = str(round(seconds, 2)).replace(".", "").zfill(4)
 
         data = {
-            1: (int(days) * 100) + int(hours),
-            2: int(minutes),
-            3: (int(seconds) * 100) + int(milliseconds),
+            1: days + "b" + hours,
+            2: "bbb" + minutes,
+            3: "b" + seconds,
             "tooltips": [
-                "Mission Elapsed Time (dddhh)",
+                "Mission Elapsed Time (ddbhh)",
                 "Mission Elapsed Time (bbbmm)",
                 "Mission Elapsed Time (bss.ss)",
             ],
@@ -421,16 +425,43 @@ class Noun43(Noun):
 
     def return_data(self):
         try:
-            latitude = str(round(get_telemetry("lat"), 2)).replace(".", "")
-            longitude = str(round(get_telemetry("long"), 2)).replace(".", "")
-            altitude = str(round(get_telemetry("altitude") / 1000, 1)).replace(".", "")
+            # latitude = str(round(get_telemetry("lat"), 2)).replace(".", "").zfill(5)
+            # longitude = str(round(get_telemetry("long"), 2)).replace(".", "").zfill(5)
+            # altitude = str(round(get_telemetry("altitude") / 1000, 1)).replace(".", "").zfill(5)
+            latitude = str(round(get_telemetry("lat"), 2))
+            longitude = str(round(get_telemetry("long"), 2))
+            altitude = str(round(get_telemetry("altitude") / 1000, 1))
         except TelemetryNotAvailable:
             raise
 
+        # the following fixes a problem that round() will discard a trailing 0 eg 100.10 becomes 100.1
+        if latitude[-2] == ".":
+            print("Adding 0 to end")
+            latitude += "0"
+        if longitude[-2] == ".":
+            print("Adding 0 to end")
+            longitude += "0"
+
+        print(latitude, longitude, altitude)
+
+        if latitude[0].isdigit():
+            latitude = latitude.replace(".", "").zfill(5)
+        else:
+            latitude = latitude.replace(".", "").zfill(6)
+        if longitude[0].isdigit():
+            longitude = longitude.replace(".", "").zfill(5)
+        else:
+            longitude = longitude.replace(".", "").zfill(6)
+        if altitude[0].isdigit():
+            altitude = altitude.replace(".", "").zfill(5)
+        else:
+            altitude = altitude.replace(".", "").zfill(6)
+
+        print(latitude, longitude, altitude)
         data = {
-            1: int(latitude),
-            2: int(longitude),
-            3: int(altitude),
+            1: latitude,
+            2: longitude,
+            3: altitude,
             "is_octal": False,
             "tooltips": [
                 "Latitude (xxx.xx°)",
