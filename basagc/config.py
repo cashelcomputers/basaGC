@@ -26,7 +26,7 @@
 from sortedcontainers import SortedDict
 
 PROGRAM_NAME = "basaGC"
-VERSION = "0.5.4"
+VERSION = "0.5.5"
 IMAGES_DIR = "./images/"
 IP = "127.0.0.1"
 PORT = "8085"
