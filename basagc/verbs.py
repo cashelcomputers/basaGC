@@ -179,7 +179,7 @@ class DataVerb(Verb):
         :param name: name (description) of verb
         :type name: string
         :param verb_number: the verb number
-        :type verb_number: int
+        :type verb_number: str
         :return: None
         """
 
@@ -197,7 +197,7 @@ class DisplayVerb(DataVerb):
         :param name: name (description) of verb
         :type name: string
         :param verb_number: the verb number
-        :type verb_number: int
+        :type verb_number: str
         :return: None
         """
 

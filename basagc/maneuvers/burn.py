@@ -42,6 +42,9 @@ class Burn(object):
         self.time_until_ignition = self.time_of_ignition - get_telemetry("missionTime")
         self.velocity_at_cutoff = get_telemetry("orbitalVelocity") + self.delta_v
         self.is_directional_autopilot_engaged = False
+        if self.calling_maneuver.time_to_transfer:
+            log("Got time to transfer data")
+            self.time_to_transfer = self.calling_maneuver.time_to_transfer
 
     def execute(self):
         gc.burn_data.append(self)
@@ -99,5 +102,5 @@ class Burn(object):
             # if self.calling_maneuver.check_time_to_burn in gc.loop_items:
             #     gc.loop_items.remove(self.calling_maneuver.check_time_to_burn)
             gc.loop_items.remove(self.fine_start_time_monitor)
-            gc.enable_thrust_autopilot(delta_v_required=self.delta_v)
+            gc.enable_thrust_autopilot(delta_v_required=self.delta_v, calling_burn=self)
             log("Thrusting", log_level="DEBUG")
