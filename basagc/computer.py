@@ -27,7 +27,8 @@
 import multiprocessing as mp
 
 import wx
-from sortedcontainers import SortedDict
+# from sortedcontainers import SortedDict
+from collections import OrderedDict
 
 import config
 import utils
@@ -55,7 +56,6 @@ class Computer(object):
 
         self.gui = gui
         self.dsky = dsky.DSKY(self.gui, self)
-        #self.loop_timer = utils.Timer(interval=0.5, function=self.main_loop)
         self.loop_timer = wx.Timer(gui)
         gui.Bind(wx.EVT_TIMER, self.main_loop, self.loop_timer)
         self.out_queue = mp.Queue()
@@ -97,51 +97,56 @@ class Computer(object):
         programs.dsky = self.dsky
         routines.computer = self
 
-        self.nouns = SortedDict({
-            "09": nouns.Noun09(),
-            "17": nouns.Noun17(),
-            "30": nouns.Noun30(),
-            "33": nouns.Noun33(),
-            "36": nouns.Noun36(),
-            "43": nouns.Noun43(),
-            "44": nouns.Noun44(),
-            "50": nouns.Noun50(),
-            "62": nouns.Noun62(),
-            "95": nouns.Noun95()
-        })
-        self.verbs = SortedDict({
-            "01": verbs.Verb1,
-            "02": verbs.Verb2,
-            "03": verbs.Verb3,
-            "04": verbs.Verb4,
-            "05": verbs.Verb5,
-            "06": verbs.Verb6,
-            "07": verbs.Verb7,
-            "11": verbs.Verb11,
-            "12": verbs.Verb12,
-            "13": verbs.Verb13,
-            "14": verbs.Verb14,
-            "15": verbs.Verb15,
-            "16": verbs.Verb16,
-            "17": verbs.Verb17,
-            "21": verbs.Verb21,
-            "22": verbs.Verb22,
-            "23": verbs.Verb23,
-            "24": verbs.Verb24,
-            "25": verbs.Verb25,
-            "32": verbs.Verb32,
-            "33": verbs.Verb33,
-            "34": verbs.Verb34,
-            "35": verbs.Verb35,
-            "36": verbs.Verb36,
-            "37": verbs.Verb37,
-            "75": verbs.Verb75,
-            "82": verbs.Verb82,
-            "93": verbs.Verb93,
-            "99": verbs.Verb99,
-        })
+        self.nouns = OrderedDict(
+            {
+                "09": nouns.Noun09(),
+                "17": nouns.Noun17(),
+                "30": nouns.Noun30(),
+                "33": nouns.Noun33(),
+                "36": nouns.Noun36(),
+                "43": nouns.Noun43(),
+                "44": nouns.Noun44(),
+                "50": nouns.Noun50(),
+                "62": nouns.Noun62(),
+                "95": nouns.Noun95(),
+            }
+        )
 
-        self.programs = SortedDict({
+        self.verbs = OrderedDict(
+            {
+                "01": verbs.Verb1,
+                "02": verbs.Verb2,
+                "03": verbs.Verb3,
+                "04": verbs.Verb4,
+                "05": verbs.Verb5,
+                "06": verbs.Verb6,
+                "07": verbs.Verb7,
+                "11": verbs.Verb11,
+                "12": verbs.Verb12,
+                "13": verbs.Verb13,
+                "14": verbs.Verb14,
+                "15": verbs.Verb15,
+                "16": verbs.Verb16,
+                "17": verbs.Verb17,
+                "21": verbs.Verb21,
+                "22": verbs.Verb22,
+                "23": verbs.Verb23,
+                "24": verbs.Verb24,
+                "25": verbs.Verb25,
+                "32": verbs.Verb32,
+                "33": verbs.Verb33,
+                "34": verbs.Verb34,
+                "35": verbs.Verb35,
+                "36": verbs.Verb36,
+                "37": verbs.Verb37,
+                "75": verbs.Verb75,
+                "82": verbs.Verb82,
+                "93": verbs.Verb93,
+                "99": verbs.Verb99,
+            }
+        )
+
+        self.programs = OrderedDict({
             "00": programs.Program00,
             "11": programs.Program11,
             "15": programs.Program15,
