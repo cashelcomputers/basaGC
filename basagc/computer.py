@@ -54,6 +54,7 @@ class Computer(object):
         :return: None
         """
 
+        utils.log(message="\n\n" + config.SHORT_LICENCE + "\n", log_level="INFO")
         self.gui = gui
         self.dsky = dsky.DSKY(self.gui, self)
         self.loop_timer = wx.Timer(gui)
