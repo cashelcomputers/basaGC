@@ -72,6 +72,7 @@ class HelpFrame(wx.Frame):
         self.viewer.Clear()
         self.Hide()
 
+
 class SettingsFrame(wx.Frame):
 
     """This frame provides a settings dialog"""
@@ -171,7 +172,7 @@ class LogViewerFrame(wx.Frame):
     """This frame provides a log viewer"""
 
     def __init__(self, *args, **kwds):
-        kwds["style"] = wx.CLOSE_BOX | wx.MINIMIZE_BOX
+        kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
         self.panel_2 = wx.Panel(self, wx.ID_ANY)
         self.viewer = wx.TextCtrl(self.panel_2, wx.ID_ANY, "", style=wx.TE_MULTILINE | wx.TE_READONLY)
@@ -277,6 +278,9 @@ class GUI(wx.Frame):
         self.help_programs_menu = wx.MenuItem(self.help_menu, wx.ID_ANY, "Programs...",
                                               "Displays available programs", wx.ITEM_NORMAL)
         self.help_menu.AppendItem(self.help_programs_menu)
+        self.help_alarm_codes_menu = wx.MenuItem(self.help_menu, wx.ID_ANY, "Alarm codes...", "Displays alarm codes",
+                                                 wx.ITEM_NORMAL)
+        self.help_menu.AppendItem(self.help_alarm_codes_menu)
         self.about_menuitem = wx.MenuItem(self.help_menu, wx.ID_ANY, "About...", "", wx.ITEM_NORMAL)
         self.help_menu.AppendItem(self.about_menuitem)
         self.menubar.Append(self.help_menu, "Help")
@@ -332,6 +336,7 @@ class GUI(wx.Frame):
         self.Bind(wx.EVT_MENU, self.verbs_menuitem_click, self.help_verbs_menu)
         self.Bind(wx.EVT_MENU, self.nouns_menuitem_click, self.help_nouns_menu)
         self.Bind(wx.EVT_MENU, self.programs_menuitem_click, self.help_programs_menu)
+        self.Bind(wx.EVT_MENU, self.alarm_codes_menuitem_click, self.help_alarm_codes_menu)
 
     def __set_properties(self):
 
@@ -551,8 +556,7 @@ class GUI(wx.Frame):
     #     GUI.dsky.control_registers["verb"].stop_blink()
     #     GUI.dsky.control_registers["noun"].stop_blink()
 
-    @staticmethod
-    def on():
+    def on(self):
 
         """ Turns the DSKY on.
         :return: None
@@ -562,8 +566,7 @@ class GUI(wx.Frame):
         for item in GUI.dsky.static_display:
             item.on()
 
-    @staticmethod
-    def off():
+    def off(self):
 
         """ Turns the DSKY off.
         :return: None
@@ -592,8 +595,7 @@ class GUI(wx.Frame):
 
         self.log_viewer.Show()
 
-    @staticmethod
-    def quit_menuitem_click(event):
+    def quit_menuitem_click(self, event):
 
         """ Event handler for Quit menu item.
         :param event: wxPython event (not used)
@@ -602,8 +604,7 @@ class GUI(wx.Frame):
 
         GUI.computer.quit()
 
-    @staticmethod
-    def about_menuitem_click(event):
+    def about_menuitem_click(self, event):
 
         """ Event handler for Help/About menu item.
         :param event: wxPython event (not used)
@@ -622,7 +623,6 @@ class GUI(wx.Frame):
         about_dialog.AddDeveloper(config.DEVELOPERS)
 
         wx.AboutBox(about_dialog)
-
 
     def verbs_menuitem_click(self, event):
         self.help_viewer.SetTitle("Verbs Listing")
@@ -651,6 +651,14 @@ class GUI(wx.Frame):
         for program_number, program in self.computer.programs.iteritems():
             programs_list += "Program " + program_number + ":\t" + program.description + "\n"
         self.help_viewer.viewer.SetValue(programs_list)
+        self.help_viewer.Show()
+
+    def alarm_codes_menuitem_click(self, event):
+        self.help_viewer.SetTitle("Alarm Codes")
+        alarm_codes_list = ""
+        for alarm_code, description in config.ALARM_CODES.iteritems():
+            alarm_codes_list += "0X" + str(alarm_code) + ":\t" + description + "\n"
+        self.help_viewer.viewer.SetValue(alarm_codes_list)
         self.help_viewer.Show()
 
 

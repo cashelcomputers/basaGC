@@ -7,9 +7,9 @@ Thanks to Ron Burkey (<info@sandroid.org>) for VirtualAGC!
 
 This is my reimplementation of the Apollo Guidance Computer (AGC) and Display/Keyboard (DSKY) for Kerbal Space Program.
 
-_IMPORTANT:_ I have switched to the Gitflow development model. The most bleeding edge version can now be found in branch
-<a href="https://github.com/cashelcomputers/basaGC/tree/develop">"develop"</a>. Stable version can be obtained from
-branch <a href="https://github.com/cashelcomputers/basaGC/tree/master">"master"</a>.
+_IMPORTANT:_ I have switched to the Gitflow development model. The most bleeding edge version can now be found in
+branch <a href="https://github.com/cashelcomputers/basaGC/tree/develop">"develop"</a>. Stable version can be obtained
+from branch <a href="https://github.com/cashelcomputers/basaGC/tree/master">"master"</a>.
 
 Prerequisites:
 

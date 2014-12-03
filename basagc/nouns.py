@@ -28,7 +28,7 @@ import math
 from telemachus import get_telemetry, TelemetryNotAvailable
 import utils
 
-computer = None
+gc = None
 
 
 def octal(value):
@@ -50,7 +50,7 @@ class NounNotImplementedError(Exception):
 
     pass
 
-#-----------------------BEGIN NORMAL NOUNS--------------------------------------
+# -----------------------BEGIN NORMAL NOUNS--------------------------------------
 
 # no noun 00
 
@@ -112,7 +112,8 @@ class Noun(object):
         self.description = description
 
     def return_data(self):
-        pass
+        raise NounNotImplementedError
+
 
 class Noun09(Noun):
 
@@ -122,11 +123,11 @@ class Noun09(Noun):
     def return_data(self):
 
         utils.log("Noun 09 requested")
-        alarm_codes = computer.alarm_codes
+        alarm_codes = gc.alarm_codes
         data = {
-            1: alarm_codes[0],
-            2: alarm_codes[1],
-            3: alarm_codes[2],
+            1: str(alarm_codes[0]),
+            2: str(alarm_codes[1]),
+            3: str(alarm_codes[2]),
             "is_octal": True,
             "tooltips": [
                 "First alarm code",
@@ -182,12 +183,12 @@ class Noun17(Noun):
 
     def return_data(self):
 
-        # FIXME: need to make sure that data is correct length (sometimes drops the last 0 when input is xxx.x rather than
-        # xxx.xx
+        # FIXME: need to make sure that data is correct length (sometimes drops the last 0 when input is xxx.x rather
+        # then xxx.xx
         try:
-            roll = str(round(get_telemetry("roll"), 2))
-            pitch = str(round(get_telemetry("pitch"), 2))
-            yaw = str(round(get_telemetry("heading"), 2))
+            roll = str(round(get_telemetry("roll"), 1))
+            pitch = str(round(get_telemetry("pitch"), 1))
+            yaw = str(round(get_telemetry("heading"), 1))
         except TelemetryNotAvailable:
             raise
 
@@ -196,14 +197,14 @@ class Noun17(Noun):
         yaw = yaw.replace(".", "")
 
         data = {
-            1: int(roll),
-            2: int(pitch),
-            3: int(yaw),
+            1: roll,
+            2: pitch,
+            3: yaw,
             "is_octal": False,
             "tooltips": [
-                "Roll (xxx.xx°)",
-                "Pitch (xxx.xx°)",
-                "Yaw (xxx.xx°)",
+                "Roll (0xxx.x°)",
+                "Pitch (0xxx.x°)",
+                "Yaw (0xxx.x°)",
             ],
         }
         return data
@@ -270,8 +271,24 @@ class Noun17(Noun):
 # def noun29(calling_verb):
 #     raise NounNotImplementedError
 #
-# def noun30(calling_verb=None):
-#     raise NounNotImplementedError
+class Noun30(Noun):
+    def __init__(self):
+        super(Noun30, self).__init__("Octal Target ID (000XX)")
+
+    def return_data(self):
+
+        target_id = gc.noun_data["30"]
+        data = {
+            1: target_id,
+            2: None,
+            3: None,
+            "tooltips": ["Target Octal ID"],
+            "is_octal": True,
+        }
+        return data
+
+    def receive_data(self, data):
+        gc.noun_data["30"] = data
 #
 # def noun31(calling_verb):
 #     raise NounNotImplementedError
@@ -288,6 +305,38 @@ class Noun17(Noun):
 # def noun35(calling_verb):
 #     raise NounNotImplementedError
 
+class Noun33(Noun):
+
+    def __init__(self):
+        super(Noun33, self).__init__("Time to Ignition (00xxx hours, 000xx minutes, 0xx.xx seconds)")
+
+    def return_data(self):
+
+        hours, minutes, seconds = 0, 0, 0
+        try:
+            burn = gc.burn_data[0]
+        except IndexError:
+            gc.program_alarm(alarm_code=115, message="No burn data loaded")
+            return False
+        time_of_ignition = utils.seconds_to_time(burn.start_time)
+        hours = str(int(time_of_ignition["hours"]))
+        minutes = str(int(time_of_ignition["minutes"]))
+        seconds = str(time_of_ignition["seconds"]).replace(".", "")
+
+        data = {
+            1: "-" + hours,
+            2: "-bbb" + minutes,
+            3: "-b" + seconds,
+            "tooltips": [
+                "Time To Ignition (hhhhh)",
+                "Time To Ignition (bbbmm)",
+                "Time To Ignition (bss.ss)",
+            ],
+            "is_octal": False,
+        }
+        return data
+
+
 class Noun36(Noun):
 
     def __init__(self):
@@ -298,18 +347,22 @@ class Noun36(Noun):
             telemetry = get_telemetry("missionTime")
         except TelemetryNotAvailable:
             raise
+
         minutes, seconds = divmod(telemetry, 60)
         hours, minutes = divmod(minutes, 60)
         days, hours = divmod(hours, 24)
-        milliseconds, seconds = math.modf(seconds)
-        milliseconds *= 100
+
+        days = str(int(days)).zfill(2)
+        hours = str(int(hours)).zfill(2)
+        minutes = str(int(minutes)).zfill(2)
+        seconds = str(round(seconds, 2)).replace(".", "").zfill(4)
 
         data = {
-            1: (int(days) * 100) + int(hours),
-            2: int(minutes),
-            3: (int(seconds) * 100) + int(milliseconds),
+            1: days + "b" + hours,
+            2: "bbb" + minutes,
+            3: "b" + seconds,
             "tooltips": [
-                "Mission Elapsed Time (dddhh)",
+                "Mission Elapsed Time (ddbhh)",
                 "Mission Elapsed Time (bbbmm)",
                 "Mission Elapsed Time (bss.ss)",
             ],
@@ -372,16 +425,29 @@ class Noun43(Noun):
 
     def return_data(self):
         try:
-            latitude = str(round(get_telemetry("lat"), 2)).replace(".", "")
-            longitude = str(round(get_telemetry("long"), 2)).replace(".", "")
-            altitude = str(round(get_telemetry("altitude") / 1000, 1)).replace(".", "")
+            # latitude = str(round(get_telemetry("lat"), 2)).replace(".", "").zfill(5)
+            # longitude = str(round(get_telemetry("long"), 2)).replace(".", "").zfill(5)
+            # altitude = str(round(get_telemetry("altitude") / 1000, 1)).replace(".", "").zfill(5)
+            latitude = str(round(get_telemetry("lat"), 2))
+            longitude = str(round(get_telemetry("long"), 2))
+            altitude = str(round(get_telemetry("altitude") / 1000, 1))
         except TelemetryNotAvailable:
             raise
 
+        # the following fixes a problem that round() will discard a trailing 0 eg 100.10 becomes 100.1
+        if latitude[-2] == ".":
+            latitude += "0"
+        if longitude[-2] == ".":
+            longitude += "0"
+
+        latitude = latitude.replace(".", "")
+        longitude = longitude.replace(".", "")
+        altitude = altitude.replace(".", "")
+
         data = {
-            1: int(latitude),
-            2: int(longitude),
-            3: int(altitude),
+            1: latitude,
+            2: longitude,
+            3: altitude,
             "is_octal": False,
             "tooltips": [
                 "Latitude (xxx.xx°)",
@@ -390,26 +456,6 @@ class Noun43(Noun):
             ],
         }
         return data
-# def noun43(calling_verb=None):
-#
-#     """ Latitude, longitude, altitude.
-#     :param calling_verb: the verb calling the noun.
-#     :return: noun data
-#     """
-#
-#     description = "Geographic Position (Latitude, Longitude, Altitude)"
-#
-#     latitude = str(round(get_telemetry("lat"), 2)).replace(".", "")
-#     longitude = str(round(get_telemetry("long"), 2)).replace(".", "")
-#     altitude = str(round(get_telemetry("altitude") / 1000, 1)).replace(".", "")
-#
-#     data = {
-#         1: int(latitude),
-#         2: int(longitude),
-#         3: int(altitude),
-#         "is_octal": False,
-#     }
-#     return data
 
 class Noun44(Noun):
     def __init__(self):
@@ -429,12 +475,12 @@ class Noun44(Noun):
         tff_minutes, tff_seconds = divmod(tff, 60)
         tff_hours, tff_minutes = divmod(tff_minutes, 60)
 
-        tff = str(tff_hours).zfill(2) + str(tff_minutes).zfill(2) + str(tff_seconds).zfill(2)
+        tff = str(tff_hours).zfill(1) + str(tff_minutes).zfill(2) + str(tff_seconds).zfill(2)
 
         data = {
-            1: int(apoapsis),
-            2: int(periapsis),
-            3: int(tff),
+            1: apoapsis,
+            2: periapsis,
+            3: tff,
             "tooltips": [
                 "Apoapsis Altitude (xxx.xx km)",
                 "Periapsis Altitude (xxx.xx km)",
@@ -503,9 +549,9 @@ class Noun50(Noun):
         surface_velocity_z = str(round(get_telemetry("surfaceVelocityz"), 1)).replace(".", "")
 
         data = {
-            1: int(surface_velocity_x),
-            2: int(surface_velocity_y),
-            3: int(surface_velocity_z),
+            1: surface_velocity_x,
+            2: surface_velocity_y,
+            3: surface_velocity_z,
             "tooltips": [
                 "Surface Velocity X (xxxx.x m/s)",
                 "Surface Velocity Y (xxxx.x m/s)",
@@ -588,9 +634,9 @@ class Noun62(Noun):
         altitude = altitude.replace(".", "")
 
         data = {
-            1: int(surface_velocity),
-            2: int(altitude_rate),
-            3: int(altitude),
+            1: surface_velocity,
+            2: altitude_rate,
+            3: altitude,
             "is_octal": False,
             "tooltips": [
                 "Surface Velocity (xxxx.x m/s)",
@@ -671,8 +717,10 @@ class Noun62(Noun):
 # def noun78(calling_verb):
 #     raise NounNotImplementedError
 #
-# def noun79(calling_verb):
-#     raise NounNotImplementedError
+# class Noun79(Noun):
+#
+#     def __init__(self):
+#         super(Noun79, self).__init__("FILL ME IN")
 #
 # def noun80(calling_verb):
 #     raise NounNotImplementedError
@@ -719,8 +767,34 @@ class Noun62(Noun):
 # def noun94(calling_verb):
 #     raise NounNotImplementedError
 #
-# def noun95(calling_verb):
-#     raise NounNotImplementedError
+class Noun95(Noun):
+
+    def __init__(self):
+        super(Noun95, self).__init__(description="Hohmann Transfer Data Display")
+
+    def return_data(self):
+
+        # time_to_ignition = gc.noun_data["95"][0]
+        time_to_ignition = utils.seconds_to_time(gc.burn_data[0].time_until_ignition)
+        minutes_to_ignition = str(int(time_to_ignition["minutes"])).zfill(2)
+        seconds_to_ignition = str(int(time_to_ignition["seconds"])).zfill(2)
+        delta_v = str(int(gc.burn_data[0].delta_v))
+        velocity_at_cutoff = str(int(gc.burn_data[0].velocity_at_cutoff))
+
+
+        data = {
+            1: minutes_to_ignition + "b" + seconds_to_ignition,
+            2: delta_v,
+            3: velocity_at_cutoff,
+            "is_octal": False,
+            "tooltips": [
+                "Time To Ignition (TIG) (xxbxx mins, seconds)",
+                "Δv (xxxxx m/s)",
+                "Velocity at cutoff (xxxxx m/s)",
+            ],
+        }
+        return data
+
 #
 # def noun96(calling_verb):
 #     raise NounNotImplementedError

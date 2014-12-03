@@ -24,19 +24,15 @@
 #  by Ronald S. Burkey <info@sandroid.org> (thanks Ronald!)
 
 import logging
-
 import wx
 
 import nouns
 import config
-#import computer as Computer
 from telemachus import KSPNotConnected, TelemetryNotAvailable
-#from telemachus import get_telemetry
-#from computer import orbit, body
 import utils
+import programs
 
-
-computer = None
+gc = None
 dsky = None
 frame = None
 
@@ -66,32 +62,6 @@ INVALID_VERBS = [
 ]
 
 
-def format_output_data(data):
-
-    """ Formats data for output to the DSKY.
-    :param data: data to display
-    :type data: dict
-    :return: DSKY formatted output
-    :rtype: string
-    """
-
-    output = []
-    raw_data = [data[1], data[2], data[3]]
-
-    for item in raw_data:
-        if data["is_octal"]:
-            output.append("")
-        elif item < 0:
-            #item = ~item + 1
-            output.append("-")
-            item = abs(item)
-        else:
-            output.append("+")
-        d = str(item).zfill(5)
-        output.append(d)
-    return output
-
-
 class NounNotAcceptableError(Exception):
 
     """ This exception is raised when the noun selected is not available with the verb selected.
@@ -99,7 +69,7 @@ class NounNotAcceptableError(Exception):
 
     pass
 
-#------------------------BEGIN BASE CLASS DEFINITIONS---------------------------
+# ------------------------BEGIN BASE CLASS DEFINITIONS---------------------------
 
 
 class Verb(object):
@@ -113,16 +83,42 @@ class Verb(object):
         :param name: the name (or description) of the verb
         :type name: string
         :param verb_number: the number of the verb. Valid ranges are 01 to 99 with some verb numbers not used
-        :type verb_number: int
+        :type verb_number: str
         """
 
         self.name = name
         self.number = verb_number
         self.illegal_nouns = []
-        #self.activity_timer = wx.Timer(frame)  # TODO: convert to utils.Timer object
-        #frame.Bind(wx.EVT_TIMER, self._activity, self.activity_timer)
+        # self.activity_timer = wx.Timer(frame)  # TODO: convert to utils.Timer object
+        # frame.Bind(wx.EVT_TIMER, self._activity, self.activity_timer)
         self.data = []
-        self.requested_noun = noun
+        self.noun = noun
+
+    def _format_output_data(self, data):
+
+        """ Formats data for output to the DSKY.
+        :param data: data to display
+        :type data: dict
+        :return: DSKY formatted output
+        :rtype: list of strings
+        """
+
+        raw_data = [data[1], data[2], data[3]]
+        out_data = []
+        for item in raw_data:
+            if not item:
+                continue
+            output = ""
+            if data["is_octal"]:
+                output = "b"
+                output += item.zfill(5)
+            elif item[0] == "-":
+                output += item.zfill(6)
+            elif item[0].isdigit():
+                output = "+"
+                output += item.zfill(5)
+            out_data.append(output)
+        return out_data
 
     def execute(self):
 
@@ -130,8 +126,10 @@ class Verb(object):
         :return:
         """
 
+        if gc.dsky.requested_noun in self.illegal_nouns:
+            raise NounNotAcceptableError
         utils.log("Executing Verb {}: {}".format(self.number, self.name))
-        computer.dsky.current_verb = self.number
+        gc.dsky.current_verb = self
 
     # def _activity(self, event):
     #
@@ -148,7 +146,7 @@ class Verb(object):
         """ Terminates the verb
         """
 
-        raise NotImplementedError
+        gc.dsky.current_verb = None
 
     def receive_data(self, data):
 
@@ -181,7 +179,7 @@ class DataVerb(Verb):
         :param name: name (description) of verb
         :type name: string
         :param verb_number: the verb number
-        :type verb_number: int
+        :type verb_number: str
         :return: None
         """
 
@@ -199,7 +197,7 @@ class DisplayVerb(DataVerb):
         :param name: name (description) of verb
         :type name: string
         :param verb_number: the verb number
-        :type verb_number: int
+        :type verb_number: str
         :return: None
         """
 
@@ -211,9 +209,8 @@ class DisplayVerb(DataVerb):
         :return: None
         """
 
-        #raise NotImplementedError
-        if computer.dsky.requested_noun in self.illegal_nouns:
-            raise NounNotAcceptableError
+        super(DisplayVerb, self).execute()
+
 
 
 class MonitorVerb(DisplayVerb):
@@ -237,11 +234,11 @@ class MonitorVerb(DisplayVerb):
             self.timer.Stop()
             self.timer.Start(config.DISPLAY_UPDATE_INTERVAL)
 
-        if self.requested_noun is None:
-            self.requested_noun = str(computer.dsky.requested_noun)
-        if computer.dsky.requested_noun in self.illegal_nouns:
+        if self.noun is None:
+            self.noun = gc.dsky.requested_noun
+        if self.noun in self.illegal_nouns:
             raise NounNotAcceptableError
-        noun_function = computer.nouns[self.requested_noun]
+        noun_function = gc.nouns[self.noun]
         try:
             data = noun_function.return_data()
         except nouns.NounNotImplementedError:
@@ -251,26 +248,31 @@ class MonitorVerb(DisplayVerb):
         except KSPNotConnected:
             utils.log("KSP not connected, terminating V{}".format(self.number),
                       log_level="ERROR")
-            computer.program_alarm(110)
+            gc.program_alarm(110)
             self.terminate()
             raise
         except TelemetryNotAvailable:
             utils.log("Telemetry not available, terminating V{}".format(self.number),
                       log_level="ERROR")
-            computer.program_alarm(111)
+            gc.program_alarm(111)
             self.terminate()
             raise
-        output = format_output_data(data)
+        if not data:
+            # if the noun returns False, the noun *should* have already raised a program alarm, so we just need to
+            # terminate and return
+            self.terminate()
+            return
+        output = self._format_output_data(data)
+
 
         # set tooltips
-        computer.dsky.registers[1].set_tooltip(data["tooltips"][0])
-        computer.dsky.registers[2].set_tooltip(data["tooltips"][1])
-        computer.dsky.registers[3].set_tooltip(data["tooltips"][2])
+        gc.dsky.registers[1].set_tooltip(data["tooltips"][0])
+        gc.dsky.registers[2].set_tooltip(data["tooltips"][1])
+        gc.dsky.registers[3].set_tooltip(data["tooltips"][2])
 
         # display data on DSKY registers
-        computer.dsky.registers[1].display(sign=output[0], value=output[1])
-        computer.dsky.registers[2].display(sign=output[2], value=output[3])
-        computer.dsky.registers[3].display(sign=output[4], value=output[5])
+        for index, display_line in enumerate(output, start=1):
+            gc.dsky.registers[index].display(display_line)
 
         dsky.flash_comp_acty()
 
@@ -291,6 +293,9 @@ class MonitorVerb(DisplayVerb):
 
         self.timer.Start(config.DISPLAY_UPDATE_INTERVAL)
 
+    def execute(self):
+        super(MonitorVerb, self).execute()
+
     def _update_display(self, event):
 
         """ a simple wrapper to call the display update method """
@@ -308,9 +313,9 @@ class MonitorVerb(DisplayVerb):
         utils.log("Terminating V{}".format(self.number))
         dsky.annunciators["key_rel"].off()
         dsky.display_lock = None
-        #dsky.backgrounded_update = None
+        # dsky.backgrounded_update = None
         self.timer.Stop()
-        self.requested_noun = None
+        self.noun = None
         # self.activity_timer.Stop()
 
     def background(self):
@@ -320,7 +325,6 @@ class MonitorVerb(DisplayVerb):
         """
 
         dsky.backgrounded_update = self
-        print(type(dsky.backgrounded_update), dsky.backgrounded_update)
         dsky.display_lock = None
         self.timer.Stop()
         dsky.annunciators["key_rel"].start_blink()
@@ -333,8 +337,8 @@ class MonitorVerb(DisplayVerb):
 
         dsky.display_lock = self
         dsky.backgrounded_update = None
-        dsky.control_registers["verb"].display(str(self.number))
-        dsky.control_registers["noun"].display(self.requested_noun)
+        dsky.control_registers["verb"].display(self.number)
+        dsky.control_registers["noun"].display(self.noun)
         self.start_monitor()
 
 
@@ -354,6 +358,15 @@ class LoadVerb(DataVerb):
 
         super(LoadVerb, self).__init__(name, verb_number, noun)
 
+    def accept_input(self, data):
+        """ Accepts data provided by user via DSKY
+        :param data: the data
+        :return: None
+        """
+        gc.noun_data[self.noun].append(data)
+
+        utils.log(data)
+
 #---------------------------BEGIN VERB CLASS DEFINITIONS------------------------
 
 # no verb 00
@@ -370,19 +383,18 @@ class Verb1(DisplayVerb):
         :return: None
         """
 
-        super(Verb1, self).__init__(name="Display Octal component 1 in R1", verb_number=1, noun=noun)
-    #def execute(self):
-        #super(Verb1, self).execute()
-        #if self.data == None:
-            #noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
-            #noun_function(calling_verb=self, base=8)
-            #return
-        #else:
-            #noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
-            #self.noun_data = noun_function(calling_verb=self, data=self.data, base=8)
-            #output = format_output_data(self.noun_data)
-            #computer.dsky.registers[1].display(output[0], output[1])
-            #self.data = None
+        super(Verb1, self).__init__(name="Display Octal component 1 in R1", verb_number="01", noun=noun)
+
+    def execute(self):
+
+        super(Verb1, self).execute()
+        noun_function = gc.nouns[gc.dsky.requested_noun]
+        noun_data = noun_function.return_data()
+        if noun_data is False:
+            # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
+            return
+        output = self._format_output_data(noun_data)
+        gc.dsky.registers[1].display(output[0])
 
 
 class Verb2(DisplayVerb):
@@ -396,7 +408,7 @@ class Verb2(DisplayVerb):
         :return: None
         """
 
-        super(Verb2, self).__init__(name="Display Octal component 2 in R1", verb_number=2, noun=noun)
+        super(Verb2, self).__init__(name="Display Octal component 2 in R1", verb_number="02", noun=noun)
 
     #def execute(self):
         #super(Verb2, self).execute()
@@ -407,7 +419,7 @@ class Verb2(DisplayVerb):
         #else:
             #noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
             #self.noun_data = noun_function(calling_verb=self, data=self.data, base=8)
-            #output = format_output_data(self.noun_data)
+            #output = _format_output_data(self.noun_data)
             #computer.dsky.registers[1].display(output[2], output[3])
             #self.data = None
 
@@ -423,7 +435,7 @@ class Verb3(DisplayVerb):
         :return: None
         """
 
-        super(Verb3, self).__init__(name="Display Octal component 3 in R1", verb_number=3, noun=noun)
+        super(Verb3, self).__init__(name="Display Octal component 3 in R1", verb_number="03", noun=noun)
 
     #def execute(self):
         #super(Verb3, self).execute()
@@ -434,7 +446,7 @@ class Verb3(DisplayVerb):
         #else:
             #noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
             #self.noun_data = noun_function(calling_verb=self, data=self.data, base=8)
-            #output = format_output_data(self.noun_data)
+            #output = _format_output_data(self.noun_data)
             #computer.dsky.registers[1].display(output[4], output[5])
             #self.data = None
 
@@ -450,7 +462,7 @@ class Verb4(DisplayVerb):
         :return: None
         """
 
-        super(Verb4, self).__init__(name="Display Octal components 1, 2 in R1, R2", verb_number=4, noun=noun)
+        super(Verb4, self).__init__(name="Display Octal components 1, 2 in R1, R2", verb_number="04", noun=noun)
 
     def execute(self):
 
@@ -459,11 +471,11 @@ class Verb4(DisplayVerb):
         """
 
         super(Verb4, self).execute()
-        noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
+        noun_function = gc.nouns[gc.dsky.state["requested_noun"]]
         noun_data = noun_function(calling_verb=self)
-        output = format_output_data(noun_data)
-        computer.dsky.registers[1].display(output[0], output[1])
-        computer.dsky.registers[2].display(output[2], output[3])
+        output = self._format_output_data(noun_data)
+        gc.dsky.registers[1].display(output[0])
+        gc.dsky.registers[2].display(output[1])
 
 
 class Verb5(DisplayVerb):
@@ -477,7 +489,7 @@ class Verb5(DisplayVerb):
         :return: None
         """
 
-        super(Verb5, self).__init__(name="Display Octal components 1, 2, 3 in R1, R2, R3", verb_number=5, noun=noun)
+        super(Verb5, self).__init__(name="Display Octal components 1, 2, 3 in R1, R2, R3", verb_number="05", noun=noun)
         self.illegal_nouns = []
 
     def execute(self):
@@ -486,14 +498,16 @@ class Verb5(DisplayVerb):
         :return: None
         """
 
-        utils.log("Executing V05")
         super(Verb5, self).execute()
-        noun_function = computer.nouns[computer.dsky.requested_noun]
+        noun_function = gc.nouns[gc.dsky.requested_noun]
         noun_data = noun_function.return_data()
-        output = format_output_data(noun_data)
-        computer.dsky.registers[1].display(sign=output[0], value=output[1])
-        computer.dsky.registers[2].display(sign=output[2], value=output[3])
-        computer.dsky.registers[3].display(sign=output[4], value=output[5])
+        if not noun_data:
+            # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
+            return
+        output = self._format_output_data(noun_data)
+        gc.dsky.registers[1].display(output[0])
+        gc.dsky.registers[2].display(output[1])
+        gc.dsky.registers[3].display(output[2])
 
 
 class Verb6(DisplayVerb):
@@ -507,7 +521,7 @@ class Verb6(DisplayVerb):
         :return: None
         """
 
-        super(Verb6, self).__init__(name="Display Decimal in R1 or in R1, R2 or in R1, R2, R3", verb_number=6,
+        super(Verb6, self).__init__(name="Display Decimal in R1 or in R1, R2 or in R1, R2, R3", verb_number="06",
                                     noun=noun)
 
     def execute(self):
@@ -517,6 +531,16 @@ class Verb6(DisplayVerb):
         """
 
         super(Verb6, self).execute()
+        noun_function = gc.nouns[gc.dsky.requested_noun]
+        noun_data = noun_function.return_data()
+        if not noun_data:
+            # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
+            return
+        output = self._format_output_data(noun_data)
+        gc.dsky.registers[1].display(output[0])
+        gc.dsky.registers[2].display(output[1])
+        gc.dsky.registers[3].display(output[2])
+
         # if self.data is None:
         #     noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
         #     noun_function(calling_verb=self, base=10)
@@ -524,7 +548,7 @@ class Verb6(DisplayVerb):
         # else:
         #     noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
         #     noun_data = noun_function()
-        #     output = format_output_data(noun_data)
+        #     output = _format_output_data(noun_data)
         #     computer.dsky.registers[1].display(sign=output[0], value=output[1])
         #     computer.dsky.registers[2].display(sign=output[2], value=output[3])
         #     computer.dsky.registers[3].display(sign=output[4], value=output[5])
@@ -542,7 +566,7 @@ class Verb7(DisplayVerb):
         :return: None
         """
 
-        super(Verb7, self).__init__(name="Display Double Precision Decimal in R1, R2 (test only)", verb_number=7,
+        super(Verb7, self).__init__(name="Display Double Precision Decimal in R1, R2 (test only)", verb_number="07",
                                     noun=noun)
 
 # no verb 8
@@ -563,7 +587,7 @@ class Verb11(MonitorVerb):
         :return: None
         """
 
-        super(Verb11, self).__init__(name="Monitor Octal component 1 in R1", verb_number=11, noun=noun)
+        super(Verb11, self).__init__(name="Monitor Octal component 1 in R1", verb_number="11", noun=noun)
 
 
 class Verb12(MonitorVerb):
@@ -577,7 +601,7 @@ class Verb12(MonitorVerb):
         :return: None
         """
 
-        super(Verb12, self).__init__(name="Monitor Octal component 2 in R1", verb_number=12, noun=noun)
+        super(Verb12, self).__init__(name="Monitor Octal component 2 in R1", verb_number="12", noun=noun)
 
 
 class Verb13(MonitorVerb):
@@ -591,7 +615,7 @@ class Verb13(MonitorVerb):
         :return: None
         """
 
-        super(Verb13, self).__init__(name="Monitor Octal component 3 in R1", verb_number=13, noun=noun)
+        super(Verb13, self).__init__(name="Monitor Octal component 3 in R1", verb_number="13", noun=noun)
 
 
 class Verb14(MonitorVerb):
@@ -605,7 +629,7 @@ class Verb14(MonitorVerb):
         :return: None
         """
 
-        super(Verb14, self).__init__(name="Monitor Octal components 1, 2 in R1, R2", verb_number=14, noun=noun)
+        super(Verb14, self).__init__(name="Monitor Octal components 1, 2 in R1, R2", verb_number="14", noun=noun)
 
 
 class Verb15(MonitorVerb):
@@ -619,7 +643,7 @@ class Verb15(MonitorVerb):
         :return: None
         """
 
-        super(Verb15, self).__init__(name="Monitor Octal components 1, 2, 3 in R1, R2, R3", verb_number=15, noun=noun)
+        super(Verb15, self).__init__(name="Monitor Octal components 1, 2, 3 in R1, R2, R3", verb_number="15", noun=noun)
 
 
 class Verb16(MonitorVerb):
@@ -633,7 +657,7 @@ class Verb16(MonitorVerb):
         :return: None
         """
 
-        super(Verb16, self).__init__(name="Monitor Decimal in R1 or in R1, R2 or in R1, R2, R3", verb_number=16,
+        super(Verb16, self).__init__(name="Monitor Decimal in R1 or in R1, R2 or in R1, R2, R3", verb_number="16",
                                      noun=noun)
 
     def execute(self):
@@ -641,7 +665,7 @@ class Verb16(MonitorVerb):
         """ Executes the verb.
         :return: None
         """
-
+        super(Verb16, self).execute()
         self.start_monitor()
 
 
@@ -656,7 +680,7 @@ class Verb17(MonitorVerb):
         :return: None
         """
 
-        super(Verb17, self).__init__(name="Monitor Double Precision Decimal in R1, R2 (test only)", verb_number=17,
+        super(Verb17, self).__init__(name="Monitor Double Precision Decimal in R1, R2 (test only)", verb_number="17",
                                      noun=noun)
 
 # no verb 18
@@ -677,7 +701,7 @@ class Verb21(LoadVerb):
         :return: None
         """
 
-        super(Verb21, self).__init__(name="Load component 1 into R1", verb_number=21, noun=noun)
+        super(Verb21, self).__init__(name="Load component 1 into R1", verb_number="21", noun=noun)
 
     def execute(self):
 
@@ -685,17 +709,17 @@ class Verb21(LoadVerb):
         :return: None
         """
 
-        #dsky.request_data(self.accept_input, dsky.registers[3])
-        pass
+        dsky.request_data(self.accept_input, dsky.registers[1])
 
-    def accept_input(self, data):
-
-        """ Accepts data provided by user via DSKY
-        :param data: the data
-        :return: None
-        """
-
-        utils.log(data)
+    # def accept_input(self, data):
+    #
+    #     """ Accepts data provided by user via DSKY
+    #     :param data: the data
+    #     :return: None
+    #     """
+    #     gc.noun_data[self.noun].append(data)
+    #
+    #     utils.log(data)
 
 
 class Verb22(LoadVerb):
@@ -709,7 +733,7 @@ class Verb22(LoadVerb):
         :return: None
         """
 
-        super(Verb22, self).__init__(name="Load component 2 into R2", verb_number=22, noun=noun)
+        super(Verb22, self).__init__(name="Load component 2 into R2", verb_number="22", noun=noun)
 
     def execute(self):
 
@@ -717,7 +741,7 @@ class Verb22(LoadVerb):
         :return: None
         """
 
-        pass
+        dsky.request_data(self.accept_input, dsky.registers[2])
 
 
 class Verb23(LoadVerb):
@@ -731,7 +755,7 @@ class Verb23(LoadVerb):
         :return: None
         """
 
-        super(Verb23, self).__init__(name="Load component 3 into R3", verb_number=23, noun=noun)
+        super(Verb23, self).__init__(name="Load component 3 into R3", verb_number="23", noun=noun)
 
     def execute(self):
 
@@ -739,7 +763,7 @@ class Verb23(LoadVerb):
         :return: None
         """
 
-        computer.dsky.request_data(requesting_object=self.accept_input, location=dsky.registers[3])
+        gc.dsky.request_data(requesting_object=self.accept_input, display_location=dsky.registers[3])
 
     def accept_input(self, data):
 
@@ -748,11 +772,11 @@ class Verb23(LoadVerb):
         :return: None
         """
 
-        computer.loaded_data["verb"] = self.number
-        computer.loaded_data["noun"] = dsky.state["current_noun"]
-        computer.loaded_data[3] = data
-        if computer.object_requesting_data:
-            computer.object_requesting_data()
+        gc.loaded_data["verb"] = self.number
+        gc.loaded_data["noun"] = dsky.current_noun
+        gc.loaded_data[3] = data
+        if gc.object_requesting_data:
+            gc.object_requesting_data()
 
 
 class Verb24(LoadVerb):
@@ -766,7 +790,7 @@ class Verb24(LoadVerb):
         :return: None
         """
 
-        super(Verb24, self).__init__(name="Load component 1, 2 into R1, R2", verb_number=24, noun=noun)
+        super(Verb24, self).__init__(name="Load component 1, 2 into R1, R2", verb_number="24", noun=noun)
 
     def execute(self):
 
@@ -788,7 +812,7 @@ class Verb25(LoadVerb):
         :return: None
         """
 
-        super(Verb25, self).__init__(name="Load component 1, 2, 3 into R1, R2, R3", verb_number=25, noun=noun)
+        super(Verb25, self).__init__(name="Load component 1, 2, 3 into R1, R2, R3", verb_number="25", noun=noun)
 
     def execute(self):
 
@@ -828,7 +852,7 @@ class Verb32(Verb):
         :return: None
         """
 
-        super(Verb32, self).__init__(name="Recycle program", verb_number=32, noun=noun)
+        super(Verb32, self).__init__(name="Recycle program", verb_number="32", noun=noun)
 
     def execute(self):
 
@@ -853,7 +877,7 @@ class Verb33(Verb):
             :return: None
             """
 
-        super(Verb33, self).__init__(name="Proceed without DSKY inputs", verb_number=33, noun=noun)
+        super(Verb33, self).__init__(name="Proceed without DSKY inputs", verb_number="33", noun=noun)
 
     def execute(self):
 
@@ -878,7 +902,7 @@ class Verb34(Verb):
         :return: None
         """
 
-        super(Verb34, self).__init__(name="Terminate function", verb_number=34, noun=noun)
+        super(Verb34, self).__init__(name="Terminate function", verb_number="34", noun=noun)
 
     def execute(self):
 
@@ -886,8 +910,18 @@ class Verb34(Verb):
         :return: None
         """
 
-        if isinstance(dsky.state["backgrounded_update"], MonitorVerb):
-            dsky.state["backgrounded_update"].terminate()
+        if dsky.backgrounded_update:
+            utils.log("Terminating backgrounded update")
+            dsky.backgrounded_update.terminate()
+            if dsky.annunciators["key_rel"].blink_timer.IsRunning():
+                dsky.annunciators["key_rel"].stop_blink()
+        if gc.active_program:
+            utils.log("Terminating active program {}".format(gc.active_program.number))
+            # have to use try block to catch and ignore expected ProgramTerminated exception
+            try:
+                gc.active_program.terminate()
+            except programs.ProgramTerminated:
+                pass
         else:
             utils.log("V34 called, but nothing to terminate!")
 
@@ -902,7 +936,7 @@ class Verb35(Verb):
         :return: None
         """
 
-        super(Verb35, self).__init__(name="Test lights", verb_number=35, noun=noun)
+        super(Verb35, self).__init__(name="Test lights", verb_number="35", noun=noun)
         self.stop_timer = wx.Timer(frame)
         self.loop_counter = 0
         frame.Bind(wx.EVT_TIMER, self.stop_timer_event, self.stop_timer)
@@ -920,15 +954,15 @@ class Verb35(Verb):
         for register in dsky.registers.itervalues():
             register.sign.plus()
             for digit in register.digits:
-                digit.display(8)
+                digit.display("8")
         #commands the control registers
         for name, register in dsky.control_registers.iteritems():
             if name == "program":
                 for digit in register.digits.itervalues():
-                    digit.display(8)
+                    digit.display("8")
             else:
                 for digit in register.digits.itervalues():
-                    digit.display(8)
+                    digit.display("8")
                     digit.start_blink()
         self.stop_timer.Start(5000, oneShot=True)
 
@@ -938,7 +972,6 @@ class Verb35(Verb):
         :return: None
         """
 
-        utils.log("Hit terminate")
         for annunciator in dsky.annunciators.itervalues():
             annunciator.off()
         for name, register in dsky.control_registers.iteritems():
@@ -948,7 +981,7 @@ class Verb35(Verb):
             else:
                 for digit in register.digits.itervalues():
                     digit.stop_blink()
-                    digit.display(8)
+                    digit.display("8")
 
     def stop_timer_event(self, event):
 
@@ -972,7 +1005,7 @@ class Verb36(Verb):
         :return: None
         """
 
-        super(Verb36, self).__init__(name="Request fresh start", verb_number=36, noun=noun)
+        super(Verb36, self).__init__(name="Request fresh start", verb_number="36", noun=noun)
 
     def execute(self):
 
@@ -980,7 +1013,7 @@ class Verb36(Verb):
         :return: None
         """
 
-        computer.fresh_start()
+        gc.fresh_start()
 
 
 class Verb37(Verb):
@@ -994,7 +1027,7 @@ class Verb37(Verb):
         :return: None
         """
 
-        super(Verb37, self).__init__(name="Change program (Major Mode)", verb_number=37, noun=noun)
+        super(Verb37, self).__init__(name="Change program (Major Mode)", verb_number="37", noun=noun)
         #self.data.append("")
 
     def execute(self):
@@ -1004,7 +1037,7 @@ class Verb37(Verb):
         """
 
         super(Verb37, self).execute()
-        dsky.request_data(requesting_object=self.receive_data, location=dsky.control_registers["noun"])
+        dsky.request_data(requesting_object=self.receive_data, display_location=dsky.control_registers["noun"])
 
     def receive_data(self, data):
 
@@ -1012,23 +1045,13 @@ class Verb37(Verb):
         :param data: the data from DSKY
         :return: None
         """
-
-        computer.programs[data].execute()
-
-    def data_load_done(self):
-
-        """ Called when the data load is complete
-        :return: None
-        """
-
-        dsky.verb_noun_flash_off()
-        data = self.data.pop()
-        number_of_digits = len(data)
-        if number_of_digits != 2:
-            dsky.operator_error("Expected exactly two digits, received {}".format(number_of_digits))
+        if len(data) != 2:
+            dsky.operator_error("Expected exactly two digits, received {} digits".format(len(data)))
             self.terminate()
             return
-        computer.programs[int(data)].execute()
+        #computer.programs[data].execute()
+        program = gc.programs[data]()
+        program.execute()
 
 #-------------------------------BEGIN EXTENDED VERBS----------------------------
 
@@ -1189,15 +1212,15 @@ class Verb75(ExtendedVerb):
         :return: None
         """
 
-        super(Verb75, self).__init__(name="Backup liftoff", verb_number=75)
+        super(Verb75, self).__init__(name="Backup liftoff", verb_number="75")
 
     def execute(self):
 
         """ Executes the verb.
         :return: None
         """
-
-        computer.programs["11"].execute()
+        program = gc.programs["11"]()
+        program.execute()
 
 #no verb 76
 #no verb 77
@@ -1228,7 +1251,7 @@ class Verb82(ExtendedVerb):
         :return: None
         """
 
-        super(Verb82, self).__init__(name="Request orbital parameters display (R30)", verb_number=82)
+        super(Verb82, self).__init__(name="Request orbital parameters display (R30)", verb_number="82")
 
     def execute(self):
 
@@ -1238,7 +1261,7 @@ class Verb82(ExtendedVerb):
 
         #super(Verb82, self).execute()
         #computer.routines[30]()
-        computer.execute_verb(verb=16, noun=44)
+        gc.execute_verb(verb="16", noun="44")
 
 
 # class Verb83(Verb):
@@ -1280,9 +1303,12 @@ class Verb82(ExtendedVerb):
 #     def __init__(self):
 #         super(Verb92, self).__init__(name="Operate IMU performance test (P07)", verb_number=92)
 #
-# class Verb93(Verb):
-#     def __init__(self):
-#         super(Verb93, self).__init__(name="Enable W Matrix initialization", verb_number=93)
+class Verb93(ExtendedVerb):
+    def __init__(self):
+        super(Verb93, self).__init__(name="Disable Autopilot", verb_number="93")
+
+    def execute(self):
+        gc.disable_direction_autopilot()
 #
 # class Verb94(Verb):
 #     def __init__(self):
@@ -1313,17 +1339,28 @@ class Verb99(ExtendedVerb):
         :return: None
         """
 
-        super(Verb99, self).__init__(name="Please enable engine", verb_number=99)
+        super(Verb99, self).__init__(name="Please enable engine", verb_number="99")
 
-    def execute(self):
+    def execute(self, object_requesting_proceed):
 
         """ Executes the verb.
         :return: None
         """
 
-        pass
-        # super(Verb99, self).execute()
-        # orbiting_body = body.Body(get_telemetry("body"))
-        # orbiting_body.orbit.update_parameters()
-        # orbiting_body.parent_body.orbit.update_parameters()
-        # utils.log(orbiting_body, orbiting_body.parent_body.orbit)
+        # stop any display updates
+        if gc.dsky.current_verb:
+            gc.dsky.current_verb.terminate()
+        super(Verb99, self).execute()
+
+
+
+        # blank the DSKY
+        for register in gc.dsky.control_registers.itervalues():
+            register.blank()
+        for register in gc.dsky.registers.itervalues():
+            register.blank()
+
+        # re-display the verb number since the register has been blanked
+        gc.dsky.control_registers["verb"].display("99")
+        gc.dsky.request_data(requesting_object=object_requesting_proceed, display_location=None,
+                             is_proceed_available=True)

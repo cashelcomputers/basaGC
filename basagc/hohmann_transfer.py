@@ -27,9 +27,10 @@
 import math
 
 from telemachus import get_telemetry
-from config import BODIES
+from config import TELEMACHUS_BODY_IDS
 
-def delta_v(departure_altitude, destination_altitude):
+
+def delta_v(departure_altitude, destination_altitude, departure_body="Kerbin"):
     """
     Given a circular orbit at altitude departure_altitude and a target orbit at altitude
     destination_altitude, return the delta-V budget of the two burns required for a Hohmann
@@ -38,24 +39,23 @@ def delta_v(departure_altitude, destination_altitude):
     departure_altitude and destination_altitude are in meters above the surface.
     returns a float of the burn delta-v required, positive means prograde, negative means retrograde
 
+    :param departure_body:
     :param departure_altitude: departure orbit altitude
     :param destination_altitude: destination orbit altitude
     """
-    departure_planet_radius = get_telemetry("body_radius", body_number=BODIES["Kerbin"])
+
+    departure_planet_radius = get_telemetry("body_radius", body_number=TELEMACHUS_BODY_IDS[departure_body])
     r1 = departure_altitude + departure_planet_radius
     r2 = destination_altitude + departure_planet_radius
-    mu = get_telemetry("body_gravParameter", body_number=BODIES["Kerbin"])
+    mu = float(get_telemetry("body_gravParameter", body_number=TELEMACHUS_BODY_IDS[departure_body]))
 
     sqrt_r1 = math.sqrt(r1)
     sqrt_r2 = math.sqrt(r2)
     sqrt_2_sum = math.sqrt(2 / (r1 + r2))
     sqrt_mu = math.sqrt(mu)
-    dv1 = sqrt_mu / sqrt_r1 * (sqrt_r2 * sqrt_2_sum - 1)
-    dV2 = sqrt_mu / sqrt_r2 * (1 - sqrt_r1 * sqrt_2_sum)
-    return (dV1, dV2)
-
-
-
+    delta_v_1 = sqrt_mu / sqrt_r1 * (sqrt_r2 * sqrt_2_sum - 1)
+    delta_v_2 = sqrt_mu / sqrt_r2 * (1 - sqrt_r1 * sqrt_2_sum)
+    return delta_v_1, delta_v_2
 
 
 def time_to_transfer(departure_orbit, destination_orbit, grav_param):
