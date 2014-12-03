@@ -89,6 +89,8 @@ class Burn(object):
         if telemachus.get_telemetry("throttle") > 0:
             telemachus.cut_throttle()
 
+        gc.remove_burn(self)
+
     def _coarse_start_time_monitor(self):
 
         self.time_until_ignition = self._calculate_time_to_ignition()
