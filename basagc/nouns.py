@@ -23,13 +23,14 @@
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>
 
-import math
+from collections import OrderedDict
 
 from telemachus import get_telemetry, TelemetryNotAvailable
 import utils
 
 gc = None
 
+nouns = {}
 
 def octal(value):
 
@@ -108,8 +109,9 @@ class NounNotImplementedError(Exception):
 
 class Noun(object):
 
-    def __init__(self, description):
+    def __init__(self, description, number):
         self.description = description
+        self.number = number
 
     def return_data(self):
         raise NounNotImplementedError
@@ -118,7 +120,7 @@ class Noun(object):
 class Noun09(Noun):
 
     def __init__(self):
-        super(Noun09, self).__init__(description="Alarm Codes")
+        super(Noun09, self).__init__(description="Alarm Codes", number="09")
 
     def return_data(self):
 
@@ -170,8 +172,9 @@ class Noun09(Noun):
 class Noun14(Noun):
 
     def __init__(self):
-        super(Noun14, self).__init__("Burn error display (Expected Δv at cutoff (xxxxx m/s), Actual Δv at cutoff ("
-                                     "xxxxx m/s), Difference (xxxx.x m/s)")
+        super(Noun14, self).__init__(description="Burn error display (Expected Δv at cutoff (xxxxx m/s), Actual Δv at"
+                                                 "cutoff (xxxxx m/s), Difference (xxxx.x m/s)",
+                                     number="14")
 
     def return_data(self):
         if not gc.next_burn:
@@ -204,7 +207,7 @@ class Noun14(Noun):
 class Noun17(Noun):
 
     def __init__(self):
-        super(Noun17, self).__init__("Attitude (Roll, Pitch, Yaw)")
+        super(Noun17, self).__init__("Attitude (Roll, Pitch, Yaw)", number="17")
 
     def return_data(self):
 
@@ -298,7 +301,7 @@ class Noun17(Noun):
 #
 class Noun30(Noun):
     def __init__(self):
-        super(Noun30, self).__init__("Octal Target ID (000XX)")
+        super(Noun30, self).__init__("Octal Target ID (000XX)", number="30")
 
     def return_data(self):
 
@@ -307,7 +310,7 @@ class Noun30(Noun):
             1: target_id,
             2: None,
             3: None,
-            "tooltips": ["Target Octal ID"],
+            "tooltips": ["Target Octal ID", None, None],
             "is_octal": True,
         }
         return data
@@ -333,7 +336,7 @@ class Noun30(Noun):
 class Noun33(Noun):
 
     def __init__(self):
-        super(Noun33, self).__init__("Time to Ignition (00xxx hours, 000xx minutes, 0xx.xx seconds)")
+        super(Noun33, self).__init__("Time to Ignition (00xxx hours, 000xx minutes, 0xx.xx seconds)", number="33")
 
     def return_data(self):
 
@@ -363,7 +366,7 @@ class Noun33(Noun):
 class Noun36(Noun):
 
     def __init__(self):
-        super(Noun36, self).__init__("Mission Elapsed Time (MET) (dddhh, bbbmm, bss.ss)")
+        super(Noun36, self).__init__("Mission Elapsed Time (MET) (dddhh, bbbmm, bss.ss)", number="36")
 
     def return_data(self):
         try:
@@ -436,7 +439,7 @@ class Noun36(Noun):
 class Noun40(Noun):
 
     def __init__(self):
-        super(Noun40, self).__init__("Burn Data (Time from ignition, Δv to be gained, accumulated Δv")
+        super(Noun40, self).__init__("Burn Data (Time from ignition, Δv to be gained, accumulated Δv", number="40")
 
     def return_data(self):
         if not gc.next_burn:
@@ -465,7 +468,7 @@ class Noun40(Noun):
 class Noun43(Noun):
 
     def __init__(self):
-        super(Noun43, self).__init__("Geographic Position (Latitude, Longitude, Altitude)")
+        super(Noun43, self).__init__("Geographic Position (Latitude, Longitude, Altitude)", number="43")
 
     def return_data(self):
         try:
@@ -503,7 +506,8 @@ class Noun43(Noun):
 
 class Noun44(Noun):
     def __init__(self):
-        super(Noun44, self).__init__("Apoapsis (xxx.xx km), Periapsis (xxx.xx km), Time To Apoapsis (hmmss)")
+        super(Noun44, self).__init__("Apoapsis (xxx.xx km), Periapsis (xxx.xx km), Time To Apoapsis (hmmss)",
+                                     number="44")
 
     def return_data(self):
         try:
@@ -585,7 +589,7 @@ class Noun44(Noun):
 
 class Noun50(Noun):
     def __init__(self):
-        super(Noun50, self).__init__("Surface Velocity Display (X, Y, Z in xxxx.x m/s)")
+        super(Noun50, self).__init__("Surface Velocity Display (X, Y, Z in xxxx.x m/s)", number="50")
 
     def return_data(self):
         surface_velocity_x = str(round(get_telemetry("surfaceVelocityx"), 1)).replace(".", "")
@@ -666,7 +670,7 @@ class Noun50(Noun):
 
 class Noun62(Noun):
     def __init__(self):
-        super(Noun62, self).__init__("Surface Velocity, Altitude Rate, Altitude")
+        super(Noun62, self).__init__("Surface Velocity, Altitude Rate, Altitude", number="62")
 
     def return_data(self):
         surface_velocity = str(round(get_telemetry("surfaceVelocity"), 1))
@@ -814,7 +818,7 @@ class Noun62(Noun):
 class Noun95(Noun):
 
     def __init__(self):
-        super(Noun95, self).__init__(description="Hohmann Transfer Data Display")
+        super(Noun95, self).__init__(description="Hohmann Transfer Data Display", number="95")
 
     def return_data(self):
 

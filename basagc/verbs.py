@@ -238,7 +238,7 @@ class MonitorVerb(DisplayVerb):
             self.noun = gc.dsky.requested_noun
         if self.noun in self.illegal_nouns:
             raise NounNotAcceptableError
-        noun_function = gc.nouns[self.noun]
+        noun_function = gc.nouns[self.noun]()
         try:
             data = noun_function.return_data()
         except nouns.NounNotImplementedError:
@@ -388,7 +388,7 @@ class Verb1(DisplayVerb):
     def execute(self):
 
         super(Verb1, self).execute()
-        noun_function = gc.nouns[gc.dsky.requested_noun]
+        noun_function = gc.nouns[gc.dsky.requested_noun]()
         noun_data = noun_function.return_data()
         if noun_data is False:
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
@@ -499,7 +499,7 @@ class Verb5(DisplayVerb):
         """
 
         super(Verb5, self).execute()
-        noun_function = gc.nouns[gc.dsky.requested_noun]
+        noun_function = gc.nouns[gc.dsky.requested_noun]()
         noun_data = noun_function.return_data()
         if not noun_data:
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
@@ -531,7 +531,7 @@ class Verb6(DisplayVerb):
         """
 
         super(Verb6, self).execute()
-        noun_function = gc.nouns[gc.dsky.requested_noun]
+        noun_function = gc.nouns[gc.dsky.requested_noun]()
         noun_data = noun_function.return_data()
         if not noun_data:
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
