@@ -29,6 +29,7 @@ import multiprocessing as mp
 import wx
 # from sortedcontainers import SortedDict
 from collections import OrderedDict
+from basagc import burn
 
 import config
 import utils
@@ -39,7 +40,6 @@ import programs
 import routines
 from telemachus import check_connection, get_telemetry
 import telemachus
-from maneuvers import burn
 
 
 class Computer(object):

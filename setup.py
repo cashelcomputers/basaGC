@@ -7,7 +7,7 @@ from distutils.core import setup
 setup(
     name='basaGC',
     version=config.VERSION,
-    packages=['basagc', 'basagc.maneuvers'],
+    packages=['basagc'],
     url=config.WEBSITE,
     license='GPL',
     author=config.DEVELOPERS,

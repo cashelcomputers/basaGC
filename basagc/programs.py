@@ -22,12 +22,12 @@
 #
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>
+from basagc import hohmann_transfer
 
 import utils
-from maneuvers import hohmann_transfer
 import config
 from telemachus import get_telemetry, KSPNotConnected
-from maneuvers.burn import Burn
+from basagc.burn import Burn
 
 gc = None
 dsky = None
