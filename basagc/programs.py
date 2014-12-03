@@ -204,9 +204,25 @@ class Program15(Program):
         self.grav_param = 0.0
         self.orbital_period = 0
         self.departure_body_orbital_period = 0
-        self.is_display_blanked = False
         self.first_burn = None
         self.second_burn = None
+
+    def execute(self):
+
+        """ Entry point for the program
+        :return: None
+        """
+
+        super(Program15, self).execute()
+        self.orbiting_body = get_telemetry("body")
+
+        if not self._check_orbital_parameters():
+            return
+        gc.noun_data["30"] = self._check_target()
+        self.target_octal_id = self._check_target()
+        gc.execute_verb(verb="01", noun="30")
+        gc.dsky.request_data(requesting_object=self._accept_target_input, display_location=dsky.registers[1],
+                             is_proceed_available=True)
 
     def terminate(self):
 
@@ -215,6 +231,27 @@ class Program15(Program):
         gc.burn_data.remove(self.second_burn)
         super(Program15, self).terminate()
 
+    def _accept_target_input(self, target):
+
+        """ Called by P15 after user as entered target choice.
+        :param target: string of octal target code
+        :return: None
+        """
+
+        if target == "proceed":
+            self.target_octal_id = self.target_octal_id.lstrip("0")
+        elif target[0] == ("+" or "-"):
+            dsky.operator_error("Expected octal input, decimal input provided")
+            self.execute()
+            return
+        elif target not in config.OCTAL_BODY_IDS.values():
+            utils.log("{} {} is not a valid target".format(target, type(target)))
+            gc.poodoo_abort(223, message="Target not valid")
+            return
+        else:
+            self.target_octal_id = target.lstrip("0")
+        # calculate the maneuver and add recalculation job to gc main loop
+        self.calculate_maneuver()
 
     def calculate_maneuver(self):
 
@@ -301,43 +338,13 @@ class Program15(Program):
                                 time_of_ignition=self.time_of_ignition_second_burn)
 
         # load the Burn objects into computer
-        gc.load_burn(self.first_burn)
+        gc.load_burn(self.first_burn, execute=True)
         gc.load_burn(self.second_burn)
 
         # display burn parameters and finish
         gc.execute_verb(verb="06", noun="95")
 
-    # def recalculate_maneuver(self):
-    #
-    #     """ This function is to be placed in the GC main loop to recalculate maneuver parameters.
-    #     :return: nothing
-    #     """
-    #
-    #     # update orbital altitude
-    #     self.departure_altitude = get_telemetry("altitude")
-    #
-    #     # update current phase angle
-    #     telemachus_body_id = config.TELEMACHUS_BODY_IDS[config.OCTAL_BODY_NAMES[self.target_octal_id]]
-    #     current_phase_angle = get_telemetry("body_phaseAngle",
-    #                                         body_number=telemachus_body_id)
-    #
-    #     # recalculate phase angle difference
-    #     phase_angle_difference = current_phase_angle - self.phase_angle_required
-    #     if phase_angle_difference < 0:
-    #         phase_angle_difference = 180 + abs(phase_angle_difference)
-    #     self.delta_time_to_burn = phase_angle_difference / ((360 / self.orbital_period) - (360 /
-    #                                                                                 self.departure_body_orbital_period))
-    #     delta_time = utils.seconds_to_time(self.delta_time_to_burn)
-    #     velocity_at_cutoff = get_telemetry("orbitalVelocity") + self.delta_v_first_burn
-    #     self.first_burn.delta_v =
-    #     # gc.noun_data["95"] = [
-    #     #     delta_time,
-    #     #     self.delta_v_first_burn,
-    #     #     velocity_at_cutoff,
-    #     # ]
-
-
-    def check_orbital_parameters(self):
+    def _check_orbital_parameters(self):
 
         """ Checks to see if current orbital parameters are within an acceptable range to plot maneuver
         :return: Bool
@@ -357,7 +364,7 @@ class Program15(Program):
         else:
             return True
 
-    def check_target(self):
+    def _check_target(self):
 
         """Checks if a target exists, it not, returns the default target, else returns the selected target number
         Returns: octal target code
@@ -370,54 +377,6 @@ class Program15(Program):
             return config.OCTAL_BODY_IDS["Mun"].zfill(5)
         else:
             return config.OCTAL_BODY_IDS[get_telemetry("target_name")].zfill(5)
-
-    def execute(self):
-
-        """ Executes the program.
-        :return: None
-        """
-
-        super(Program15, self).execute()
-        self.orbiting_body = get_telemetry("body")
-
-        if not self.check_orbital_parameters():
-            return
-        gc.noun_data["30"] = self.check_target()
-        self.target_octal_id = self.check_target()
-        gc.execute_verb(verb="01", noun="30")
-        gc.dsky.request_data(requesting_object=self.accept_target_input, display_location=dsky.registers[1],
-                             is_proceed_available=True)
-
-    def accept_target_input(self, target):
-
-        """ Called by P15 after user as entered target choice.
-        :param target: string of octal target code
-        :return: None
-        """
-
-        if target == "proceed":
-            self.target_octal_id = self.target_octal_id.lstrip("0")
-        elif target[0] == ("+" or "-"):
-            dsky.operator_error("Expected octal input, decimal input provided")
-            self.execute()
-            return
-        elif target not in config.OCTAL_BODY_IDS.values():
-            utils.log("{} {} is not a valid target".format(target, type(target)))
-            gc.poodoo_abort(223, message="Target not valid")
-            return
-        else:
-            self.target_octal_id = target.lstrip("0")
-        # calculate the maneuver and add recalculation job to gc main loop
-        self.calculate_maneuver()
-        # gc.loop_items.append(self.recalculate_maneuver)
-        gc.loop_items.append(self.first_burn._coarse_start_time_monitor)
-        gc.execute_verb(verb="16", noun="95")
-
-
-        #gc.poodoo_abort(310)
-        # gc.execute_verb(verb=16, noun=79)
-        # gc.set_attitude("prograde")
-
 
 class ProgramNotImplementedError(Exception):
 

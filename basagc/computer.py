@@ -175,7 +175,7 @@ class Computer(object):
         if not self.next_burn:
             self.next_burn = self._burn_queue.pop()
         if execute:
-            self.next_burn.execute_verb()
+            self.next_burn.execute()
 
     def burn_complete(self):
 

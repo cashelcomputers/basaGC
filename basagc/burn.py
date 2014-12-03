@@ -88,43 +88,6 @@ class Burn(object):
         if telemachus.get_telemetry("throttle") > 0:
             telemachus.cut_throttle()
 
-    def _enable_directional_autopilot(self):
-
-        try:
-            telemachus.set_mechjeb_smartass(self.direction)
-        except:
-            return False
-        else:
-            utils.log("Directional autopilot enabled", log_level="INFO")
-            return True
-
-    def _begin_burn(self):
-
-        self.initial_speed = get_telemetry("orbitalVelocity")
-
-        # start thrusting
-        telemachus.set_throttle(100)
-        gc.loop_items.append(self._thrust_monitor)
-
-    def _thrust_monitor(self):
-
-        # recalculate accumulated delta-v so far
-        self.accumulated_delta_v = self._calculate_accumulated_delta_v()
-
-        if self.accumulated_delta_v > (self.delta_v_required - 10) and not self._is_thrust_reduced:
-            utils.log("Throttling back to 10%", log_level="DEBUG")
-            telemachus.set_throttle(20)
-            self._is_thrust_reduced = True
-
-        if self.accumulated_delta_v > (self.delta_v_required - 0.5):
-            telemachus.cut_throttle()
-            utils.log("Closing throttle, burn complete!", log_level="DEBUG")
-            gc.loop_items.remove(self)
-
-        gc.burn_complete()
-        # utils.log("Accumulated Δv: {}, Δv to go: {}".format(accumulated_speed[0], delta_v_required -
-        #                                                     accumulated_speed[0]))
-
     def _coarse_start_time_monitor(self):
 
         self.time_until_ignition = self._calculate_time_to_ignition()
@@ -161,12 +124,39 @@ class Burn(object):
 
     def _fine_start_time_monitor(self):
 
-        current_time = get_telemetry("missionTime")
         self.time_until_ignition = self._calculate_time_to_ignition()
         if float(self.time_until_ignition) < 0.1:
+            utils.log("Engine Ignition", log_level="INFO")
             self._begin_burn()
-            utils.log("Thrusting", log_level="DEBUG")
             gc.loop_items.remove(self._fine_start_time_monitor)
+
+    def _begin_burn(self):
+
+        self.initial_speed = get_telemetry("orbitalVelocity")
+
+        # start thrusting
+        telemachus.set_throttle(100)
+        gc.loop_items.append(self._thrust_monitor)
+
+    def _thrust_monitor(self):
+
+        # recalculate accumulated delta-v so far
+        self.accumulated_delta_v = self._calculate_accumulated_delta_v()
+
+        if self.accumulated_delta_v > (self.delta_v_required - 10) and not self._is_thrust_reduced:
+            utils.log("Throttling back to 10%", log_level="DEBUG")
+            telemachus.set_throttle(20)
+            self._is_thrust_reduced = True
+
+        if self.accumulated_delta_v > (self.delta_v_required - 0.5):
+            telemachus.cut_throttle()
+            utils.log("Closing throttle, burn complete!", log_level="DEBUG")
+            gc.loop_items.remove(self._thrust_monitor)
+            self.terminate()
+            gc.burn_complete()
+
+        # utils.log("Accumulated Δv: {}, Δv to go: {}".format(accumulated_speed[0], delta_v_required -
+        #                                                     accumulated_speed[0]))
 
     def _calculate_velocity_at_cutoff(self):
         return get_telemetry("orbitalVelocity") + self.delta_v_required
@@ -193,4 +183,13 @@ class Burn(object):
             return False
         else:
             utils.log("Directional autopilot disabled", log_level="INFO")
+            return True
+
+    def _enable_directional_autopilot(self):
+        try:
+            telemachus.set_mechjeb_smartass(self.direction)
+        except:
+            return False
+        else:
+            utils.log("Directional autopilot enabled", log_level="INFO")
             return True

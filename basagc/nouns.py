@@ -774,13 +774,15 @@ class Noun95(Noun):
 
     def return_data(self):
 
-        # time_to_ignition = gc.noun_data["95"][0]
-        time_to_ignition = utils.seconds_to_time(gc.burn_data[0].time_until_ignition)
+        if not gc.next_burn:
+            gc.program_alarm(115)
+            return False
+
+        time_to_ignition = utils.seconds_to_time(gc.next_burn.time_until_ignition)
         minutes_to_ignition = str(int(time_to_ignition["minutes"])).zfill(2)
         seconds_to_ignition = str(int(time_to_ignition["seconds"])).zfill(2)
-        delta_v = str(int(gc.burn_data[0].delta_v))
-        velocity_at_cutoff = str(int(gc.burn_data[0].velocity_at_cutoff))
-
+        delta_v = str(int(gc.next_burn.delta_v_required))
+        velocity_at_cutoff = str(int(gc.next_burn.velocity_at_cutoff))
 
         data = {
             1: minutes_to_ignition + "b" + seconds_to_ignition,
