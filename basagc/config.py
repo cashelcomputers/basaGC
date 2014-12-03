@@ -119,6 +119,7 @@ ALARM_CODES = OrderedDict({
     224: "Orbit not circular",
     225: "Vessel and target orbits inclination too far apart",
     226: "Time of ignition less than 2 minutes in the future",
+    227: "Time of ignition less than 3 minutes in the future",
     310: "Program hasn't been finished yet, watch this space :)",
     410: "Autopilot error",
 })
