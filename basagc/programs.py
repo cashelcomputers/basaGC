@@ -386,6 +386,11 @@ class Program40(Program):
 
     def execute(self):
         super(Program40, self).execute()
+        # if TIG < 3 mins away, abort burn
+        if utils.seconds_to_time(self.burn.time_until_ignition)["minutes"] < 3:
+            gc.remove_burn()
+            gc.poodoo_abort(227)
+            return
         # if time to ignition if further than a hour away, display time to ignition
         if utils.seconds_to_time(self.burn.time_until_ignition)["hours"] > 0:
             utils.log("TIG > 1 hour away")
@@ -400,6 +405,10 @@ class Program40(Program):
             gc.loop_items.remove(self._ten_minute_monitor)
         else:
             self.burn.execute()
+
+    def terminate(self):
+        super(Program40, self).terminate()
+        self.burn.terminate()
 
 class ProgramNotImplementedError(Exception):
 
