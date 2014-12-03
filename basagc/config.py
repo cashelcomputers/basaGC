@@ -127,11 +127,9 @@ OCTAL_BODY_IDS = {key: str(int(oct(int(value)))) for key, value in
                   TELEMACHUS_BODY_IDS.iteritems()}  # FIXME: abomination
 OCTAL_BODY_NAMES = {value: key for key, value in OCTAL_BODY_IDS.iteritems()}
 
-PROGRAM_DESCRIPTION = """{program_name} is a implementation of the Apollo Guidance Computer (AGC) for Kerbal Space \
-Program.
-
-{program_name} includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html) by
-Ronald S. Burkey <info@sandroid.org> """.format(program_name=PROGRAM_NAME)
+PROGRAM_DESCRIPTION = "basaGC is a implementation of the Apollo Guidance Computer (AGC) for Kerbal Space Program." + (
+                      "\n\nbasaGC includes code and images from the Virtual AGC Project ") + (
+                      "(http://www.ibiblio.org/apollo/index.html) by Ronald S. Burkey <info@sandroid.org>")
 
 with open(LICENCE_FILE) as f:
     LICENCE = f.readlines()
