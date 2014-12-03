@@ -227,8 +227,8 @@ class Program15(Program):
     def terminate(self):
 
         utils.log("Removing burn data", log_level="DEBUG")
-        gc.burn_data.remove(self.first_burn)
-        gc.burn_data.remove(self.second_burn)
+        gc.remove_burn(self.first_burn)
+        gc.remove_burn(self.second_burn)
         super(Program15, self).terminate()
 
     def _accept_target_input(self, target):
@@ -338,11 +338,12 @@ class Program15(Program):
                                 time_of_ignition=self.time_of_ignition_second_burn)
 
         # load the Burn objects into computer
-        gc.load_burn(self.first_burn, execute=True)
-        gc.load_burn(self.second_burn)
+        gc.load_burn(self.first_burn, execute=False)
+        gc.load_burn(self.second_burn, execute=False)
 
-        # display burn parameters and finish
+        # display burn parameters and go to poo
         gc.execute_verb(verb="06", noun="95")
+        gc.go_to_poo()
 
     def _check_orbital_parameters(self):
 
@@ -377,6 +378,28 @@ class Program15(Program):
             return config.OCTAL_BODY_IDS["Mun"].zfill(5)
         else:
             return config.OCTAL_BODY_IDS[get_telemetry("target_name")].zfill(5)
+
+class Program40(Program):
+    def __init__(self):
+        super(Program40, self).__init__(description="SPS Burn", number="40")
+        self.burn = gc.next_burn
+
+    def execute(self):
+        super(Program40, self).execute()
+        # if time to ignition if further than a hour away, display time to ignition
+        if utils.seconds_to_time(self.burn.time_until_ignition)["hours"] > 0:
+            utils.log("TIG > 1 hour away")
+            gc.execute_verb(verb="16", noun="33")
+            gc.loop_items.append(self._ten_minute_monitor)
+        else:
+            utils.log("TIG < 1 hour away, enabling burn")
+            self.burn.execute()
+
+    def _ten_minute_monitor(self):
+        if utils.seconds_to_time(self.burn.time_until_ignition)["hours"] < 1:
+            gc.loop_items.remove(self._ten_minute_monitor)
+        else:
+            self.burn.execute()
 
 class ProgramNotImplementedError(Exception):
 

@@ -103,10 +103,12 @@ class Computer(object):
         self.nouns = OrderedDict(
             {
                 "09": nouns.Noun09(),
+                "14": nouns.Noun14(),
                 "17": nouns.Noun17(),
                 "30": nouns.Noun30(),
                 "33": nouns.Noun33(),
                 "36": nouns.Noun36(),
+                "40": nouns.Noun40(),
                 "43": nouns.Noun43(),
                 "44": nouns.Noun44(),
                 "50": nouns.Noun50(),
@@ -153,6 +155,7 @@ class Computer(object):
             "00": programs.Program00,
             "11": programs.Program11,
             "15": programs.Program15,
+            "40": programs.Program40,
         })
 
         # self.routines = {
@@ -176,6 +179,12 @@ class Computer(object):
             self.next_burn = self._burn_queue.pop()
         if execute:
             self.next_burn.execute()
+
+    def remove_burn(self, burn):
+        if burn in self.next_burn:
+            self.next_burn.remove(burn)
+        if burn in self._burn_queue:
+            self._burn_queue.remove(burn)
 
     def burn_complete(self):
 
@@ -289,6 +298,10 @@ class Computer(object):
         for item in self.loop_items:
             item()
 
+    def go_to_poo(self):
+        poo = self.programs["00"]()
+        poo.execute()
+
     def execute_verb(self, verb, noun=None, **kwargs):
 
         """ Executes the specified verb, optionally with the specified noun.
@@ -317,21 +330,21 @@ class Computer(object):
         self.alarm_codes[0] = 0
         self.alarm_codes[1] = 0
 
-    def program_alarm(self, alarm_code, message=None):
+    def program_alarm(self, alarm_code):
 
         """ Sets the program alarm codes in memory and turns the PROG annunciator on.
         :param alarm_code: a 3 or 4 digit octal int of the alarm code to raise
         :param message: optional message to print to log
         :return: None
         """
+        utils.log("PROGRAM ALARM {}: {}".format(str(alarm_code), config.ALARM_CODES[alarm_code]), log_level="ERROR")
         alarm_code += 1000
         if self.alarm_codes[0] != 0:
             self.alarm_codes[1] = self.alarm_codes[0]
         self.alarm_codes[0] = alarm_code
         self.alarm_codes[2] = self.alarm_codes[0]
         self.dsky.annunciators["prog"].on()
-        if message:
-            utils.log("PROGRAM ALARM {}: {}".format(str(alarm_code), message), log_level="ERROR")
+
 
     def poodoo_abort(self, alarm_code):
 

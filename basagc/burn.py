@@ -75,6 +75,7 @@ class Burn(object):
             gc.program_alarm(410)
             return
         # load the course start time monitor into the computers main loop
+        gc.execute_verb(verb="16", noun="40")
         gc.loop_items.append(self._coarse_start_time_monitor)
 
     def terminate(self):
@@ -105,7 +106,7 @@ class Burn(object):
         if int(self.time_until_ignition) <= 100 and self.is_display_blanked:
             # restore the displayed program number
             gc.dsky.control_registers["program"].display(gc.active_program.number)
-            gc.execute_verb(verb="16", noun="95")
+            gc.execute_verb(verb="16", noun="40")
             self.is_display_blanked = False
             self._enable_directional_autopilot()
 
@@ -120,7 +121,7 @@ class Burn(object):
         else:
             return
         gc.loop_items.append(self._fine_start_time_monitor)
-        gc.execute_verb(verb="16", noun="95")
+        gc.execute_verb(verb="16", noun="40")
 
     def _fine_start_time_monitor(self):
 
@@ -151,9 +152,12 @@ class Burn(object):
         if self.accumulated_delta_v > (self.delta_v_required - 0.5):
             telemachus.cut_throttle()
             utils.log("Closing throttle, burn complete!", log_level="DEBUG")
+            gc.dsky.current_verb.terminate()
+            gc.execute_verb(verb="06", noun="14")
             gc.loop_items.remove(self._thrust_monitor)
             self.terminate()
             gc.burn_complete()
+            gc.go_to_poo()
 
         # utils.log("Accumulated Δv: {}, Δv to go: {}".format(accumulated_speed[0], delta_v_required -
         #                                                     accumulated_speed[0]))

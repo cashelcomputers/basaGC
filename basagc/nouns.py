@@ -167,8 +167,33 @@ class Noun09(Noun):
 # def noun13(calling_verb):
 #     raise NounNotImplementedError
 #
-# def noun14(calling_verb):
-#     raise NounNotImplementedError
+class Noun14(Noun):
+
+    def __init__(self):
+        super(Noun14, self).__init__("Burn error display (Expected Δv at cutoff (xxxxx m/s), Actual Δv at cutoff ("
+                                     "xxxxx m/s), Difference (xxxx.x m/s)")
+
+    def return_data(self):
+        if not gc.next_burn:
+            gc.program_alarm(115)
+            return False
+        burn = gc.next_burn
+        expected_delta_v_at_cutoff = burn.velocity_at_cutoff
+        actual_delta_v_at_cutoff = get_telemetry("orbitalVelocity")
+        delta_v_error = actual_delta_v_at_cutoff - expected_delta_v_at_cutoff
+
+        expected_delta_v_at_cutoff = str(int(expected_delta_v_at_cutoff)).replace(".", "")
+        actual_delta_v_at_cutoff = str(int(actual_delta_v_at_cutoff)).replace(".", "")
+        delta_v_error = str(round(delta_v_error, 1)).replace(".", "")
+
+        data = {
+            1: expected_delta_v_at_cutoff,
+            2: actual_delta_v_at_cutoff,
+            3: delta_v_error,
+            "is_octal": False,
+        }
+        return data
+
 #
 # def noun15(calling_verb):
 #     raise NounNotImplementedError
@@ -312,12 +337,10 @@ class Noun33(Noun):
 
     def return_data(self):
 
-        hours, minutes, seconds = 0, 0, 0
-        try:
-            burn = gc.burn_data[0]
-        except IndexError:
+        if not gc.next_burn:
             gc.program_alarm(alarm_code=115, message="No burn data loaded")
             return False
+
         time_of_ignition = utils.seconds_to_time(burn.start_time)
         hours = str(int(time_of_ignition["hours"]))
         minutes = str(int(time_of_ignition["minutes"]))
@@ -410,16 +433,37 @@ class Noun36(Noun):
 
 #-----------------------BEGIN MIXED NOUNS--------------------------------------
 
-# def noun40(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun41(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun42(calling_verb):
-#     raise NounNotImplementedError
+class Noun40(Noun):
+
+    def __init__(self):
+        super(Noun40, self).__init__("Burn Data (Time from ignition, Δv to be gained, accumulated Δv")
+
+    def return_data(self):
+        if not gc.next_burn:
+            gc.program_alarm(115)
+            return False
+        burn = gc.next_burn
+        time_to_ignition = utils.seconds_to_time(burn.time_until_ignition)
+        minutes_to_ignition = str(int(time_to_ignition["minutes"])).zfill(2)
+        seconds_to_ignition = str(int(time_to_ignition["seconds"])).zfill(2)
+        delta_v_gain = str(int(burn.delta_v_required)).replace(".", "")
+        accumulated_delta_v = str(int(burn.accumulated_delta_v)).replace(".", "")
+
+        data = {
+            1: minutes_to_ignition + "b" + seconds_to_ignition,
+            2: delta_v_gain,
+            3: accumulated_delta_v,
+            "is_octal": False,
+            "tooltips": [
+                "Time From Ignition (mmbss minutes, seconds)",
+                "Δv (xxxxx m/s)",
+                "Accumulated Δv (xxxxx m/s)",
+            ],
+        }
+        return data
 
 class Noun43(Noun):
+
     def __init__(self):
         super(Noun43, self).__init__("Geographic Position (Latitude, Longitude, Altitude)")
 
