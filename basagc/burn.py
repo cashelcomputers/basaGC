@@ -24,8 +24,8 @@
 #  (http://www.ibiblio.org/apollo/index.html) by Ronald S. Burkey
 #  <info@sandroid.org>
 
-from ..telemachus import get_telemetry
-from ..utils import log
+from telemachus import get_telemetry
+from utils import log
 
 gc = None
 

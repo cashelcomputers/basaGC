@@ -23,11 +23,16 @@
 # (http://www.ibiblio.org/apollo/index.html) by Ronald S. Burkey
 # <info@sandroid.org>
 
-from sortedcontainers import SortedDict
+import os
 
+from collections import OrderedDict
+
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 PROGRAM_NAME = "basaGC"
-VERSION = "0.5.4"
-IMAGES_DIR = "./images/"
+VERSION = "0.5.5"
+LICENCE_FILE = "./licence"
+
+IMAGES_DIR = BASE_DIR + "/images/"
 IP = "127.0.0.1"
 PORT = "8085"
 URL = "http://" + IP + ":" + PORT + "/telemachus/datalink?"
@@ -106,7 +111,7 @@ TELEMACHUS_BODY_IDS = {
     "Eeloo": "16",
 }
 
-ALARM_CODES = SortedDict({
+ALARM_CODES = OrderedDict({
     110: "Error contacting KSP",
     111: "Telemetry not available",
     115: "No burn data loaded",
@@ -122,21 +127,22 @@ OCTAL_BODY_IDS = {key: str(int(oct(int(value)))) for key, value in
                   TELEMACHUS_BODY_IDS.iteritems()}  # FIXME: abomination
 OCTAL_BODY_NAMES = {value: key for key, value in OCTAL_BODY_IDS.iteritems()}
 
-PROGRAM_DESCRIPTION = """{program_name} is a implementation of the Apollo Guidance Computer (AGC) for Kerbal Space \
-Program. While not entirely accurate to the real AGC, I have attempted to be as accurate as possible.
+PROGRAM_DESCRIPTION = "basaGC is a implementation of the Apollo Guidance Computer (AGC) for Kerbal Space Program." + (
+                      "\n\nbasaGC includes code and images from the Virtual AGC Project ") + (
+                      "(http://www.ibiblio.org/apollo/index.html) by Ronald S. Burkey <info@sandroid.org>")
 
-{program_name} includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html) by
-Ronald S. Burkey <info@sandroid.org> """.format(program_name=PROGRAM_NAME)
+with open(LICENCE_FILE) as f:
+    LICENCE = f.readlines()
+LICENCE = "".join(LICENCE)
 
-LICENCE = """{} is free software; you can redistribute it and/or modify it under the terms of the GNU General
-Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any
-later version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with this program; if not, write to the Free
-Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.""".format(PROGRAM_NAME)
+SHORT_LICENCE = "basaGC is free software; you can redistribute it and/or modify it under the terms of the GNU " + (
+                "General Public License as published by the Free Software Foundation; either version 2 of the ") + (
+                "License, or (at your option) any later version.\n\nThis program is distributed in the hope that ") + (
+                "it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of ") + (
+                "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for ") + (
+                "more details.\n\nYou should have received a copy of the GNU General Public License along with ") + (
+                "this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, ") + (
+                "Fifth Floor, Boston, MA 02110-1301, USA.")
 
 COPYRIGHT = "(C) 2014 Tim Buchanan (cashelcomputers@gmail.com)"
 WEBSITE = "https://github.com/cashelcomputers/basaGC/"
