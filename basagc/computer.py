@@ -102,18 +102,18 @@ class Computer(object):
 
         self.nouns = OrderedDict(
             {
-                "09": nouns.Noun09(),
-                "14": nouns.Noun14(),
-                "17": nouns.Noun17(),
-                "30": nouns.Noun30(),
-                "33": nouns.Noun33(),
-                "36": nouns.Noun36(),
-                "40": nouns.Noun40(),
-                "43": nouns.Noun43(),
-                "44": nouns.Noun44(),
-                "50": nouns.Noun50(),
-                "62": nouns.Noun62(),
-                "95": nouns.Noun95(),
+                "09": nouns.Noun09,
+                "14": nouns.Noun14,
+                "17": nouns.Noun17,
+                "30": nouns.Noun30,
+                "33": nouns.Noun33,
+                "36": nouns.Noun36,
+                "40": nouns.Noun40,
+                "43": nouns.Noun43,
+                "44": nouns.Noun44,
+                "50": nouns.Noun50,
+                "62": nouns.Noun62,
+                "95": nouns.Noun95,
             }
         )
 
@@ -180,11 +180,11 @@ class Computer(object):
         if execute:
             self.next_burn.execute()
 
-    def remove_burn(self, burn):
-        if burn in self.next_burn:
-            self.next_burn.remove(burn)
-        if burn in self._burn_queue:
-            self._burn_queue.remove(burn)
+    def remove_burn(self, this_burn):
+        if this_burn in self.next_burn:
+            self.next_burn.remove(this_burn)
+        if this_burn in self._burn_queue:
+            self._burn_queue.remove(this_burn)
 
     def burn_complete(self):
 
@@ -193,62 +193,10 @@ class Computer(object):
         else:
             self.next_burn = None
 
-    # def enable_direction_autopilot(self, direction):
-    #     if direction not in config.DIRECTIONS:
-    #         self.program_alarm(410)
-    #     else:
-    #         utils.log("Autopilot enabled", log_level="INFO")
-    #         telemachus.set_mechjeb_smartass(direction)
-    #         self.is_direction_autopilot_engaged = True
-
-    # def _begin_burn(self, delta_v_required, calling_burn):
-    #
-    #     initial_speed = get_telemetry("orbitalVelocity")
-    #     self.is_thrust_autopilot_engaged = True
-    #     thrust_reduced_20 = [False]
-    #     delta_v_required = delta_v_required
-    #     accumulated_speed = [0]
-    #     self.calling_burn = calling_burn
-    #
-    #     # start thrusting
-    #     telemachus.set_throttle(100)
-    #
-    #     def thrust_monitor():
-    #
-    #         if accumulated_speed[0] > (delta_v_required - 10) and not thrust_reduced_20[0]:
-    #             utils.log("Setting thrust to 20%", log_level="DEBUG")
-    #             telemachus.set_throttle(20)
-    #             thrust_reduced_20[0] = True
-    #         # elif accumulated_speed[0] > (delta_v_required - 5) and not thrust_reduced_5[0]:
-    #         #     utils.log("Setting thrust to 5%", log_level="DEBUG")
-    #         #     telemachus.set_throttle(5)
-    #         #     thrust_reduced_5[0] = True
-    #         delta_time_to_transfer = self.calling_burn.time_to_transfer - get_telemetry("timeToAp")
-    #         if delta_time_to_transfer < 10:
-    #         # if accumulated_speed[0] > (delta_v_required - 0.5):
-    #             telemachus.cut_throttle()
-    #             utils.log("Closing throttle, burn complete!", log_level="DEBUG")
-    #             self.loop_items.remove(thrust_monitor)
-    #
-    #         current_speed = get_telemetry("orbitalVelocity")
-    #         accumulated_speed[0] = current_speed - initial_speed
-    #         # utils.log("Accumulated Δv: {}, Δv to go: {}".format(accumulated_speed[0], delta_v_required -
-    #         #                                                     accumulated_speed[0]))
-    #         print(delta_time_to_transfer)
-    #
-    #     self.loop_items.append(thrust_monitor)
-
-
-
-
-
-
-
     def disable_direction_autopilot(self):
         telemachus.disable_smartass()
         self.is_direction_autopilot_engaged = False
         utils.log("Autopilot disabled", log_level="INFO")
-
 
     def quit(self, event=None):
 
@@ -256,6 +204,9 @@ class Computer(object):
         :param event: wxPython event (not used)
         :return: None
         """
+
+        # disables SMARTASS
+        telemachus.disable_smartass()
 
         # if self.loop_timer.is_running:
         #     self.loop_timer.stop()
@@ -334,7 +285,6 @@ class Computer(object):
 
         """ Sets the program alarm codes in memory and turns the PROG annunciator on.
         :param alarm_code: a 3 or 4 digit octal int of the alarm code to raise
-        :param message: optional message to print to log
         :return: None
         """
         utils.log("PROGRAM ALARM {}: {}".format(str(alarm_code), config.ALARM_CODES[alarm_code]), log_level="ERROR")
@@ -449,4 +399,3 @@ class Computer(object):
                     self.dsky.annunciators["stby"].on()
                     utils.log("No Telemachus antenna found", log_level="WARNING")
                 self.ksp_paused_state = paused_state
-
