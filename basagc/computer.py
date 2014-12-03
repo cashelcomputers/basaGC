@@ -79,7 +79,9 @@ class Computer(object):
         self.noun_data = {
             "30": [],
         }
-        self.burn_data = []
+
+        self.next_burn = None
+        self._burn_queue = []
         self.is_ksp_connected = None
         self.ksp_paused_state = None
         self.is_direction_autopilot_engaged = False
@@ -168,51 +170,64 @@ class Computer(object):
         }
         self.on()
 
-    def enable_direction_autopilot(self, direction):
-        if direction not in config.DIRECTIONS:
-            self.program_alarm(410)
+    def load_burn(self, burn_object, execute=True):
+        self._burn_queue.append(burn_object)
+        if not self.next_burn:
+            self.next_burn = self._burn_queue.pop()
+        if execute:
+            self.next_burn.execute_verb()
+
+    def burn_complete(self):
+
+        if self._burn_queue:
+            self.next_burn = self._burn_queue.pop()
         else:
-            utils.log("Autopilot enabled", log_level="INFO")
-            telemachus.set_mechjeb_smartass(direction)
-            self.is_direction_autopilot_engaged = True
+            self.next_burn = None
 
-    def enable_thrust_autopilot(self, delta_v_required, calling_burn):
+    # def enable_direction_autopilot(self, direction):
+    #     if direction not in config.DIRECTIONS:
+    #         self.program_alarm(410)
+    #     else:
+    #         utils.log("Autopilot enabled", log_level="INFO")
+    #         telemachus.set_mechjeb_smartass(direction)
+    #         self.is_direction_autopilot_engaged = True
 
-        initial_speed = get_telemetry("orbitalVelocity")
-        self.is_thrust_autopilot_engaged = True
-        thrust_reduced_20 = [False]
-        # thrust_reduced_5 = [False]
-        delta_v_required = delta_v_required
-        accumulated_speed = [0]
-        self.calling_burn = calling_burn
-
-        # start thrusting
-        telemachus.set_throttle(100)
-
-        def thrust_monitor():
-
-            if accumulated_speed[0] > (delta_v_required - 20) and not thrust_reduced_20[0]:
-                utils.log("Setting thrust to 20%", log_level="DEBUG")
-                telemachus.set_throttle(20)
-                thrust_reduced_20[0] = True
-            # elif accumulated_speed[0] > (delta_v_required - 5) and not thrust_reduced_5[0]:
-            #     utils.log("Setting thrust to 5%", log_level="DEBUG")
-            #     telemachus.set_throttle(5)
-            #     thrust_reduced_5[0] = True
-            delta_time_to_transfer = self.calling_burn.time_to_transfer - get_telemetry("timeToAp")
-            if delta_time_to_transfer < 10:
-            # if accumulated_speed[0] > (delta_v_required - 0.5):
-                telemachus.cut_throttle()
-                utils.log("Closing throttle, burn complete!", log_level="DEBUG")
-                self.loop_items.remove(thrust_monitor)
-
-            current_speed = get_telemetry("orbitalVelocity")
-            accumulated_speed[0] = current_speed - initial_speed
-            # utils.log("Accumulated Δv: {}, Δv to go: {}".format(accumulated_speed[0], delta_v_required -
-            #                                                     accumulated_speed[0]))
-            print(delta_time_to_transfer)
-
-        self.loop_items.append(thrust_monitor)
+    # def _begin_burn(self, delta_v_required, calling_burn):
+    #
+    #     initial_speed = get_telemetry("orbitalVelocity")
+    #     self.is_thrust_autopilot_engaged = True
+    #     thrust_reduced_20 = [False]
+    #     delta_v_required = delta_v_required
+    #     accumulated_speed = [0]
+    #     self.calling_burn = calling_burn
+    #
+    #     # start thrusting
+    #     telemachus.set_throttle(100)
+    #
+    #     def thrust_monitor():
+    #
+    #         if accumulated_speed[0] > (delta_v_required - 10) and not thrust_reduced_20[0]:
+    #             utils.log("Setting thrust to 20%", log_level="DEBUG")
+    #             telemachus.set_throttle(20)
+    #             thrust_reduced_20[0] = True
+    #         # elif accumulated_speed[0] > (delta_v_required - 5) and not thrust_reduced_5[0]:
+    #         #     utils.log("Setting thrust to 5%", log_level="DEBUG")
+    #         #     telemachus.set_throttle(5)
+    #         #     thrust_reduced_5[0] = True
+    #         delta_time_to_transfer = self.calling_burn.time_to_transfer - get_telemetry("timeToAp")
+    #         if delta_time_to_transfer < 10:
+    #         # if accumulated_speed[0] > (delta_v_required - 0.5):
+    #             telemachus.cut_throttle()
+    #             utils.log("Closing throttle, burn complete!", log_level="DEBUG")
+    #             self.loop_items.remove(thrust_monitor)
+    #
+    #         current_speed = get_telemetry("orbitalVelocity")
+    #         accumulated_speed[0] = current_speed - initial_speed
+    #         # utils.log("Accumulated Δv: {}, Δv to go: {}".format(accumulated_speed[0], delta_v_required -
+    #         #                                                     accumulated_speed[0]))
+    #         print(delta_time_to_transfer)
+    #
+    #     self.loop_items.append(thrust_monitor)
 
 
 

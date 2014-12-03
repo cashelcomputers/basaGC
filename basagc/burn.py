@@ -25,40 +25,111 @@
 #  <info@sandroid.org>
 
 from telemachus import get_telemetry
-from utils import log
+import utils
+import config
+import telemachus
 
 gc = None
 
+
 class Burn(object):
 
-    def __init__(self, delta_v, direction, time_of_ignition, calling_maneuver):
+    """ This object models a burn maneuver """
 
-        self.delta_v = delta_v
+    def __init__(self, delta_v, direction, time_of_ignition, recalc_function=None):
+
+        """ Class constructor
+
+        :param delta_v: delta_v required for burn
+        :type delta_v: float
+        :param direction: direction of burn
+        :type direction: str (should be in config.DIRECTIONS)
+        :param time_of_ignition: Time of Ignition, relative to Mission Elapsed Time
+        :type time_of_ignition: float
+        :return: None
+        """
+
+        self.recalc_function = recalc_function
+        self.delta_v_required = delta_v
         self.direction = direction
         self.time_of_ignition = time_of_ignition
-        self.calling_maneuver = calling_maneuver
         self.is_display_blanked = False
         self.is_verb_99_executed = False
-        self.time_until_ignition = self.time_of_ignition - get_telemetry("missionTime")
-        self.velocity_at_cutoff = get_telemetry("orbitalVelocity") + self.delta_v
+        self.time_until_ignition = self._calculate_time_to_ignition()
+        self.velocity_at_cutoff = self._calculate_velocity_at_cutoff()
         self.is_directional_autopilot_engaged = False
-        if self.calling_maneuver.time_to_transfer:
-            log("Got time to transfer data")
-            self.time_to_transfer = self.calling_maneuver.time_to_transfer
+        self.is_thrust_autopilot_engaged = False
+        self.is_active = False
+        self.initial_speed = 0.0
+        self.accumulated_delta_v = 0.0
+        self._is_thrust_reduced = False
 
     def execute(self):
-        gc.burn_data.append(self)
-        gc.loop_items.append(self.coarse_start_time_monitor)
+
+        """ Entry point to execute this burn.
+        :return: None
+        """
+
+        # check if direction is valid
+        if self.direction not in config.DIRECTIONS:
+            gc.program_alarm(410)
+            return
+        # load the course start time monitor into the computers main loop
+        gc.loop_items.append(self._coarse_start_time_monitor)
 
     def terminate(self):
-        if self.is_directional_autopilot_engaged:
-            gc.disable_direction_autopilot()
-        gc.loop_items.remove(self)
 
-    def coarse_start_time_monitor(self):
-        current_time = get_telemetry("missionTime")
-        self.time_until_ignition = self.time_of_ignition - current_time
+        """ Terminates the burn, disabling autopilot if running
+        :return: None
+        """
+        self._disable_directional_autopilot()
 
+        # if the throttle is open, close it
+        if telemachus.get_telemetry("throttle") > 0:
+            telemachus.cut_throttle()
+
+    def _enable_directional_autopilot(self):
+
+        try:
+            telemachus.set_mechjeb_smartass(self.direction)
+        except:
+            return False
+        else:
+            utils.log("Directional autopilot enabled", log_level="INFO")
+            return True
+
+    def _begin_burn(self):
+
+        self.initial_speed = get_telemetry("orbitalVelocity")
+
+        # start thrusting
+        telemachus.set_throttle(100)
+        gc.loop_items.append(self._thrust_monitor)
+
+    def _thrust_monitor(self):
+
+        # recalculate accumulated delta-v so far
+        self.accumulated_delta_v = self._calculate_accumulated_delta_v()
+
+        if self.accumulated_delta_v > (self.delta_v_required - 10) and not self._is_thrust_reduced:
+            utils.log("Throttling back to 10%", log_level="DEBUG")
+            telemachus.set_throttle(20)
+            self._is_thrust_reduced = True
+
+        if self.accumulated_delta_v > (self.delta_v_required - 0.5):
+            telemachus.cut_throttle()
+            utils.log("Closing throttle, burn complete!", log_level="DEBUG")
+            gc.loop_items.remove(self)
+
+        gc.burn_complete()
+        # utils.log("Accumulated Δv: {}, Δv to go: {}".format(accumulated_speed[0], delta_v_required -
+        #                                                     accumulated_speed[0]))
+
+    def _coarse_start_time_monitor(self):
+
+        self.time_until_ignition = self._calculate_time_to_ignition()
+
+        # at TIG - 105 seconds:
         # ensure we only blank display first time through the loop
         if int(self.time_until_ignition) == 105 and not self.is_display_blanked:
             gc.dsky.current_verb.terminate()
@@ -67,40 +138,59 @@ class Burn(object):
             for register in gc.dsky.registers.itervalues():
                 register.blank()
             self.is_display_blanked = True
-        # after 5 seconds, reenable display and enable autopilot
+        # at TIG - 100 seconds, reenable display and enable directional autopilot
         if int(self.time_until_ignition) <= 100 and self.is_display_blanked:
             # restore the displayed program number
             gc.dsky.control_registers["program"].display(gc.active_program.number)
-
             gc.execute_verb(verb="16", noun="95")
             self.is_display_blanked = False
-            self.is_directional_autopilot_engaged = True
-            gc.enable_direction_autopilot(self.direction)
+            self._enable_directional_autopilot()
 
         # at TIG - 10, execute verb 99
-        if int(self.time_until_ignition) <= 10 and not self.is_verb_99_executed:
-            self.is_verb_99_executed = True
-            gc.loop_items.remove(self.coarse_start_time_monitor)
-            gc.execute_verb(verb="99", object_requesting_proceed=self.execute_burn)
+        if int(self.time_until_ignition) <= 10:
+            gc.loop_items.remove(self._coarse_start_time_monitor)
+            gc.execute_verb(verb="99", object_requesting_proceed=self._accept_enable_engine)
 
-    def execute_burn(self, data):
+    def _accept_enable_engine(self, data):
         if data == "proceed":
-            log("Go for burn!", log_level="INFO")
+            utils.log("Go for burn!", log_level="INFO")
         else:
             return
-        gc.loop_items.append(self.fine_start_time_monitor)
+        gc.loop_items.append(self._fine_start_time_monitor)
         gc.execute_verb(verb="16", noun="95")
 
-    def fine_start_time_monitor(self):
+    def _fine_start_time_monitor(self):
 
         current_time = get_telemetry("missionTime")
-        self.time_until_ignition = self.time_of_ignition - current_time
+        self.time_until_ignition = self._calculate_time_to_ignition()
         if float(self.time_until_ignition) < 0.1:
-            # start thrusting and stop the programs running tasks
-            # if self.calling_maneuver.recalculate_maneuver in gc.loop_items:
-            #     gc.loop_items.remove(self.calling_maneuver.recalculate_maneuver)
-            # if self.calling_maneuver.check_time_to_burn in gc.loop_items:
-            #     gc.loop_items.remove(self.calling_maneuver.check_time_to_burn)
-            gc.loop_items.remove(self.fine_start_time_monitor)
-            gc.enable_thrust_autopilot(delta_v_required=self.delta_v, calling_burn=self)
-            log("Thrusting", log_level="DEBUG")
+            self._begin_burn()
+            utils.log("Thrusting", log_level="DEBUG")
+            gc.loop_items.remove(self._fine_start_time_monitor)
+
+    def _calculate_velocity_at_cutoff(self):
+        return get_telemetry("orbitalVelocity") + self.delta_v_required
+
+    def _calculate_time_to_ignition(self):
+
+        """ Calculates the time to ignition in seconds
+        :return: time to ignition in seconds
+        :rtype : float
+        """
+
+        current_time = get_telemetry("missionTime")
+        return self.time_of_ignition - current_time
+
+    def _calculate_accumulated_delta_v(self):
+        current_speed = get_telemetry("orbitalVelocity")
+        return current_speed - self.initial_speed
+
+    def _disable_directional_autopilot(self):
+
+        try:
+            telemachus.disable_smartass()
+        except:
+            return False
+        else:
+            utils.log("Directional autopilot disabled", log_level="INFO")
+            return True

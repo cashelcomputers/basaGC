@@ -258,7 +258,7 @@ class Program15(Program):
         # calculate the current difference in phase angle required and current phase angle
         self.phase_angle_difference = current_phase_angle - self.phase_angle_required
         if self.phase_angle_difference < 0:
-            self.phase_aPeriodngle_difference = 180 + abs(self.phase_angle_difference)
+            self.phase_angle_difference = 180 + abs(self.phase_angle_difference)
 
         # calculate time of ignition (TIG)
         self.delta_time_to_burn = self.phase_angle_difference / ((360 / self.orbital_period) -
@@ -293,84 +293,19 @@ class Program15(Program):
         # create a Burn object for the outbound burn
         self.first_burn = Burn(delta_v=self.delta_v_first_burn,
                               direction="prograde",
-                              time_of_ignition=self.time_of_ignition_first_burn,
-                              calling_maneuver=self)
+                              time_of_ignition=self.time_of_ignition_first_burn)
 
         # create a Burn object for the outbound burn
         self.second_burn = Burn(delta_v=self.delta_v_second_burn,
                                 direction="retrograde",
-                                time_of_ignition=self.time_of_ignition_second_burn,
-                                calling_maneuver=self)
+                                time_of_ignition=self.time_of_ignition_second_burn)
 
-        # begin first burn monitor
-        self.first_burn.execute()
+        # load the Burn objects into computer
+        gc.load_burn(self.first_burn)
+        gc.load_burn(self.second_burn)
 
-
-        # load the burn monitor into the computer main loop
-        gc.loop_items.append(self.first_burn.coarse_start_time_monitor)
-
-        #hms_time_of_ignition = utils.seconds_to_time(self.time_of_ignition_first_burn)
-        # gc.noun_data["33"] = [
-        #     hms_time_of_ignition[0],
-        #     hms_time_of_ignition[1],
-        #     hms_time_of_ignition[2],
-        # ]
-        # gc.noun_data["95"] = [
-        #     delta_time,
-        #     self.delta_v_first_burn,
-        #     get_telemetry("orbitalVelocity") + self.delta_v_first_burn,
-        # ]
-
-    # def burn_start_time_monitor(self):
-    #     if float(self.delta_time_to_burn) < 0.1:
-    #         # start thrusting and stop the programs running tasks
-    #         if self.recalculate_maneuver in gc.loop_items:
-    #             gc.loop_items.remove(self.recalculate_maneuver)
-    #         if self.check_time_to_burn in gc.loop_items:
-    #             gc.loop_items.remove(self.check_time_to_burn)
-    #         gc.loop_items.remove(self.burn_start_time_monitor)
-    #         gc.enable_thrust_autopilot(delta_v_required=self.delta_v_first_burn)
-    #         utils.log("Thrusting", log_level="DEBUG")
-
-
-    # def execute_burn(self, data):
-    #     if data == "proceed":
-    #         utils.log("Go for burn!", log_level="INFO")
-    #     else:
-    #         return
-    #     gc.loop_items.append(self.burn_start_time_monitor)
-    #     gc.execute_verb(verb="16", noun="95")
-
-
-    # def check_time_to_burn(self):
-    #
-    #     """ This function is to be placed in the GC main loop to calculate engine ignition, engage the autopilot, and
-    #     manipulate the DSKY as required
-    #     :return: nothing
-    #     """
-    #
-    #     # when delta TIG is -105 seconds, blank display for 5 seconds
-    #     if int(self.delta_time_to_burn) == 105:
-    #         # ensure we only blank display first time throught the loop
-    #         if not self.is_display_blanked:
-    #             gc.dsky.current_verb.terminate()
-    #             for register in gc.dsky.control_registers.itervalues():
-    #                 register.blank()
-    #             for register in gc.dsky.registers.itervalues():
-    #                 register.blank()
-    #             self.is_display_blanked = True
-    #     # after 5 seconds, reenable display and enable autopilot
-    #     if self.is_display_blanked and int(self.delta_time_to_burn) == 100:
-    #         gc.execute_verb(verb="16", noun="95")
-    #         self.is_display_blanked = False
-    #         gc.enable_direction_autopilot("prograde")
-    #
-    #     # at TIG - 10, execute verb 99
-    #     if int(self.delta_time_to_burn) == 10:
-    #         gc.loop_items.remove(self.check_time_to_burn)
-    #         gc.execute_verb(99, object_requesting_proceed=self.execute_burn)
-
-
+        # display burn parameters and finish
+        gc.execute_verb(verb="06", noun="95")
 
     # def recalculate_maneuver(self):
     #
@@ -475,7 +410,7 @@ class Program15(Program):
         # calculate the maneuver and add recalculation job to gc main loop
         self.calculate_maneuver()
         # gc.loop_items.append(self.recalculate_maneuver)
-        gc.loop_items.append(self.first_burn.coarse_start_time_monitor)
+        gc.loop_items.append(self.first_burn._coarse_start_time_monitor)
         gc.execute_verb(verb="16", noun="95")
 
 

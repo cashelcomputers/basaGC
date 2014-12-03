@@ -3,6 +3,9 @@ basaGC changelog
 
 Please note that this file only contains changes from version 0.5.0 onwards. All dates are in dd/mm/yy format.
 
+xx/xx/14: version 0.5.6:
+- Burn program
+
 02/12/14: version 0.5.5:
 - Added alarm codes to help menu
 - Many small bug fixes
