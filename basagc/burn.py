@@ -146,7 +146,7 @@ class Burn(object):
 
         if self.accumulated_delta_v > (self.delta_v_required - 10) and not self._is_thrust_reduced:
             utils.log("Throttling back to 10%", log_level="DEBUG")
-            telemachus.set_throttle(20)
+            telemachus.set_throttle(10)
             self._is_thrust_reduced = True
 
         if self.accumulated_delta_v > (self.delta_v_required - 0.5):
