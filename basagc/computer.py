@@ -173,7 +173,15 @@ class Computer(object):
         }
         self.on()
 
-    def load_burn(self, burn_object, execute=True):
+    def add_burn(self, burn_object, execute=True):
+
+        """ Adds a Burn object to the computer burn queue. If no burn is assigned to next_burn, load new burn to
+        next_burn
+        :param burn_object: a Burn object that contains parameters for the burn
+        :param execute: if true, execute the added burn
+        :return: None
+        """
+
         self._burn_queue.append(burn_object)
         if not self.next_burn:
             self.next_burn = self._burn_queue.pop()
@@ -181,6 +189,12 @@ class Computer(object):
             self.next_burn.execute()
 
     def remove_burn(self, this_burn):
+
+        """ Removes a given Burn object from the computers burn queue
+        :param this_burn: the Burn object to remove
+        :return: None
+        """
+
         if this_burn in self.next_burn:
             self.next_burn.remove(this_burn)
         if this_burn in self._burn_queue:
@@ -188,12 +202,21 @@ class Computer(object):
 
     def burn_complete(self):
 
+        """ Removes a completed burn and loads next queued burn if available.
+        :return: None
+        """
+
         if self._burn_queue:
             self.next_burn = self._burn_queue.pop()
         else:
             self.next_burn = None
 
     def disable_direction_autopilot(self):
+
+        """ Disables the directional autopilot
+        :return: None
+        """
+
         telemachus.disable_smartass()
         self.is_direction_autopilot_engaged = False
         utils.log("Autopilot disabled", log_level="INFO")
@@ -206,8 +229,10 @@ class Computer(object):
         """
 
         # disables SMARTASS
-        telemachus.disable_smartass()
-
+        try:
+            telemachus.disable_smartass()
+        except TypeError:
+            pass
         # if self.loop_timer.is_running:
         #     self.loop_timer.stop()
         self.gui.Destroy()
@@ -234,7 +259,7 @@ class Computer(object):
 
     def main_loop(self, event):
 
-        """ The guidance computer main loop. Not used for much yet.
+        """ The guidance computer main loop.
         :return: None
         """
 
@@ -250,6 +275,11 @@ class Computer(object):
             item()
 
     def go_to_poo(self):
+
+        """ Executes program 00. Name comes from NASA documentation :)
+        :return: None
+        """
+
         poo = self.programs["00"]()
         poo.execute()
 
@@ -295,12 +325,10 @@ class Computer(object):
         self.alarm_codes[2] = self.alarm_codes[0]
         self.dsky.annunciators["prog"].on()
 
-
     def poodoo_abort(self, alarm_code):
 
         """ Terminates the faulty program, and executes Program 00 (P00)
-        :param alarm_code: a 3 or 4 digit octal int of the alarm code to raise
-        :param message: optional message to print to log
+        :param alarm_code: a 3 digit octal int of the alarm code to raise
         :return: None
         """
 
@@ -356,7 +384,7 @@ class Computer(object):
     def check_ksp_connection(self):
 
         """ checks if we have a connection to Telemachus / KSP
-        Returns nothing.
+        :return: None
         """
 
         if not check_connection():
@@ -377,6 +405,7 @@ class Computer(object):
     def check_paused_state(self):
 
         """ Checks the paused state of KSP, and illuminates STBY annunciator and logs state as necessary.
+        :return: None
         """
 
         if self.is_ksp_connected:

@@ -338,8 +338,8 @@ class Program15(Program):
                                 time_of_ignition=self.time_of_ignition_second_burn)
 
         # load the Burn objects into computer
-        gc.load_burn(self.first_burn, execute=False)
-        gc.load_burn(self.second_burn, execute=False)
+        gc.add_burn(self.first_burn, execute=False)
+        gc.add_burn(self.second_burn, execute=False)
 
         # display burn parameters and go to poo
         gc.execute_verb(verb="06", noun="95")
