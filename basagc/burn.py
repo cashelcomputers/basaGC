@@ -76,7 +76,7 @@ class Burn(object):
             return
         # load the course start time monitor into the computers main loop
         gc.execute_verb(verb="16", noun="40")
-        gc.loop_items.append(self._coarse_start_time_monitor)
+        gc.main_loop_table.append(self._coarse_start_time_monitor)
 
     def terminate(self):
 
@@ -114,7 +114,7 @@ class Burn(object):
 
         # at TIG - 10, execute verb 99
         if int(self.time_until_ignition) <= 10:
-            gc.loop_items.remove(self._coarse_start_time_monitor)
+            gc.main_loop_table.remove(self._coarse_start_time_monitor)
             gc.execute_verb(verb="99", object_requesting_proceed=self._accept_enable_engine)
 
     def _accept_enable_engine(self, data):
@@ -122,7 +122,7 @@ class Burn(object):
             utils.log("Go for burn!", log_level="INFO")
         else:
             return
-        gc.loop_items.append(self._fine_start_time_monitor)
+        gc.main_loop_table.append(self._fine_start_time_monitor)
         gc.execute_verb(verb="16", noun="40")
 
     def _fine_start_time_monitor(self):
@@ -131,7 +131,7 @@ class Burn(object):
         if float(self.time_until_ignition) < 0.1:
             utils.log("Engine Ignition", log_level="INFO")
             self._begin_burn()
-            gc.loop_items.remove(self._fine_start_time_monitor)
+            gc.main_loop_table.remove(self._fine_start_time_monitor)
 
     def _begin_burn(self):
 
@@ -139,7 +139,7 @@ class Burn(object):
 
         # start thrusting
         telemachus.set_throttle(100)
-        gc.loop_items.append(self._thrust_monitor)
+        gc.main_loop_table.append(self._thrust_monitor)
 
     def _thrust_monitor(self):
 
@@ -156,9 +156,9 @@ class Burn(object):
             utils.log("Closing throttle, burn complete!", log_level="DEBUG")
             gc.dsky.current_verb.terminate()
             gc.execute_verb(verb="06", noun="14")
-            gc.loop_items.remove(self._thrust_monitor)
-            self.terminate()
+            gc.main_loop_table.remove(self._thrust_monitor)
             gc.burn_complete()
+            self.terminate()
             gc.go_to_poo()
 
         # utils.log("Accumulated Δv: {}, Δv to go: {}".format(accumulated_speed[0], delta_v_required -

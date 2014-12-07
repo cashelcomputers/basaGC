@@ -23,8 +23,11 @@
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org> (thanks Ronald!)
 
+import sys
+import inspect
 import logging
 import wx
+from collections import OrderedDict
 
 import nouns
 import config
@@ -372,7 +375,7 @@ class LoadVerb(DataVerb):
 # no verb 00
 
 
-class Verb1(DisplayVerb):
+class Verb01(DisplayVerb):
 
     """ Displays Octal component 1 in R1
     """
@@ -383,11 +386,11 @@ class Verb1(DisplayVerb):
         :return: None
         """
 
-        super(Verb1, self).__init__(name="Display Octal component 1 in R1", verb_number="01", noun=noun)
+        super(Verb01, self).__init__(name="Display Octal component 1 in R1", verb_number="01", noun=noun)
 
     def execute(self):
 
-        super(Verb1, self).execute()
+        super(Verb01, self).execute()
         noun_function = gc.nouns[gc.dsky.requested_noun]()
         noun_data = noun_function.return_data()
         if noun_data is False:
@@ -397,7 +400,7 @@ class Verb1(DisplayVerb):
         gc.dsky.registers[1].display(output[0])
 
 
-class Verb2(DisplayVerb):
+class Verb02(DisplayVerb):
 
     """ Displays Octal component 2 in R1
     """
@@ -408,7 +411,7 @@ class Verb2(DisplayVerb):
         :return: None
         """
 
-        super(Verb2, self).__init__(name="Display Octal component 2 in R1", verb_number="02", noun=noun)
+        super(Verb02, self).__init__(name="Display Octal component 2 in R1", verb_number="02", noun=noun)
 
     #def execute(self):
         #super(Verb2, self).execute()
@@ -424,7 +427,7 @@ class Verb2(DisplayVerb):
             #self.data = None
 
 
-class Verb3(DisplayVerb):
+class Verb03(DisplayVerb):
 
     """ Displays Octal component 3 in R1
     """
@@ -435,7 +438,7 @@ class Verb3(DisplayVerb):
         :return: None
         """
 
-        super(Verb3, self).__init__(name="Display Octal component 3 in R1", verb_number="03", noun=noun)
+        super(Verb03, self).__init__(name="Display Octal component 3 in R1", verb_number="03", noun=noun)
 
     #def execute(self):
         #super(Verb3, self).execute()
@@ -451,7 +454,7 @@ class Verb3(DisplayVerb):
             #self.data = None
 
 
-class Verb4(DisplayVerb):
+class Verb04(DisplayVerb):
 
     """ Displays Octal components 1, 2 in R1, R2
     """
@@ -462,7 +465,7 @@ class Verb4(DisplayVerb):
         :return: None
         """
 
-        super(Verb4, self).__init__(name="Display Octal components 1, 2 in R1, R2", verb_number="04", noun=noun)
+        super(Verb04, self).__init__(name="Display Octal components 1, 2 in R1, R2", verb_number="04", noun=noun)
 
     def execute(self):
 
@@ -470,7 +473,7 @@ class Verb4(DisplayVerb):
         :return: None
         """
 
-        super(Verb4, self).execute()
+        super(Verb04, self).execute()
         noun_function = gc.nouns[gc.dsky.state["requested_noun"]]
         noun_data = noun_function(calling_verb=self)
         output = self._format_output_data(noun_data)
@@ -478,7 +481,7 @@ class Verb4(DisplayVerb):
         gc.dsky.registers[2].display(output[1])
 
 
-class Verb5(DisplayVerb):
+class Verb05(DisplayVerb):
 
     """ Displays Octal components 1, 2, 3 in R1, R2, R3
     """
@@ -489,7 +492,7 @@ class Verb5(DisplayVerb):
         :return: None
         """
 
-        super(Verb5, self).__init__(name="Display Octal components 1, 2, 3 in R1, R2, R3", verb_number="05", noun=noun)
+        super(Verb05, self).__init__(name="Display Octal components 1, 2, 3 in R1, R2, R3", verb_number="05", noun=noun)
         self.illegal_nouns = []
 
     def execute(self):
@@ -498,7 +501,7 @@ class Verb5(DisplayVerb):
         :return: None
         """
 
-        super(Verb5, self).execute()
+        super(Verb05, self).execute()
         noun_function = gc.nouns[gc.dsky.requested_noun]()
         noun_data = noun_function.return_data()
         if not noun_data:
@@ -510,7 +513,7 @@ class Verb5(DisplayVerb):
         gc.dsky.registers[3].display(output[2])
 
 
-class Verb6(DisplayVerb):
+class Verb06(DisplayVerb):
 
     """ Displays Decimal in R1 or in R1, R2 or in R1, R2, R3
     """
@@ -521,7 +524,7 @@ class Verb6(DisplayVerb):
         :return: None
         """
 
-        super(Verb6, self).__init__(name="Display Decimal in R1 or in R1, R2 or in R1, R2, R3", verb_number="06",
+        super(Verb06, self).__init__(name="Display Decimal in R1 or in R1, R2 or in R1, R2, R3", verb_number="06",
                                     noun=noun)
 
     def execute(self):
@@ -530,7 +533,7 @@ class Verb6(DisplayVerb):
         :return: None
         """
 
-        super(Verb6, self).execute()
+        super(Verb06, self).execute()
         noun_function = gc.nouns[gc.dsky.requested_noun]()
         noun_data = noun_function.return_data()
         if not noun_data:
@@ -555,19 +558,19 @@ class Verb6(DisplayVerb):
             #self.data = None
 
 
-class Verb7(DisplayVerb):
-
-    """ Displays Double Precision Decimal in R1, R2 (test only)
-    """
-
-    def __init__(self, noun):
-
-        """ Class constructor
-        :return: None
-        """
-
-        super(Verb7, self).__init__(name="Display Double Precision Decimal in R1, R2 (test only)", verb_number="07",
-                                    noun=noun)
+# class Verb07(DisplayVerb):
+# 
+#     """ Displays Double Precision Decimal in R1, R2 (test only)
+#     """
+# 
+#     def __init__(self, noun):
+# 
+#         """ Class constructor
+#         :return: None
+#         """
+# 
+#         super(Verb07, self).__init__(name="Display Double Precision Decimal in R1, R2 (test only)", verb_number="07",
+#                                     noun=noun)
 
 # no verb 8
 
@@ -1364,3 +1367,11 @@ class Verb99(ExtendedVerb):
         gc.dsky.control_registers["verb"].display("99")
         gc.dsky.request_data(requesting_object=object_requesting_proceed, display_location=None,
                              is_proceed_available=True)
+
+
+verbs = OrderedDict()
+clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+for class_tuple in clsmembers:
+    if class_tuple[0][-1].isdigit():
+        verbs[class_tuple[0][-2:]] = class_tuple[1]
+

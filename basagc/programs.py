@@ -22,6 +22,12 @@
 #
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>
+
+from collections import OrderedDict
+import sys
+import inspect
+
+
 from basagc import hohmann_transfer
 
 import utils
@@ -198,7 +204,7 @@ class Program15(Program):
         self.delta_time_to_burn = 0.0
         self.phase_angle_difference = 0.0
         self.target_octal_id = ""
-        self.departure_body = get_telemetry("body")
+        self.departure_body = None
         self.departure_altitude = 0
         self.destination_altitude = 0
         self.grav_param = 0.0
@@ -214,6 +220,7 @@ class Program15(Program):
         """
 
         super(Program15, self).execute()
+        self.departure_body = get_telemetry("body")
         self.orbiting_body = get_telemetry("body")
 
         if not self._check_orbital_parameters():
@@ -261,10 +268,10 @@ class Program15(Program):
 
         # load target
         target = config.OCTAL_BODY_NAMES[self.target_octal_id]
-        target_apoapsis = get_telemetry("body_ApA", body_number=config.TELEMACHUS_BODY_IDS[target])
+        target_apoapsis = float(get_telemetry("body_ApA", body_number=config.TELEMACHUS_BODY_IDS[target]))
 
         # set destination altitude
-        self.destination_altitude = target_apoapsis # + 100000
+        self.destination_altitude = target_apoapsis + 500000
         # if target == "Mun":
         #     self.destination_altitude = 12750000
 
@@ -338,8 +345,8 @@ class Program15(Program):
                                 time_of_ignition=self.time_of_ignition_second_burn)
 
         # load the Burn objects into computer
-        gc.add_burn(self.first_burn, execute=False)
-        gc.add_burn(self.second_burn, execute=False)
+        gc.add_burn_to_queue(self.first_burn, execute=False)
+        gc.add_burn_to_queue(self.second_burn, execute=False)
 
         # display burn parameters and go to poo
         gc.execute_verb(verb="06", noun="95")
@@ -388,21 +395,21 @@ class Program40(Program):
         super(Program40, self).execute()
         # if TIG < 3 mins away, abort burn
         if utils.seconds_to_time(self.burn.time_until_ignition)["minutes"] < 3:
-            gc.remove_burn()
+            gc.remove_burn(gc.next_burn)
             gc.poodoo_abort(227)
             return
         # if time to ignition if further than a hour away, display time to ignition
         if utils.seconds_to_time(self.burn.time_until_ignition)["hours"] > 0:
             utils.log("TIG > 1 hour away")
             gc.execute_verb(verb="16", noun="33")
-            gc.loop_items.append(self._ten_minute_monitor)
+            gc.main_loop_table.append(self._ten_minute_monitor)
         else:
             utils.log("TIG < 1 hour away, enabling burn")
             self.burn.execute()
 
     def _ten_minute_monitor(self):
         if utils.seconds_to_time(self.burn.time_until_ignition)["hours"] < 1:
-            gc.loop_items.remove(self._ten_minute_monitor)
+            gc.main_loop_table.remove(self._ten_minute_monitor)
         else:
             self.burn.execute()
 
@@ -424,3 +431,10 @@ class ProgramTerminated(Exception):
     """
 
     pass
+
+
+programs = OrderedDict()
+clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+for class_tuple in clsmembers:
+    if class_tuple[0][-1].isdigit():
+        programs[class_tuple[0][-2:]] = class_tuple[1]

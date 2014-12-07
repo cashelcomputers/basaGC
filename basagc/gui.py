@@ -641,7 +641,8 @@ class GUI(wx.Frame):
         self.help_viewer.SetTitle("Nouns Listing")
         nouns_list = ""
         for noun_number, noun in self.computer.nouns.iteritems():
-            nouns_list += "Noun " + noun_number + ":\t" + noun.description + "\n"
+            this_noun = noun()
+            nouns_list += "Noun " + noun_number + ":\t" + this_noun.description + "\n"
         self.help_viewer.viewer.SetValue(nouns_list)
         self.help_viewer.Show()
 
@@ -649,7 +650,8 @@ class GUI(wx.Frame):
         self.help_viewer.SetTitle("Programs Listing")
         programs_list = ""
         for program_number, program in self.computer.programs.iteritems():
-            programs_list += "Program " + program_number + ":\t" + program.description + "\n"
+            this_program = program()
+            programs_list += "Program " + program_number + ":\t" + this_program.description + "\n"
         self.help_viewer.viewer.SetValue(programs_list)
         self.help_viewer.Show()
 

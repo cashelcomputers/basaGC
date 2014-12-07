@@ -24,10 +24,8 @@
 #  (http://www.ibiblio.org/apollo/index.html) by Ronald S. Burkey
 #  <info@sandroid.org>
 
-import multiprocessing as mp
 
 import wx
-# from sortedcontainers import SortedDict
 from collections import OrderedDict
 from basagc import burn
 
@@ -59,27 +57,14 @@ class Computer(object):
         self.dsky = dsky.DSKY(self.gui, self)
         self.loop_timer = wx.Timer(gui)
         gui.Bind(wx.EVT_TIMER, self.main_loop, self.loop_timer)
-        self.out_queue = mp.Queue()
-        self.in_queue = mp.Queue()
         self.is_powered_on = False
-        # self.state_vector = utils.StateVector()
-        self.loop_items = []
+        self.main_loop_table = []
         self.gui.Bind(wx.EVT_CLOSE, self.quit)
         self.alarm_codes = [0, 0, 0]
-        self.running_programs = []
-        self.run_average_g_routine = False
-        self.target = ""
-        self.loaded_data = {
-            "verb": 0,
-            "noun": 0,
-            1: "",
-            2: "",
-            3: "",
-        }
+        self.running_program = None
         self.noun_data = {
             "30": [],
         }
-
         self.next_burn = None
         self._burn_queue = []
         self.is_ksp_connected = None
@@ -98,65 +83,66 @@ class Computer(object):
         nouns.frame = self.gui
         programs.gc = self
         programs.dsky = self.dsky
-        routines.computer = self
 
-        self.nouns = OrderedDict(
-            {
-                "09": nouns.Noun09,
-                "14": nouns.Noun14,
-                "17": nouns.Noun17,
-                "30": nouns.Noun30,
-                "33": nouns.Noun33,
-                "36": nouns.Noun36,
-                "40": nouns.Noun40,
-                "43": nouns.Noun43,
-                "44": nouns.Noun44,
-                "50": nouns.Noun50,
-                "62": nouns.Noun62,
-                "95": nouns.Noun95,
-            }
-        )
-
-        self.verbs = OrderedDict(
-            {
-                "01": verbs.Verb1,
-                "02": verbs.Verb2,
-                "03": verbs.Verb3,
-                "04": verbs.Verb4,
-                "05": verbs.Verb5,
-                "06": verbs.Verb6,
-                "07": verbs.Verb7,
-                "11": verbs.Verb11,
-                "12": verbs.Verb12,
-                "13": verbs.Verb13,
-                "14": verbs.Verb14,
-                "15": verbs.Verb15,
-                "16": verbs.Verb16,
-                "17": verbs.Verb17,
-                "21": verbs.Verb21,
-                "22": verbs.Verb22,
-                "23": verbs.Verb23,
-                "24": verbs.Verb24,
-                "25": verbs.Verb25,
-                "32": verbs.Verb32,
-                "33": verbs.Verb33,
-                "34": verbs.Verb34,
-                "35": verbs.Verb35,
-                "36": verbs.Verb36,
-                "37": verbs.Verb37,
-                "75": verbs.Verb75,
-                "82": verbs.Verb82,
-                "93": verbs.Verb93,
-                "99": verbs.Verb99,
-            }
-        )
-
-        self.programs = OrderedDict({
-            "00": programs.Program00,
-            "11": programs.Program11,
-            "15": programs.Program15,
-            "40": programs.Program40,
-        })
+        self.nouns = nouns.nouns
+        # self.nouns = OrderedDict(
+        #     {
+        #         "09": nouns.Noun09,
+        #         "14": nouns.Noun14,
+        #         "17": nouns.Noun17,
+        #         "30": nouns.Noun30,
+        #         "33": nouns.Noun33,
+        #         "36": nouns.Noun36,
+        #         "40": nouns.Noun40,
+        #         "43": nouns.Noun43,
+        #         "44": nouns.Noun44,
+        #         "50": nouns.Noun50,
+        #         "62": nouns.Noun62,
+        #         "95": nouns.Noun95,
+        #     }
+        # )
+        
+        self.verbs = verbs.verbs
+        # self.verbs = OrderedDict(
+        #     {
+        #         "01": verbs.Verb01,
+        #         "02": verbs.Verb02,
+        #         "03": verbs.Verb03,
+        #         "04": verbs.Verb04,
+        #         "05": verbs.Verb05,
+        #         "06": verbs.Verb06,
+        #         #"07": verbs.Verb07,
+        #         "11": verbs.Verb11,
+        #         "12": verbs.Verb12,
+        #         "13": verbs.Verb13,
+        #         "14": verbs.Verb14,
+        #         "15": verbs.Verb15,
+        #         "16": verbs.Verb16,
+        #         "17": verbs.Verb17,
+        #         "21": verbs.Verb21,
+        #         "22": verbs.Verb22,
+        #         "23": verbs.Verb23,
+        #         "24": verbs.Verb24,
+        #         "25": verbs.Verb25,
+        #         "32": verbs.Verb32,
+        #         "33": verbs.Verb33,
+        #         "34": verbs.Verb34,
+        #         "35": verbs.Verb35,
+        #         "36": verbs.Verb36,
+        #         "37": verbs.Verb37,
+        #         "75": verbs.Verb75,
+        #         "82": verbs.Verb82,
+        #         "93": verbs.Verb93,
+        #         "99": verbs.Verb99,
+        #     }
+        # )
+        self.programs = programs.programs
+        # self.programs = OrderedDict({
+        #     "00": programs.Program00,
+        #     "11": programs.Program11,
+        #     "15": programs.Program15,
+        #     "40": programs.Program40,
+        # })
 
         # self.routines = {
         #     "average_g": routines.average_g,
@@ -173,7 +159,7 @@ class Computer(object):
         }
         self.on()
 
-    def add_burn(self, burn_object, execute=True):
+    def add_burn_to_queue(self, burn_object, execute=True):
 
         """ Adds a Burn object to the computer burn queue. If no burn is assigned to next_burn, load new burn to
         next_burn
@@ -195,8 +181,8 @@ class Computer(object):
         :return: None
         """
 
-        if this_burn in self.next_burn:
-            self.next_burn.remove(this_burn)
+        if this_burn == self.next_burn:
+            self.next_burn = None
         if this_burn in self._burn_queue:
             self._burn_queue.remove(this_burn)
 
@@ -205,11 +191,14 @@ class Computer(object):
         """ Removes a completed burn and loads next queued burn if available.
         :return: None
         """
-
+        
+        utils.log("Removing {} from burn queue".format(self.next_burn))
+        self.next_burn = None
         if self._burn_queue:
+            utils.log("Adding {} as next burn".format(self._burn_queue[0]))
             self.next_burn = self._burn_queue.pop()
-        else:
-            self.next_burn = None
+
+            
 
     def disable_direction_autopilot(self):
 
@@ -271,7 +260,7 @@ class Computer(object):
 
         # if self.run_average_g_routine:
         #     routines.average_g()
-        for item in self.loop_items:
+        for item in self.main_loop_table:
             item()
 
     def go_to_poo(self):
@@ -340,7 +329,7 @@ class Computer(object):
         self.alarm_codes[2] = self.alarm_codes[0]
         self.dsky.annunciators["prog"].on()
         try:
-            self.running_programs[-1].terminate()
+            self.running_program[-1].terminate()
         except programs.ProgramTerminated:
             # this should happen if the program terminated successfully
             utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), alarm_message), log_level="ERROR")

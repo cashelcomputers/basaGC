@@ -28,9 +28,10 @@ import os
 from collections import OrderedDict
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+print(BASE_DIR)
 PROGRAM_NAME = "basaGC"
 VERSION = "0.5.5"
-LICENCE_FILE = "./licence"
+LICENCE_FILE = BASE_DIR + "/licence"
 
 IMAGES_DIR = BASE_DIR + "/images/"
 IP = "127.0.0.1"

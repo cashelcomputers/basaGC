@@ -24,13 +24,13 @@
 #  by Ronald S. Burkey <info@sandroid.org>
 
 from collections import OrderedDict
+import inspect
+import sys
 
 from telemachus import get_telemetry, TelemetryNotAvailable
 import utils
 
 gc = None
-
-nouns = {}
 
 def octal(value):
 
@@ -815,8 +815,10 @@ class Noun62(Noun):
 # def noun94(calling_verb):
 #     raise NounNotImplementedError
 #
-class Noun95(Noun):
 
+
+class Noun95(Noun):
+    
     def __init__(self):
         super(Noun95, self).__init__(description="Hohmann Transfer Data Display", number="95")
 
@@ -857,3 +859,11 @@ class Noun95(Noun):
 #
 # def noun99(calling_verb):
 #     raise NounNotImplementedError
+
+# generate a OrderedDict of all nouns for inclusion in the computer
+nouns = OrderedDict()
+clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+for class_tuple in clsmembers:
+    if class_tuple[0][-1].isdigit():
+        nouns[class_tuple[0][-2:]] = class_tuple[1]
+
