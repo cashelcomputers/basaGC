@@ -55,7 +55,7 @@ class Burn(object):
         self.time_of_ignition = time_of_ignition
         self.is_display_blanked = False
         self.is_verb_99_executed = False
-        self.time_until_ignition = self._calculate_time_to_ignition()
+        self.time_until_ignition = self.calculate_time_to_ignition()
         self.velocity_at_cutoff = self._calculate_velocity_at_cutoff()
         self.is_directional_autopilot_engaged = False
         self.is_thrust_autopilot_engaged = False
@@ -94,7 +94,7 @@ class Burn(object):
 
     def _coarse_start_time_monitor(self):
 
-        self.time_until_ignition = self._calculate_time_to_ignition()
+        self.time_until_ignition = self.calculate_time_to_ignition()
 
         # at TIG - 105 seconds:
         # ensure we only blank display first time through the loop
@@ -128,7 +128,7 @@ class Burn(object):
 
     def _fine_start_time_monitor(self):
 
-        self.time_until_ignition = self._calculate_time_to_ignition()
+        self.time_until_ignition = self.calculate_time_to_ignition()
         if float(self.time_until_ignition) < 0.1:
             utils.log("Engine Ignition", log_level="INFO")
             self._begin_burn()
@@ -168,7 +168,7 @@ class Burn(object):
     def _calculate_velocity_at_cutoff(self):
         return get_telemetry("orbitalVelocity") + self.delta_v_required
 
-    def _calculate_time_to_ignition(self):
+    def calculate_time_to_ignition(self):
 
         """ Calculates the time to ignition in seconds
         :return: time to ignition in seconds
