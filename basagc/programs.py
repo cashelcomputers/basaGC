@@ -195,12 +195,10 @@ class Program15(Program):
 
         super(Program15, self).__init__(description="TMI Initiate/Cutoff", number="15")
         self.delta_v_first_burn = 0.0
-        self.delta_v_second_burn = 0.0
         self.time_to_transfer = 0.0
         self.orbiting_body = None
         self.phase_angle_required = 0.0
         self.time_of_ignition_first_burn = 0.0
-        self.time_of_ignition_second_burn = 0.0
         self.delta_time_to_burn = 0.0
         self.phase_angle_difference = 0.0
         self.target_name = ""
@@ -211,7 +209,6 @@ class Program15(Program):
         self.orbital_period = 0
         self.departure_body_orbital_period = 0
         self.first_burn = None
-        self.second_burn = None
 
     def execute(self):
 
@@ -286,7 +283,7 @@ class Program15(Program):
         current_phase_angle = get_telemetry("body_phaseAngle", body_number=telemachus_target_id)
 
         # calculate the first and second burn Δv parameters
-        self.delta_v_first_burn, self.delta_v_second_burn = hohmann_transfer.delta_v(self.departure_altitude,
+        self.delta_v_first_burn = hohmann_transfer.delta_v(self.departure_altitude,
                                                                                      self.destination_altitude)
 
         # calculate the time to complete the Hohmann transfer
@@ -333,7 +330,6 @@ class Program15(Program):
 
         # calculate the Δt from now of TIG for both burns
         self.time_of_ignition_first_burn = get_telemetry("missionTime") + self.delta_time_to_burn
-        self.time_of_ignition_second_burn = self.time_of_ignition_first_burn + self.time_to_transfer
 
         # create a Burn object for the outbound burn
         self.first_burn = Burn(delta_v=self.delta_v_first_burn,
@@ -341,15 +337,9 @@ class Program15(Program):
                                time_of_ignition=self.time_of_ignition_first_burn,
                                calling_program=self)
 
-        # create a Burn object for the outbound burn
-        self.second_burn = Burn(delta_v=self.delta_v_second_burn,
-                                direction="retrograde",
-                                time_of_ignition=self.time_of_ignition_second_burn,
-                                calling_program=self)
 
-        # load the Burn objects into computer
+        # load the Burn object into computer
         gc.add_burn_to_queue(self.first_burn, execute=False)
-        gc.add_burn_to_queue(self.second_burn, execute=False)
 
         # display burn parameters and go to poo
         gc.execute_verb(verb="06", noun="95")
@@ -431,9 +421,8 @@ class Program40(Program):
             self.burn.execute()
 
     def _ten_minute_monitor(self):
-        if utils.seconds_to_time(self.burn.time_until_ignition)["hours"] < 1:
+        if utils.seconds_to_time(self.burn.time_until_ignition)["minutes"] < 10:
             gc.main_loop_table.remove(self._ten_minute_monitor)
-        else:
             self.burn.execute()
 
     def terminate(self):
