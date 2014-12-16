@@ -36,7 +36,7 @@ class Burn(object):
 
     """ This object models a burn maneuver """
 
-    def __init__(self, delta_v, direction, time_of_ignition, recalc_function=None):
+    def __init__(self, delta_v, direction, time_of_ignition, recalc_function=None, calling_program=None):
 
         """ Class constructor
 
@@ -63,6 +63,7 @@ class Burn(object):
         self.initial_speed = 0.0
         self.accumulated_delta_v = 0.0
         self._is_thrust_reduced = False
+        self.calling_program = calling_program
 
     def execute(self):
 
