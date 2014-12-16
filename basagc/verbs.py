@@ -226,6 +226,7 @@ class MonitorVerb(DisplayVerb):
         super(MonitorVerb, self).__init__(name, verb_number, noun)
         self.timer = wx.Timer(frame)  # TODO: try making this a utils.Timer object instead
         frame.Bind(wx.EVT_TIMER, self._update_display, self.timer)
+        self.is_tooltips_set = False
 
     def _send_output(self):
 
@@ -269,9 +270,11 @@ class MonitorVerb(DisplayVerb):
 
 
         # set tooltips
-        gc.dsky.registers[1].set_tooltip(data["tooltips"][0])
-        gc.dsky.registers[2].set_tooltip(data["tooltips"][1])
-        gc.dsky.registers[3].set_tooltip(data["tooltips"][2])
+        if not self.is_tooltips_set:
+            gc.dsky.registers[1].set_tooltip(data["tooltips"][0])
+            gc.dsky.registers[2].set_tooltip(data["tooltips"][1])
+            gc.dsky.registers[3].set_tooltip(data["tooltips"][2])
+            self.is_tooltips_set = True
 
         # display data on DSKY registers
         for index, display_line in enumerate(output, start=1):
@@ -320,6 +323,10 @@ class MonitorVerb(DisplayVerb):
         self.timer.Stop()
         self.noun = None
         # self.activity_timer.Stop()
+        # reset tooltips to ""
+        gc.dsky.registers[1].set_tooltip("")
+        gc.dsky.registers[2].set_tooltip("")
+        gc.dsky.registers[3].set_tooltip("")
 
     def background(self):
 
@@ -540,6 +547,11 @@ class Verb06(DisplayVerb):
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
             return
         output = self._format_output_data(noun_data)
+
+        gc.dsky.registers[1].set_tooltip(output["tooltips"][0])
+        gc.dsky.registers[2].set_tooltip(output["tooltips"][1])
+        gc.dsky.registers[3].set_tooltip(output["tooltips"][2])
+        
         gc.dsky.registers[1].display(output[0])
         gc.dsky.registers[2].display(output[1])
         gc.dsky.registers[3].display(output[2])
