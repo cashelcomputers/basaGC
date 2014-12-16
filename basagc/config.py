@@ -28,9 +28,10 @@ import os
 from collections import OrderedDict
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+print(BASE_DIR)
 PROGRAM_NAME = "basaGC"
-VERSION = "0.5.5"
-LICENCE_FILE = "./licence"
+VERSION = "0.5.6"
+LICENCE_FILE = BASE_DIR + "/licence"
 
 IMAGES_DIR = BASE_DIR + "/images/"
 IP = "127.0.0.1"
@@ -111,17 +112,20 @@ TELEMACHUS_BODY_IDS = {
     "Eeloo": "16",
 }
 
-ALARM_CODES = OrderedDict({
+_UNSORTED_ALARM_CODES = {
     110: "Error contacting KSP",
     111: "Telemetry not available",
     115: "No burn data loaded",
+    120: "No phase angle data available",
     223: "Invalid target selected",
     224: "Orbit not circular",
     225: "Vessel and target orbits inclination too far apart",
     226: "Time of ignition less than 2 minutes in the future",
     310: "Program hasn't been finished yet, watch this space :)",
     410: "Autopilot error",
-})
+}
+
+ALARM_CODES = OrderedDict(sorted(_UNSORTED_ALARM_CODES.items()))
 
 OCTAL_BODY_IDS = {key: str(int(oct(int(value)))) for key, value in
                   TELEMACHUS_BODY_IDS.iteritems()}  # FIXME: abomination

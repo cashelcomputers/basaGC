@@ -48,7 +48,6 @@ def delta_v(departure_altitude, destination_altitude, departure_body="Kerbin"):
     r1 = departure_altitude + departure_planet_radius
     r2 = destination_altitude + departure_planet_radius
     mu = float(get_telemetry("body_gravParameter", body_number=TELEMACHUS_BODY_IDS[departure_body]))
-
     sqrt_r1 = math.sqrt(r1)
     sqrt_r2 = math.sqrt(r2)
     sqrt_2_sum = math.sqrt(2 / (r1 + r2))
@@ -56,6 +55,7 @@ def delta_v(departure_altitude, destination_altitude, departure_body="Kerbin"):
     delta_v_1 = sqrt_mu / sqrt_r1 * (sqrt_r2 * sqrt_2_sum - 1)
     delta_v_2 = sqrt_mu / sqrt_r2 * (1 - sqrt_r1 * sqrt_2_sum)
     return delta_v_1, delta_v_2
+
 
 
 def time_to_transfer(departure_orbit, destination_orbit, grav_param):

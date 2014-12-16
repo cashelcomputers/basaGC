@@ -3,6 +3,15 @@ basaGC changelog
 
 Please note that this file only contains changes from version 0.5.0 onwards. All dates are in dd/mm/yy format.
 
+16/12/14: version 0.5.6:
+- Added Program 40
+- Added Noun 14, Noun 40
+- Made help viewer lists sorted again
+- Nouns, verbs and programs are now added dynamically at runtime
+- Bug fixes
+- Added noun 49, alarm code 120
+- Some more stuff ive forgotten about :)
+
 02/12/14: version 0.5.5:
 - Added alarm codes to help menu
 - Many small bug fixes

@@ -23,13 +23,15 @@
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>
 
-import math
+from collections import OrderedDict
+import inspect
+import sys
 
 from telemachus import get_telemetry, TelemetryNotAvailable
 import utils
+import config
 
 gc = None
-
 
 def octal(value):
 
@@ -108,8 +110,9 @@ class NounNotImplementedError(Exception):
 
 class Noun(object):
 
-    def __init__(self, description):
+    def __init__(self, description, number):
         self.description = description
+        self.number = number
 
     def return_data(self):
         raise NounNotImplementedError
@@ -118,7 +121,7 @@ class Noun(object):
 class Noun09(Noun):
 
     def __init__(self):
-        super(Noun09, self).__init__(description="Alarm Codes")
+        super(Noun09, self).__init__(description="Alarm Codes", number="09")
 
     def return_data(self):
 
@@ -167,8 +170,39 @@ class Noun09(Noun):
 # def noun13(calling_verb):
 #     raise NounNotImplementedError
 #
-# def noun14(calling_verb):
-#     raise NounNotImplementedError
+class Noun14(Noun):
+
+    def __init__(self):
+        super(Noun14, self).__init__(description="Burn error display (Expected Δv at cutoff (xxxxx m/s), Actual Δv at"
+                                                 "cutoff (xxxxx m/s), Difference (xxxx.x m/s)",
+                                     number="14")
+
+    def return_data(self):
+        if not gc.next_burn:
+            gc.program_alarm(115)
+            return False
+        burn = gc.next_burn
+        expected_delta_v_at_cutoff = burn.velocity_at_cutoff
+        actual_delta_v_at_cutoff = get_telemetry("orbitalVelocity")
+        delta_v_error = actual_delta_v_at_cutoff - expected_delta_v_at_cutoff
+
+        expected_delta_v_at_cutoff = str(int(expected_delta_v_at_cutoff)).replace(".", "")
+        actual_delta_v_at_cutoff = str(int(actual_delta_v_at_cutoff)).replace(".", "")
+        delta_v_error = str(round(delta_v_error, 1)).replace(".", "")
+
+        data = {
+            1: expected_delta_v_at_cutoff,
+            2: actual_delta_v_at_cutoff,
+            3: delta_v_error,
+            "tooltips": [
+                "Expected velocity at cutoff (xxxxx m/s)",
+                "Actual velocity at cutoff (xxxxx m/s)",
+                "Velocity error (xxxx.x m/s)"
+            ],
+            "is_octal": False,
+        }
+        return data
+
 #
 # def noun15(calling_verb):
 #     raise NounNotImplementedError
@@ -179,7 +213,7 @@ class Noun09(Noun):
 class Noun17(Noun):
 
     def __init__(self):
-        super(Noun17, self).__init__("Attitude (Roll, Pitch, Yaw)")
+        super(Noun17, self).__init__("Attitude (Roll, Pitch, Yaw)", number="17")
 
     def return_data(self):
 
@@ -273,7 +307,7 @@ class Noun17(Noun):
 #
 class Noun30(Noun):
     def __init__(self):
-        super(Noun30, self).__init__("Octal Target ID (000XX)")
+        super(Noun30, self).__init__("Octal Target ID (000XX)", number="30")
 
     def return_data(self):
 
@@ -282,7 +316,7 @@ class Noun30(Noun):
             1: target_id,
             2: None,
             3: None,
-            "tooltips": ["Target Octal ID"],
+            "tooltips": ["Target Octal ID", None, None],
             "is_octal": True,
         }
         return data
@@ -308,29 +342,26 @@ class Noun30(Noun):
 class Noun33(Noun):
 
     def __init__(self):
-        super(Noun33, self).__init__("Time to Ignition (00xxx hours, 000xx minutes, 0xx.xx seconds)")
+        super(Noun33, self).__init__("Time to Ignition (00xxx hours, 000xx minutes, 0xx.xx seconds)", number="33")
 
     def return_data(self):
 
-        hours, minutes, seconds = 0, 0, 0
-        try:
-            burn = gc.burn_data[0]
-        except IndexError:
+        if not gc.next_burn:
             gc.program_alarm(alarm_code=115, message="No burn data loaded")
             return False
-        time_of_ignition = utils.seconds_to_time(burn.start_time)
-        hours = str(int(time_of_ignition["hours"]))
-        minutes = str(int(time_of_ignition["minutes"]))
-        seconds = str(time_of_ignition["seconds"]).replace(".", "")
+        time_until_ignition = utils.seconds_to_time(gc.next_burn.calculate_time_to_ignition())
+        hours = str(int(time_until_ignition["hours"]))
+        minutes = str(int(time_until_ignition["minutes"]))
+        seconds = str(int(time_until_ignition["seconds"])).replace(".", "")
 
         data = {
             1: "-" + hours,
             2: "-bbb" + minutes,
-            3: "-b" + seconds,
+            3: "-bbb" + seconds,
             "tooltips": [
                 "Time To Ignition (hhhhh)",
                 "Time To Ignition (bbbmm)",
-                "Time To Ignition (bss.ss)",
+                "Time To Ignition (bbbss)",
             ],
             "is_octal": False,
         }
@@ -340,7 +371,7 @@ class Noun33(Noun):
 class Noun36(Noun):
 
     def __init__(self):
-        super(Noun36, self).__init__("Mission Elapsed Time (MET) (dddhh, bbbmm, bss.ss)")
+        super(Noun36, self).__init__("Mission Elapsed Time (MET) (dddhh, bbbmm, bss.ss)", number="36")
 
     def return_data(self):
         try:
@@ -410,18 +441,39 @@ class Noun36(Noun):
 
 #-----------------------BEGIN MIXED NOUNS--------------------------------------
 
-# def noun40(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun41(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun42(calling_verb):
-#     raise NounNotImplementedError
+class Noun40(Noun):
+
+    def __init__(self):
+        super(Noun40, self).__init__("Burn Data (Time from ignition, Δv to be gained, accumulated Δv", number="40")
+
+    def return_data(self):
+        if not gc.next_burn:
+            gc.program_alarm(115)
+            return False
+        burn = gc.next_burn
+        time_to_ignition = utils.seconds_to_time(burn.time_until_ignition)
+        minutes_to_ignition = str(int(time_to_ignition["minutes"])).zfill(2)
+        seconds_to_ignition = str(int(time_to_ignition["seconds"])).zfill(2)
+        delta_v_gain = str(int(burn.delta_v_required)).replace(".", "")
+        accumulated_delta_v = str(int(burn.accumulated_delta_v)).replace(".", "")
+
+        data = {
+            1: "-" + minutes_to_ignition + "b" + seconds_to_ignition,
+            2: delta_v_gain,
+            3: accumulated_delta_v,
+            "is_octal": False,
+            "tooltips": [
+                "Time From Ignition (mmbss minutes, seconds)",
+                "Δv (xxxxx m/s)",
+                "Accumulated Δv (xxxxx m/s)",
+            ],
+        }
+        return data
 
 class Noun43(Noun):
+
     def __init__(self):
-        super(Noun43, self).__init__("Geographic Position (Latitude, Longitude, Altitude)")
+        super(Noun43, self).__init__("Geographic Position (Latitude, Longitude, Altitude)", number="43")
 
     def return_data(self):
         try:
@@ -459,7 +511,8 @@ class Noun43(Noun):
 
 class Noun44(Noun):
     def __init__(self):
-        super(Noun44, self).__init__("Apoapsis (xxx.xx km), Periapsis (xxx.xx km), Time To Apoapsis (hmmss)")
+        super(Noun44, self).__init__("Apoapsis (xxx.xx km), Periapsis (xxx.xx km), Time To Apoapsis (hmmss)",
+                                     number="44")
 
     def return_data(self):
         try:
@@ -536,12 +589,44 @@ class Noun44(Noun):
 # def noun48(calling_verb):
 #     raise NounNotImplementedError
 #
-# def noun49(calling_verb):
-#     raise NounNotImplementedError
+class Noun49(Noun):
+    def __init__(self):
+        super(Noun49, self).__init__("Phase angles for automaneuver", number="49")
+    
+    def return_data(self):
+        # check that the maneuver has phase angles loaded
+        try:
+            if not gc.next_burn.calling_program and not gc.next_burn.calling_program.phase_angle_required:
+                gc.program_alarm(120)
+                return False
+        except AttributeError:
+            gc.program_alarm(120)
+            return False
+        
+        phase_angle_required = gc.next_burn.calling_program.phase_angle_required
+        telemachus_target_id = config.TELEMACHUS_BODY_IDS[gc.next_burn.calling_program.target_name]
+        current_phase_angle = get_telemetry("body_phaseAngle", body_number=telemachus_target_id)
+        phase_angle_difference = str(round(current_phase_angle - phase_angle_required, 1)).replace(".", "")
+        current_phase_angle = str(round(current_phase_angle, 1)).replace(".", "")
+        phase_angle_required = str(round(phase_angle_required, 1)).replace(".", "")
+        
+        data = {
+            1: phase_angle_required,
+            2: current_phase_angle,
+            3: phase_angle_difference,
+            "tooltips": [
+                "Phase Angle Required (0xxx.x °)",
+                "Current Phase Angle (0xxx.x °)",
+                "Phase Angle Difference (0xxx.x °)",
+            ],
+            "is_octal": False,
+        }
+        return data
+        
 
 class Noun50(Noun):
     def __init__(self):
-        super(Noun50, self).__init__("Surface Velocity Display (X, Y, Z in xxxx.x m/s)")
+        super(Noun50, self).__init__("Surface Velocity Display (X, Y, Z in xxxx.x m/s)", number="50")
 
     def return_data(self):
         surface_velocity_x = str(round(get_telemetry("surfaceVelocityx"), 1)).replace(".", "")
@@ -622,7 +707,7 @@ class Noun50(Noun):
 
 class Noun62(Noun):
     def __init__(self):
-        super(Noun62, self).__init__("Surface Velocity, Altitude Rate, Altitude")
+        super(Noun62, self).__init__("Surface Velocity, Altitude Rate, Altitude", number="62")
 
     def return_data(self):
         surface_velocity = str(round(get_telemetry("surfaceVelocity"), 1))
@@ -767,23 +852,27 @@ class Noun62(Noun):
 # def noun94(calling_verb):
 #     raise NounNotImplementedError
 #
-class Noun95(Noun):
 
+
+class Noun95(Noun):
+    
     def __init__(self):
-        super(Noun95, self).__init__(description="Hohmann Transfer Data Display")
+        super(Noun95, self).__init__(description="Hohmann Transfer Data Display", number="95")
 
     def return_data(self):
 
-        # time_to_ignition = gc.noun_data["95"][0]
-        time_to_ignition = utils.seconds_to_time(gc.burn_data[0].time_until_ignition)
+        if not gc.next_burn:
+            gc.program_alarm(115)
+            return False
+
+        time_to_ignition = utils.seconds_to_time(gc.next_burn.time_until_ignition)
         minutes_to_ignition = str(int(time_to_ignition["minutes"])).zfill(2)
         seconds_to_ignition = str(int(time_to_ignition["seconds"])).zfill(2)
-        delta_v = str(int(gc.burn_data[0].delta_v))
-        velocity_at_cutoff = str(int(gc.burn_data[0].velocity_at_cutoff))
-
+        delta_v = str(int(gc.next_burn.delta_v_required))
+        velocity_at_cutoff = str(int(gc.next_burn.velocity_at_cutoff))
 
         data = {
-            1: minutes_to_ignition + "b" + seconds_to_ignition,
+            1: "-" + minutes_to_ignition + "b" + seconds_to_ignition,
             2: delta_v,
             3: velocity_at_cutoff,
             "is_octal": False,
@@ -807,3 +896,11 @@ class Noun95(Noun):
 #
 # def noun99(calling_verb):
 #     raise NounNotImplementedError
+
+# generate a OrderedDict of all nouns for inclusion in the computer
+nouns = OrderedDict()
+clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+for class_tuple in clsmembers:
+    if class_tuple[0][-1].isdigit():
+        nouns[class_tuple[0][-2:]] = class_tuple[1]
+

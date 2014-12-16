@@ -24,12 +24,9 @@
 #  (http://www.ibiblio.org/apollo/index.html) by Ronald S. Burkey
 #  <info@sandroid.org>
 
-import multiprocessing as mp
 
 import wx
-# from sortedcontainers import SortedDict
-from collections import OrderedDict
-from basagc import burn
+import burn
 
 import config
 import utils
@@ -37,9 +34,10 @@ import dsky
 import verbs
 import nouns
 import programs
-import routines
 from telemachus import check_connection, get_telemetry
 import telemachus
+
+
 
 
 class Computer(object):
@@ -59,32 +57,21 @@ class Computer(object):
         self.dsky = dsky.DSKY(self.gui, self)
         self.loop_timer = wx.Timer(gui)
         gui.Bind(wx.EVT_TIMER, self.main_loop, self.loop_timer)
-        self.out_queue = mp.Queue()
-        self.in_queue = mp.Queue()
         self.is_powered_on = False
-        # self.state_vector = utils.StateVector()
-        self.loop_items = []
+        self.main_loop_table = []
         self.gui.Bind(wx.EVT_CLOSE, self.quit)
         self.alarm_codes = [0, 0, 0]
-        self.running_programs = []
-        self.run_average_g_routine = False
-        self.target = ""
-        self.loaded_data = {
-            "verb": 0,
-            "noun": 0,
-            1: "",
-            2: "",
-            3: "",
-        }
+        self.running_program = None
         self.noun_data = {
             "30": [],
         }
-        self.burn_data = []
+        self.next_burn = None
+        self._burn_queue = []
         self.is_ksp_connected = None
         self.ksp_paused_state = None
         self.is_direction_autopilot_engaged = False
         self.is_thrust_autopilot_engaged = False
-        self.active_program = None
+        self.moi_burn_delta_v = 0.0  # a bit of a hack, need to rethink this
 
         burn.gc = self
         telemachus.gc = self
@@ -96,67 +83,10 @@ class Computer(object):
         nouns.frame = self.gui
         programs.gc = self
         programs.dsky = self.dsky
-        routines.computer = self
 
-        self.nouns = OrderedDict(
-            {
-                "09": nouns.Noun09(),
-                "17": nouns.Noun17(),
-                "30": nouns.Noun30(),
-                "33": nouns.Noun33(),
-                "36": nouns.Noun36(),
-                "43": nouns.Noun43(),
-                "44": nouns.Noun44(),
-                "50": nouns.Noun50(),
-                "62": nouns.Noun62(),
-                "95": nouns.Noun95(),
-            }
-        )
-
-        self.verbs = OrderedDict(
-            {
-                "01": verbs.Verb1,
-                "02": verbs.Verb2,
-                "03": verbs.Verb3,
-                "04": verbs.Verb4,
-                "05": verbs.Verb5,
-                "06": verbs.Verb6,
-                "07": verbs.Verb7,
-                "11": verbs.Verb11,
-                "12": verbs.Verb12,
-                "13": verbs.Verb13,
-                "14": verbs.Verb14,
-                "15": verbs.Verb15,
-                "16": verbs.Verb16,
-                "17": verbs.Verb17,
-                "21": verbs.Verb21,
-                "22": verbs.Verb22,
-                "23": verbs.Verb23,
-                "24": verbs.Verb24,
-                "25": verbs.Verb25,
-                "32": verbs.Verb32,
-                "33": verbs.Verb33,
-                "34": verbs.Verb34,
-                "35": verbs.Verb35,
-                "36": verbs.Verb36,
-                "37": verbs.Verb37,
-                "75": verbs.Verb75,
-                "82": verbs.Verb82,
-                "93": verbs.Verb93,
-                "99": verbs.Verb99,
-            }
-        )
-
-        self.programs = OrderedDict({
-            "00": programs.Program00,
-            "11": programs.Program11,
-            "15": programs.Program15,
-        })
-
-        # self.routines = {
-        #     "average_g": routines.average_g,
-        #     30: routines.routine_30,
-        # }
+        self.nouns = nouns.nouns
+        self.verbs = verbs.verbs
+        self.programs = programs.programs
 
         self.option_codes = {
             "00001": "",
@@ -168,63 +98,56 @@ class Computer(object):
         }
         self.on()
 
-    def enable_direction_autopilot(self, direction):
-        if direction not in config.DIRECTIONS:
-            self.program_alarm(410)
-        else:
-            utils.log("Autopilot enabled", log_level="INFO")
-            telemachus.set_mechjeb_smartass(direction)
-            self.is_direction_autopilot_engaged = True
+    def add_burn_to_queue(self, burn_object, execute=True):
 
-    def enable_thrust_autopilot(self, delta_v_required, calling_burn):
+        """ Adds a Burn object to the computer burn queue. If no burn is assigned to next_burn, load new burn to
+        next_burn
+        :param burn_object: a Burn object that contains parameters for the burn
+        :param execute: if true, execute the added burn
+        :return: None
+        """
 
-        initial_speed = get_telemetry("orbitalVelocity")
-        self.is_thrust_autopilot_engaged = True
-        thrust_reduced_20 = [False]
-        # thrust_reduced_5 = [False]
-        delta_v_required = delta_v_required
-        accumulated_speed = [0]
-        self.calling_burn = calling_burn
+        self._burn_queue.append(burn_object)
+        if not self.next_burn:
+            self.next_burn = self._burn_queue.pop()
+        if execute:
+            self.next_burn.execute()
 
-        # start thrusting
-        telemachus.set_throttle(100)
+    def remove_burn(self, this_burn):
 
-        def thrust_monitor():
+        """ Removes a given Burn object from the computers burn queue
+        :param this_burn: the Burn object to remove
+        :return: None
+        """
 
-            if accumulated_speed[0] > (delta_v_required - 20) and not thrust_reduced_20[0]:
-                utils.log("Setting thrust to 20%", log_level="DEBUG")
-                telemachus.set_throttle(20)
-                thrust_reduced_20[0] = True
-            # elif accumulated_speed[0] > (delta_v_required - 5) and not thrust_reduced_5[0]:
-            #     utils.log("Setting thrust to 5%", log_level="DEBUG")
-            #     telemachus.set_throttle(5)
-            #     thrust_reduced_5[0] = True
-            delta_time_to_transfer = self.calling_burn.time_to_transfer - get_telemetry("timeToAp")
-            if delta_time_to_transfer < 10:
-            # if accumulated_speed[0] > (delta_v_required - 0.5):
-                telemachus.cut_throttle()
-                utils.log("Closing throttle, burn complete!", log_level="DEBUG")
-                self.loop_items.remove(thrust_monitor)
+        if this_burn == self.next_burn:
+            self.next_burn = None
+        if this_burn in self._burn_queue:
+            self._burn_queue.remove(this_burn)
 
-            current_speed = get_telemetry("orbitalVelocity")
-            accumulated_speed[0] = current_speed - initial_speed
-            # utils.log("Accumulated Δv: {}, Δv to go: {}".format(accumulated_speed[0], delta_v_required -
-            #                                                     accumulated_speed[0]))
-            print(delta_time_to_transfer)
+    def burn_complete(self):
 
-        self.loop_items.append(thrust_monitor)
+        """ Removes a completed burn and loads next queued burn if available.
+        :return: None
+        """
+        
+        utils.log("Removing {} from burn queue".format(self.next_burn))
+        self.next_burn = None
+        if self._burn_queue:
+            utils.log("Adding {} as next burn".format(self._burn_queue[0]))
+            self.next_burn = self._burn_queue.pop()
 
-
-
-
-
-
+            
 
     def disable_direction_autopilot(self):
+
+        """ Disables the directional autopilot
+        :return: None
+        """
+
         telemachus.disable_smartass()
         self.is_direction_autopilot_engaged = False
         utils.log("Autopilot disabled", log_level="INFO")
-
 
     def quit(self, event=None):
 
@@ -233,6 +156,11 @@ class Computer(object):
         :return: None
         """
 
+        # disables SMARTASS
+        try:
+            telemachus.disable_smartass()
+        except TypeError:
+            pass
         # if self.loop_timer.is_running:
         #     self.loop_timer.stop()
         self.gui.Destroy()
@@ -259,7 +187,7 @@ class Computer(object):
 
     def main_loop(self, event):
 
-        """ The guidance computer main loop. Not used for much yet.
+        """ The guidance computer main loop.
         :return: None
         """
 
@@ -271,8 +199,17 @@ class Computer(object):
 
         # if self.run_average_g_routine:
         #     routines.average_g()
-        for item in self.loop_items:
+        for item in self.main_loop_table:
             item()
+
+    def go_to_poo(self):
+
+        """ Executes program 00. Name comes from NASA documentation :)
+        :return: None
+        """
+
+        poo = self.programs["00"]()
+        poo.execute()
 
     def execute_verb(self, verb, noun=None, **kwargs):
 
@@ -302,27 +239,24 @@ class Computer(object):
         self.alarm_codes[0] = 0
         self.alarm_codes[1] = 0
 
-    def program_alarm(self, alarm_code, message=None):
+    def program_alarm(self, alarm_code):
 
         """ Sets the program alarm codes in memory and turns the PROG annunciator on.
         :param alarm_code: a 3 or 4 digit octal int of the alarm code to raise
-        :param message: optional message to print to log
         :return: None
         """
+        utils.log("PROGRAM ALARM {}: {}".format(str(alarm_code), config.ALARM_CODES[alarm_code]), log_level="ERROR")
         alarm_code += 1000
         if self.alarm_codes[0] != 0:
             self.alarm_codes[1] = self.alarm_codes[0]
         self.alarm_codes[0] = alarm_code
         self.alarm_codes[2] = self.alarm_codes[0]
         self.dsky.annunciators["prog"].on()
-        if message:
-            utils.log("PROGRAM ALARM {}: {}".format(str(alarm_code), message), log_level="ERROR")
 
     def poodoo_abort(self, alarm_code):
 
         """ Terminates the faulty program, and executes Program 00 (P00)
-        :param alarm_code: a 3 or 4 digit octal int of the alarm code to raise
-        :param message: optional message to print to log
+        :param alarm_code: a 3 digit octal int of the alarm code to raise
         :return: None
         """
 
@@ -334,7 +268,7 @@ class Computer(object):
         self.alarm_codes[2] = self.alarm_codes[0]
         self.dsky.annunciators["prog"].on()
         try:
-            self.running_programs[-1].terminate()
+            self.running_program[-1].terminate()
         except programs.ProgramTerminated:
             # this should happen if the program terminated successfully
             utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), alarm_message), log_level="ERROR")
@@ -378,7 +312,7 @@ class Computer(object):
     def check_ksp_connection(self):
 
         """ checks if we have a connection to Telemachus / KSP
-        Returns nothing.
+        :return: None
         """
 
         if not check_connection():
@@ -399,6 +333,7 @@ class Computer(object):
     def check_paused_state(self):
 
         """ Checks the paused state of KSP, and illuminates STBY annunciator and logs state as necessary.
+        :return: None
         """
 
         if self.is_ksp_connected:
@@ -421,4 +356,3 @@ class Computer(object):
                     self.dsky.annunciators["stby"].on()
                     utils.log("No Telemachus antenna found", log_level="WARNING")
                 self.ksp_paused_state = paused_state
-

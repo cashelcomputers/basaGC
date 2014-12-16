@@ -94,7 +94,7 @@ def get_telemetry(data, body_number=None):
     """ Contacts telemachus for the requested data.
 
     :param data: The API call required
-    :type data: string
+    :type data: str | float
     :param body_number: Specify which body to obtain data for
     :type body_number: string
     :rtype: string
