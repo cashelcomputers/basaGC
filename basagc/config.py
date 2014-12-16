@@ -112,7 +112,7 @@ TELEMACHUS_BODY_IDS = {
     "Eeloo": "16",
 }
 
-ALARM_CODES = OrderedDict({
+_UNSORTED_ALARM_CODES = {
     110: "Error contacting KSP",
     111: "Telemetry not available",
     115: "No burn data loaded",
@@ -123,7 +123,9 @@ ALARM_CODES = OrderedDict({
     226: "Time of ignition less than 2 minutes in the future",
     310: "Program hasn't been finished yet, watch this space :)",
     410: "Autopilot error",
-})
+}
+
+ALARM_CODES = OrderedDict(sorted(_UNSORTED_ALARM_CODES.items()))
 
 OCTAL_BODY_IDS = {key: str(int(oct(int(value)))) for key, value in
                   TELEMACHUS_BODY_IDS.iteritems()}  # FIXME: abomination
