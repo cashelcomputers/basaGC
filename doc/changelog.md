@@ -9,6 +9,7 @@ xx/xx/14: version 0.5.6:
 - Made help viewer lists sorted again
 - Nouns, verbs and programs are now added dynamically at runtime
 - Bug fixes
+- Added noun 49, alarm code 120
 
 02/12/14: version 0.5.5:
 - Added alarm codes to help menu
