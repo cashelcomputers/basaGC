@@ -30,7 +30,7 @@ from collections import OrderedDict
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 print(BASE_DIR)
 PROGRAM_NAME = "basaGC"
-VERSION = "0.5.5"
+VERSION = "0.5.6"
 LICENCE_FILE = BASE_DIR + "/licence"
 
 IMAGES_DIR = BASE_DIR + "/images/"
