@@ -65,15 +65,15 @@ class Program(object):
         dsky.flash_comp_acty()
         dsky.control_registers["program"].display(self.number)
         # gc.running_programs.append(self)
-        gc.active_program = self
+        gc.running_program = self
 
     def terminate(self):
 
         """Terminates the program"""
 
         # gc.running_programs.remove(self)
-        if gc.active_program == self:
-            gc.active_program = None
+        if gc.running_program == self:
+            gc.running_program = None
         raise ProgramTerminated
 
     def restart(self):
@@ -297,7 +297,7 @@ class Program15(Program):
         # complete at this calculated time
 
         self.phase_angle_required = hohmann_transfer.phase_angle(self.departure_altitude, self.destination_altitude,
-                                                                     self.grav_param)
+                                                                 self.grav_param)
 
         # calculate the current difference in phase angle required and current phase angle
         self.phase_angle_difference = current_phase_angle - self.phase_angle_required
@@ -318,7 +318,7 @@ class Program15(Program):
 
         # log the maneuver calculations
         utils.log("P15 calculations:")
-        utils.log("Phase angle: {}, Δv for burn: {} m/s, time to transfer: {}".format(
+        utils.log("Phase angle required: {}, Δv for burn: {} m/s, time to transfer: {}".format(
             round(self.phase_angle_required, 2),
             int(self.delta_v_first_burn),
             utils.seconds_to_time(self.time_to_transfer)))
@@ -336,8 +336,8 @@ class Program15(Program):
 
         # create a Burn object for the outbound burn
         self.first_burn = Burn(delta_v=self.delta_v_first_burn,
-                              direction="prograde",
-                              time_of_ignition=self.time_of_ignition_first_burn)
+                               direction="prograde",
+                               time_of_ignition=self.time_of_ignition_first_burn)
 
         # create a Burn object for the outbound burn
         self.second_burn = Burn(delta_v=self.delta_v_second_burn,
@@ -393,8 +393,8 @@ class Program40(Program):
 
     def execute(self):
         super(Program40, self).execute()
-        # if TIG < 3 mins away, abort burn
-        if utils.seconds_to_time(self.burn.time_until_ignition)["minutes"] < 3:
+        # if TIG < 2 mins away, abort burn
+        if utils.seconds_to_time(self.burn.time_until_ignition)["minutes"] < 2:
             gc.remove_burn(gc.next_burn)
             gc.poodoo_abort(227)
             return
