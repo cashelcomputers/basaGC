@@ -71,6 +71,7 @@ class Computer(object):
         self.ksp_paused_state = None
         self.is_direction_autopilot_engaged = False
         self.is_thrust_autopilot_engaged = False
+        self.moi_burn_delta_v = 0.0  # a bit of a hack, need to rethink this
 
         burn.gc = self
         telemachus.gc = self
@@ -84,69 +85,8 @@ class Computer(object):
         programs.dsky = self.dsky
 
         self.nouns = nouns.nouns
-        # self.nouns = OrderedDict(
-        #     {
-        #         "09": nouns.Noun09,
-        #         "14": nouns.Noun14,
-        #         "17": nouns.Noun17,
-        #         "30": nouns.Noun30,
-        #         "33": nouns.Noun33,
-        #         "36": nouns.Noun36,
-        #         "40": nouns.Noun40,
-        #         "43": nouns.Noun43,
-        #         "44": nouns.Noun44,
-        #         "50": nouns.Noun50,
-        #         "62": nouns.Noun62,
-        #         "95": nouns.Noun95,
-        #     }
-        # )
-        
         self.verbs = verbs.verbs
-        # self.verbs = OrderedDict(
-        #     {
-        #         "01": verbs.Verb01,
-        #         "02": verbs.Verb02,
-        #         "03": verbs.Verb03,
-        #         "04": verbs.Verb04,
-        #         "05": verbs.Verb05,
-        #         "06": verbs.Verb06,
-        #         #"07": verbs.Verb07,
-        #         "11": verbs.Verb11,
-        #         "12": verbs.Verb12,
-        #         "13": verbs.Verb13,
-        #         "14": verbs.Verb14,
-        #         "15": verbs.Verb15,
-        #         "16": verbs.Verb16,
-        #         "17": verbs.Verb17,
-        #         "21": verbs.Verb21,
-        #         "22": verbs.Verb22,
-        #         "23": verbs.Verb23,
-        #         "24": verbs.Verb24,
-        #         "25": verbs.Verb25,
-        #         "32": verbs.Verb32,
-        #         "33": verbs.Verb33,
-        #         "34": verbs.Verb34,
-        #         "35": verbs.Verb35,
-        #         "36": verbs.Verb36,
-        #         "37": verbs.Verb37,
-        #         "75": verbs.Verb75,
-        #         "82": verbs.Verb82,
-        #         "93": verbs.Verb93,
-        #         "99": verbs.Verb99,
-        #     }
-        # )
         self.programs = programs.programs
-        # self.programs = OrderedDict({
-        #     "00": programs.Program00,
-        #     "11": programs.Program11,
-        #     "15": programs.Program15,
-        #     "40": programs.Program40,
-        # })
-
-        # self.routines = {
-        #     "average_g": routines.average_g,
-        #     30: routines.routine_30,
-        # }
 
         self.option_codes = {
             "00001": "",

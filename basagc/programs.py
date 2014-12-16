@@ -283,8 +283,9 @@ class Program15(Program):
         current_phase_angle = get_telemetry("body_phaseAngle", body_number=telemachus_target_id)
 
         # calculate the first and second burn Δv parameters
-        self.delta_v_first_burn = hohmann_transfer.delta_v(self.departure_altitude,
-                                                                                     self.destination_altitude)
+        self.delta_v_first_burn, gc.moi_burn_delta_v = hohmann_transfer.delta_v(self.departure_altitude,
+                                                                                self.destination_altitude)
+        print(gc.moi_burn_delta_v)
 
         # calculate the time to complete the Hohmann transfer
         self.time_to_transfer = hohmann_transfer.time_to_transfer(self.departure_altitude, self.destination_altitude,
