@@ -169,7 +169,7 @@ class Program11(Program):
 
 class Program15(Program):
 
-    """ TMI Initiate/Cutoff
+    """ Calculates TMI
     :return: None
     """
 
@@ -193,7 +193,7 @@ class Program15(Program):
         # TODO: scale final altitude based on crafts TWR
         # TODO: request twr from user
 
-        super(Program15, self).__init__(description="TMI Initiate/Cutoff", number="15")
+        super(Program15, self).__init__(description="TMI Calculate", number="15")
         self.delta_v_first_burn = 0.0
         self.time_to_transfer = 0.0
         self.orbiting_body = None
