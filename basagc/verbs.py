@@ -548,9 +548,9 @@ class Verb06(DisplayVerb):
             return
         output = self._format_output_data(noun_data)
 
-        gc.dsky.registers[1].set_tooltip(output["tooltips"][0])
-        gc.dsky.registers[2].set_tooltip(output["tooltips"][1])
-        gc.dsky.registers[3].set_tooltip(output["tooltips"][2])
+        gc.dsky.registers[1].set_tooltip(noun_data["tooltips"][0])
+        gc.dsky.registers[2].set_tooltip(noun_data["tooltips"][1])
+        gc.dsky.registers[3].set_tooltip(noun_data["tooltips"][2])
         
         gc.dsky.registers[1].display(output[0])
         gc.dsky.registers[2].display(output[1])
