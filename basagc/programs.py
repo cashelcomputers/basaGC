@@ -203,7 +203,7 @@ class Program15(Program):
         self.time_of_ignition_second_burn = 0.0
         self.delta_time_to_burn = 0.0
         self.phase_angle_difference = 0.0
-        self.target_octal_id = ""
+        self.target_name = ""
         self.departure_body = None
         self.departure_altitude = 0
         self.destination_altitude = 0
@@ -225,8 +225,9 @@ class Program15(Program):
 
         if not self._check_orbital_parameters():
             return
-        gc.noun_data["30"] = self._check_target()
-        self.target_octal_id = self._check_target()
+        self.target_name = self._check_target()
+        gc.noun_data["30"] = config.OCTAL_BODY_IDS[self.target_name]
+
         gc.execute_verb(verb="01", noun="30")
         gc.dsky.request_data(requesting_object=self._accept_target_input, display_location=dsky.registers[1],
                              is_proceed_available=True)
@@ -246,7 +247,7 @@ class Program15(Program):
         """
 
         if target == "proceed":
-            self.target_octal_id = self.target_octal_id.lstrip("0")
+            self.target_name = self.target_name.lstrip("0")
         elif target[0] == ("+" or "-"):
             dsky.operator_error("Expected octal input, decimal input provided")
             self.execute()
@@ -256,7 +257,7 @@ class Program15(Program):
             gc.poodoo_abort(223, message="Target not valid")
             return
         else:
-            self.target_octal_id = target.lstrip("0")
+            self.target_name = config.OCTAL_BODY_NAMES[target.lstrip("0")]
         # calculate the maneuver and add recalculation job to gc main loop
         self.calculate_maneuver()
 
@@ -267,8 +268,8 @@ class Program15(Program):
         """
 
         # load target
-        target = config.OCTAL_BODY_NAMES[self.target_octal_id]
-        target_apoapsis = float(get_telemetry("body_ApA", body_number=config.TELEMACHUS_BODY_IDS[target]))
+        telemachus_target_id = config.TELEMACHUS_BODY_IDS[self.target_name]
+        target_apoapsis = float(get_telemetry("body_ApA", body_number=telemachus_target_id))
 
         # set destination altitude
         self.destination_altitude = target_apoapsis + 500000
@@ -282,7 +283,7 @@ class Program15(Program):
             "Kerbin"])
         self.grav_param = get_telemetry("body_gravParameter", body_number=config.TELEMACHUS_BODY_IDS[
             self.orbiting_body])
-        current_phase_angle = get_telemetry("body_phaseAngle", body_number=config.TELEMACHUS_BODY_IDS[target])
+        current_phase_angle = get_telemetry("body_phaseAngle", body_number=telemachus_target_id)
 
         # calculate the first and second burn Δv parameters
         self.delta_v_first_burn, self.delta_v_second_burn = hohmann_transfer.delta_v(self.departure_altitude,
@@ -301,8 +302,8 @@ class Program15(Program):
 
         # calculate the current difference in phase angle required and current phase angle
         self.phase_angle_difference = current_phase_angle - self.phase_angle_required
-        if self.phase_angle_difference < 0:
-            self.phase_angle_difference = 180 + abs(self.phase_angle_difference)
+        # if self.phase_angle_difference < 0:
+        #     self.phase_angle_difference = 180 + abs(self.phase_angle_difference)
 
         # calculate time of ignition (TIG)
         self.delta_time_to_burn = self.phase_angle_difference / ((360 / self.orbital_period) -
@@ -337,12 +338,14 @@ class Program15(Program):
         # create a Burn object for the outbound burn
         self.first_burn = Burn(delta_v=self.delta_v_first_burn,
                                direction="prograde",
-                               time_of_ignition=self.time_of_ignition_first_burn)
+                               time_of_ignition=self.time_of_ignition_first_burn,
+                               calling_program=self)
 
         # create a Burn object for the outbound burn
         self.second_burn = Burn(delta_v=self.delta_v_second_burn,
                                 direction="retrograde",
-                                time_of_ignition=self.time_of_ignition_second_burn)
+                                time_of_ignition=self.time_of_ignition_second_burn,
+                                calling_program=self)
 
         # load the Burn objects into computer
         gc.add_burn_to_queue(self.first_burn, execute=False)
@@ -351,6 +354,26 @@ class Program15(Program):
         # display burn parameters and go to poo
         gc.execute_verb(verb="06", noun="95")
         gc.go_to_poo()
+
+    def recalculate_phase_angles(self):
+    
+        """ This function is to be placed in the GC main loop to recalculate maneuver parameters.
+        :return: nothing
+        """
+    
+        # update current phase angle
+        telemachus_body_id = config.TELEMACHUS_BODY_IDS[config.OCTAL_BODY_NAMES[self.target_name]]
+        current_phase_angle = get_telemetry("body_phaseAngle",
+                                            body_number=telemachus_body_id)
+    
+        # recalculate phase angle difference
+        phase_angle_difference = current_phase_angle - self.phase_angle_required
+        if phase_angle_difference < 0:
+            phase_angle_difference = 180 + abs(phase_angle_difference)
+        self.delta_time_to_burn = phase_angle_difference / ((360 / self.orbital_period) - (360 /
+                                                                                    self.departure_body_orbital_period))
+        delta_time = utils.seconds_to_time(self.delta_time_to_burn)
+        velocity_at_cutoff = get_telemetry("orbitalVelocity") + self.delta_v_first_burn
 
     def _check_orbital_parameters(self):
 
@@ -382,9 +405,9 @@ class Program15(Program):
 
         if get_telemetry("target_name") == u"No Target Selected.":
             utils.log("No target selected in KSP, defaulting to Mun", log_level="WARNING")
-            return config.OCTAL_BODY_IDS["Mun"].zfill(5)
+            return "Mun"
         else:
-            return config.OCTAL_BODY_IDS[get_telemetry("target_name")].zfill(5)
+            return get_telemetry("target_name")
 
 class Program40(Program):
     def __init__(self):
@@ -396,7 +419,7 @@ class Program40(Program):
         # if TIG < 2 mins away, abort burn
         if utils.seconds_to_time(self.burn.time_until_ignition)["minutes"] < 2:
             gc.remove_burn(gc.next_burn)
-            gc.poodoo_abort(227)
+            gc.poodoo_abort(226)
             return
         # if time to ignition if further than a hour away, display time to ignition
         if utils.seconds_to_time(self.burn.time_until_ignition)["hours"] > 0:
