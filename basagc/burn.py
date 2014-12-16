@@ -107,7 +107,7 @@ class Burn(object):
         # at TIG - 100 seconds, reenable display and enable directional autopilot
         if int(self.time_until_ignition) <= 100 and self.is_display_blanked:
             # restore the displayed program number
-            gc.dsky.control_registers["program"].display(gc.active_program.number)
+            gc.dsky.control_registers["program"].display(gc.running_program.number)
             gc.execute_verb(verb="16", noun="40")
             self.is_display_blanked = False
             self._enable_directional_autopilot()
