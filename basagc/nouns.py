@@ -194,6 +194,11 @@ class Noun14(Noun):
             1: expected_delta_v_at_cutoff,
             2: actual_delta_v_at_cutoff,
             3: delta_v_error,
+            "tooltips": [
+                "Expected velocity at cutoff (xxxxx m/s)",
+                "Actual velocity at cutoff (xxxxx m/s)",
+                "Velocity error (xxxx.x m/s)"
+            ],
             "is_octal": False,
         }
         return data
@@ -344,20 +349,19 @@ class Noun33(Noun):
         if not gc.next_burn:
             gc.program_alarm(alarm_code=115, message="No burn data loaded")
             return False
-
-        time_of_ignition = utils.seconds_to_time(burn.start_time)
-        hours = str(int(time_of_ignition["hours"]))
-        minutes = str(int(time_of_ignition["minutes"]))
-        seconds = str(time_of_ignition["seconds"]).replace(".", "")
+        time_until_ignition = utils.seconds_to_time(gc.next_burn.calculate_time_to_ignition())
+        hours = str(int(time_until_ignition["hours"]))
+        minutes = str(int(time_until_ignition["minutes"]))
+        seconds = str(int(time_until_ignition["seconds"])).replace(".", "")
 
         data = {
             1: "-" + hours,
             2: "-bbb" + minutes,
-            3: "-b" + seconds,
+            3: "-bbb" + seconds,
             "tooltips": [
                 "Time To Ignition (hhhhh)",
                 "Time To Ignition (bbbmm)",
-                "Time To Ignition (bss.ss)",
+                "Time To Ignition (bbbss)",
             ],
             "is_octal": False,
         }
