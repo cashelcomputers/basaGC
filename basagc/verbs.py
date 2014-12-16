@@ -918,11 +918,11 @@ class Verb34(Verb):
             dsky.backgrounded_update.terminate()
             if dsky.annunciators["key_rel"].blink_timer.IsRunning():
                 dsky.annunciators["key_rel"].stop_blink()
-        if gc.active_program:
-            utils.log("Terminating active program {}".format(gc.active_program.number))
+        if gc.running_program:
+            utils.log("Terminating active program {}".format(gc.running_program.number))
             # have to use try block to catch and ignore expected ProgramTerminated exception
             try:
-                gc.active_program.terminate()
+                gc.running_program.terminate()
             except programs.ProgramTerminated:
                 pass
         else:
