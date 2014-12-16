@@ -26,8 +26,7 @@
 
 
 import wx
-from collections import OrderedDict
-from basagc import burn
+import burn
 
 import config
 import utils
@@ -35,9 +34,10 @@ import dsky
 import verbs
 import nouns
 import programs
-import routines
 from telemachus import check_connection, get_telemetry
 import telemachus
+
+
 
 
 class Computer(object):
@@ -71,7 +71,6 @@ class Computer(object):
         self.ksp_paused_state = None
         self.is_direction_autopilot_engaged = False
         self.is_thrust_autopilot_engaged = False
-        self.active_program = None
 
         burn.gc = self
         telemachus.gc = self
