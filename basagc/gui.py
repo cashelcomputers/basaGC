@@ -30,8 +30,6 @@ import config
 import utils
 
 
-
-
 class HelpFrame(wx.Frame):
     def __init__(self, *args, **kwds):
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
@@ -77,11 +75,9 @@ class HelpFrame(wx.Frame):
 
 
 class SettingsFrame(wx.Frame):
-
     """This frame provides a settings dialog"""
 
     def __init__(self, *args, **kwds):
-
         """Class constructor"""
 
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
@@ -106,7 +102,6 @@ class SettingsFrame(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.cancel_button_event, self.cancel_button)
 
     def __set_properties(self):
-
         """Internal wxPython method"""
 
         self.SetTitle("basaGC settings")
@@ -114,13 +109,12 @@ class SettingsFrame(wx.Frame):
         self.log_level_combobox.SetMinSize((187, 25))
 
     def __do_layout(self):
-
         """Internal wxPython method"""
 
         sizer_17 = wx.BoxSizer(wx.VERTICAL)
         grid_sizer_1 = wx.FlexGridSizer(4, 1, 5, 0)
         grid_sizer_4 = wx.FlexGridSizer(1, 2, 0, 5)
-        grid_sizer_2 = wx.FlexGridSizer(1, 2, 5, 5)
+        grid_sizer_2 = wx.FlexGridSizer(2, 4, 5, 5)
         grid_sizer_2.Add(self.label_ip, 0, wx.ALIGN_CENTER_VERTICAL | wx.ADJUST_MINSIZE, 0)
         grid_sizer_2.Add(self.ip_field, 0, wx.EXPAND | wx.ADJUST_MINSIZE, 0)
         grid_sizer_2.Add(self.label_1, 0, wx.ALIGN_CENTER_VERTICAL | wx.ADJUST_MINSIZE, 0)
@@ -143,7 +137,6 @@ class SettingsFrame(wx.Frame):
         self.Layout()
 
     def ok_button_event(self, event):
-
         """ Event handler for OK button.
         :param event: wxPython event (not used)
         :return:
@@ -161,7 +154,6 @@ class SettingsFrame(wx.Frame):
         self.Hide()
 
     def cancel_button_event(self, event):
-
         """ Event handler for Cancel button.
         :param event: wxPython event (not used)
         :return:
@@ -171,7 +163,6 @@ class SettingsFrame(wx.Frame):
 
 
 class LogViewerFrame(wx.Frame):
-
     """This frame provides a log viewer"""
 
     def __init__(self, *args, **kwds):
@@ -208,7 +199,6 @@ class LogViewerFrame(wx.Frame):
         self.Layout()
 
     def on_close(self, event):
-
         """Event handler for close button
         :param event: Event object as passed by wxPython
         """
@@ -217,7 +207,6 @@ class LogViewerFrame(wx.Frame):
 
 
 class GUI(wx.Frame):
-
     """This class provides the main DSKY GUI"""
 
     computer = None
@@ -291,22 +280,22 @@ class GUI(wx.Frame):
         # Menu Bar end
 
         self.bitmap_5 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg",
-                                        wx.BITMAP_TYPE_ANY))
+                                                                   wx.BITMAP_TYPE_ANY))
         self.bitmap_6_copy = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg",
-                                             wx.BITMAP_TYPE_ANY))
+                                                                        wx.BITMAP_TYPE_ANY))
         self.bitmap_6 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg",
-                                        wx.BITMAP_TYPE_ANY))
+                                                                   wx.BITMAP_TYPE_ANY))
         self.bitmap_5_copy = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg",
-                                             wx.BITMAP_TYPE_ANY))
+                                                                        wx.BITMAP_TYPE_ANY))
         self.bitmap_5_copy_1 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg",
-                                               wx.BITMAP_TYPE_ANY))
+                                                                          wx.BITMAP_TYPE_ANY))
         self.bitmap_6_copy_copy = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg",
-                                                  wx.BITMAP_TYPE_ANY))
+                                                                             wx.BITMAP_TYPE_ANY))
         self.bitmap_6_copy_copy_copy = wx.StaticBitmap(self, wx.ID_ANY,
                                                        wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg",
                                                                  wx.BITMAP_TYPE_ANY))
         self.bitmap_5_copy_2 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg",
-                                               wx.BITMAP_TYPE_ANY))
+                                                                          wx.BITMAP_TYPE_ANY))
 
         self.__set_properties()
         self.__do_layout()
@@ -616,7 +605,7 @@ class GUI(wx.Frame):
 
         about_dialog = wx.AboutDialogInfo()
 
-        #about_dialog.SetIcon(wx.Icon(config.ICON, wx.BITMAP_TYPE_PNG))
+        # about_dialog.SetIcon(wx.Icon(config.ICON, wx.BITMAP_TYPE_PNG))
         about_dialog.SetName(config.PROGRAM_NAME)
         about_dialog.SetVersion(config.VERSION)
         about_dialog.SetDescription(config.PROGRAM_DESCRIPTION)
@@ -668,12 +657,10 @@ class GUI(wx.Frame):
 
 
 class BASAGCApp(wx.App):
-
     """ The main entry point for the GUI. Required by wxPython.
     """
 
     def OnInit(self):
-
         """ GUI init.
         :return: 1
         """
