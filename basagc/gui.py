@@ -605,7 +605,7 @@ class GUI(wx.Frame):
 
         about_dialog = wx.AboutDialogInfo()
 
-        # about_dialog.SetIcon(wx.Icon(config.ICON, wx.BITMAP_TYPE_PNG))
+        about_dialog.SetIcon(wx.Icon(config.ICON, wx.BITMAP_TYPE_PNG))
         about_dialog.SetName(config.PROGRAM_NAME)
         about_dialog.SetVersion(config.VERSION)
         about_dialog.SetDescription(config.PROGRAM_DESCRIPTION)
