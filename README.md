@@ -15,7 +15,7 @@ Prerequisites:
 
 - KSP (tested on 1.0.4)
 - python 2.7.x
-- wxPython 2.8.x (may work with 3.0, but this is untested. YMMV)
+- wxPython 3.0.x
 - Telemachus mod for KSP (tested on 1.4.30)
 - Mechjeb mod
 
