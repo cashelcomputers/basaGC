@@ -13,10 +13,10 @@ from branch <a href="https://github.com/cashelcomputers/basaGC/tree/master">"mas
 
 Prerequisites:
 
-- KSP (tested on 0.25)
+- KSP (tested on 1.0.4)
 - python 2.7.x
 - wxPython 2.8.x (may work with 3.0, but this is untested. YMMV)
-- Telemachus mod for KSP (tested on 1.4.27)
+- Telemachus mod for KSP (tested on 1.4.30)
 - Mechjeb mod
 
 To run basaGC, unzip the download to a folder of your choice. On Linux (since Linux rulz :) in a terminal change to
