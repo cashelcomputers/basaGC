@@ -9,6 +9,9 @@ This is my reimplementation of the Apollo Guidance Computer (AGC) and Display/Ke
 
 _IMPORTANT:_ develop branch is broken, please use master branch for now.
 
+UPDATE 16/3/16: I haven't looked at this project for quite some time, but i'm back from Duna now :) my next goal is to 
+drop wxPython and move to Tkinter, stay tuned...
+
 Prerequisites:
 
 - KSP (tested on 1.0.4)
