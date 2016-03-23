@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 """ This file contains config information common to the whole package """
 # This file is part of basaGC (https://github.com/cashelcomputers/basaGC),

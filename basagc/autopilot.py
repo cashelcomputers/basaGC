@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 """This file contains the classes that implement the autopilot as used by the guidance computer"""
 
