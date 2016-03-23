@@ -24,7 +24,7 @@
 #  (http://www.ibiblio.org/apollo/index.html) by Ronald S. Burkey
 #  <info@sandroid.org>
 
-from telemachus import get_telemetry
+
 import utils
 import config
 import telemachus
@@ -100,9 +100,9 @@ class Burn(object):
         # ensure we only blank display first time through the loop
         if int(self.time_until_ignition) == 105 and not self.is_display_blanked:
             gc.dsky.current_verb.terminate()
-            for register in gc.dsky.control_registers.itervalues():
+            for register in list(gc.dsky.control_registers.values()):
                 register.blank()
-            for register in gc.dsky.registers.itervalues():
+            for register in list(gc.dsky.registers.values()):
                 register.blank()
             self.is_display_blanked = True
         # at TIG - 100 seconds, reenable display and enable directional autopilot

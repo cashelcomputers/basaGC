@@ -51,26 +51,6 @@ LOG_LEVELS = [
 
 current_log_level = "DEBUG"
 
-ID_VERBBUTTON = 10
-ID_NOUNBUTTON = 11
-ID_PLUSBUTTON = 12
-ID_MINUSBUTTON = 13
-ID_ZEROBUTTON = 0
-ID_ONEBUTTON = 1
-ID_TWOBUTTON = 2
-ID_THREEBUTTON = 3
-ID_FOURBUTTON = 4
-ID_FIVEBUTTON = 5
-ID_SIXBUTTON = 6
-ID_SEVENBUTTON = 7
-ID_EIGHTBUTTON = 8
-ID_NINEBUTTON = 9
-ID_CLRBUTTON = 14
-ID_PROBUTTON = 15
-ID_KEYRELBUTTON = 16
-ID_ENTRBUTTON = 17
-ID_RSETBUTTON = 18
-
 DIRECTIONS = [
     "prograde",
     "retrograde",
@@ -127,9 +107,9 @@ _UNSORTED_ALARM_CODES = {
 
 ALARM_CODES = OrderedDict(sorted(_UNSORTED_ALARM_CODES.items()))
 
-OCTAL_BODY_IDS = {key: str(int(oct(int(value)))) for key, value in
-                  TELEMACHUS_BODY_IDS.iteritems()}  # FIXME: abomination
-OCTAL_BODY_NAMES = {value: key for key, value in OCTAL_BODY_IDS.iteritems()}
+# OCTAL_BODY_IDS = {key: str(int(oct(int(value)))) for key, value in
+#                 TELEMACHUS_BODY_IDS.items()}  # FIXME: abomination
+# OCTAL_BODY_NAMES = {value: key for key, value in list(OCTAL_BODY_IDS.items())}
 
 PROGRAM_DESCRIPTION = "basaGC is a implementation of the Apollo Guidance Computer (AGC) for Kerbal Space Program." + (
                       "\n\nbasaGC includes code and images from the Virtual AGC Project ") + (

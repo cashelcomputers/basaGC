@@ -22,9 +22,23 @@
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org> (thanks Ronald!)
 
+import sys
+from PyQt5.QtWidgets import QApplication, QMainWindow
+
+from basagc import new_gui
 
 if __name__ == "__main__":
 
-    from basagc.gui import BASAGCApp
-    basaGC = BASAGCApp(0)
-    basaGC.MainLoop()
+    # from basagc.gui import BASAGCApp
+    # basaGC = BASAGCApp(0)
+    # basaGC.MainLoop()
+
+    q_app = QApplication(sys.argv)
+
+    #from basagc.computer import Computer
+    main_window = QMainWindow()
+    gui = new_gui.GUI()
+    gui.setupUi(main_window)
+    main_window.show()
+    #computer = Computer(gui)
+    sys.exit(q_app.exec_())

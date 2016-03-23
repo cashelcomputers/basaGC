@@ -39,36 +39,6 @@ logging.basicConfig(level=logging.DEBUG,
 gc_log = logging.getLogger()
 
 
-# class StateVector(object):
-#
-#     """ This class represents a state vector. Not currently used by any code!
-#     """
-#
-#     def __init__(self):
-#
-#         """ Class constructor
-#         """
-#
-#         self.position_vector = {
-#             "lat": 0.0,
-#             "long": 0.0,
-#             "alt": 0.0,
-#         }
-#         self.velocity_vector = simplevector.Vector(0, 0, 0)
-#         self.time = 0.0
-#
-#
-# class Attitude(object):
-#
-#     """ This class represents a spacecraft attitude. Not currently used by any code!
-#     """
-#
-#     def __init__(self, pitch=0.0, roll=0.0, yaw=0.0):
-#         self.pitch = pitch
-#         self.roll = roll
-#         self.yaw = yaw
-#
-
 def seconds_to_time(seconds):
 
     """ Converts a time in seconds to days, hours, minutes and seconds
@@ -104,8 +74,8 @@ def log(message, log_level="DEBUG"):
         return
     now = time.strftime("%d/%m/%Y %H:%M:%S")
     log_level_number = config.LOG_LEVELS.index(log_level)
-    if log_level_number >= config.LOG_LEVELS.index(config.current_log_level):
-        LOG_VIEWER.viewer.AppendText(now + ": " + log_level + ": " + message + "\n")
+    #if log_level_number >= config.LOG_LEVELS.index(config.current_log_level):
+    #   LOG_VIEWER.viewer.AppendText(now + ": " + log_level + ": " + message + "\n")
     if log_level == "DEBUG":
         gc_log.debug(message)
     elif log_level == "INFO":

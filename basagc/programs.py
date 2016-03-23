@@ -33,7 +33,7 @@ from basagc import hohmann_transfer
 import utils
 import config
 from telemachus import get_telemetry, KSPNotConnected
-from basagc.burn import Burn
+from burn import Burn
 
 gc = None
 dsky = None
@@ -249,7 +249,7 @@ class Program15(Program):
             dsky.operator_error("Expected octal input, decimal input provided")
             self.execute()
             return
-        elif target not in config.OCTAL_BODY_IDS.values():
+        elif target not in list(config.OCTAL_BODY_IDS.values()):
             utils.log("{} {} is not a valid target".format(target, type(target)))
             gc.poodoo_abort(223, message="Target not valid")
             return
@@ -285,7 +285,7 @@ class Program15(Program):
         # calculate the first and second burn Δv parameters
         self.delta_v_first_burn, gc.moi_burn_delta_v = hohmann_transfer.delta_v(self.departure_altitude,
                                                                                 self.destination_altitude)
-        print(gc.moi_burn_delta_v)
+        print((gc.moi_burn_delta_v))
 
         # calculate the time to complete the Hohmann transfer
         self.time_to_transfer = hohmann_transfer.time_to_transfer(self.departure_altitude, self.destination_altitude,
@@ -394,7 +394,7 @@ class Program15(Program):
 
         """
 
-        if get_telemetry("target_name") == u"No Target Selected.":
+        if get_telemetry("target_name") == "No Target Selected.":
             utils.log("No target selected in KSP, defaulting to Mun", log_level="WARNING")
             return "Mun"
         else:

@@ -26,8 +26,8 @@
 
 import math
 
-from telemachus import get_telemetry
-from config import TELEMACHUS_BODY_IDS
+from .telemachus import get_telemetry
+from .config import TELEMACHUS_BODY_IDS
 
 
 def delta_v(departure_altitude, destination_altitude, departure_body="Kerbin"):

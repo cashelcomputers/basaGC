@@ -962,20 +962,20 @@ class Verb35(Verb):
         """
 
         # commands the annunciators
-        for annunciator in dsky.annunciators.itervalues():
+        for annunciator in list(dsky.annunciators.values()):
             annunciator.on()
         #commands the data registers
-        for register in dsky.registers.itervalues():
+        for register in list(dsky.registers.values()):
             register.sign.plus()
             for digit in register.digits:
                 digit.display("8")
         #commands the control registers
-        for name, register in dsky.control_registers.iteritems():
+        for name, register in list(dsky.control_registers.items()):
             if name == "program":
-                for digit in register.digits.itervalues():
+                for digit in list(register.digits.values()):
                     digit.display("8")
             else:
-                for digit in register.digits.itervalues():
+                for digit in list(register.digits.values()):
                     digit.display("8")
                     digit.start_blink()
         self.stop_timer.Start(5000, oneShot=True)
@@ -986,14 +986,14 @@ class Verb35(Verb):
         :return: None
         """
 
-        for annunciator in dsky.annunciators.itervalues():
+        for annunciator in list(dsky.annunciators.values()):
             annunciator.off()
-        for name, register in dsky.control_registers.iteritems():
+        for name, register in list(dsky.control_registers.items()):
             if name == "program":
-                for digit in register.digits.itervalues():
+                for digit in list(register.digits.values()):
                     digit.display("blank")
             else:
-                for digit in register.digits.itervalues():
+                for digit in list(register.digits.values()):
                     digit.stop_blink()
                     digit.display("8")
 
@@ -1369,9 +1369,9 @@ class Verb99(ExtendedVerb):
 
 
         # blank the DSKY
-        for register in gc.dsky.control_registers.itervalues():
+        for register in list(gc.dsky.control_registers.values()):
             register.blank()
-        for register in gc.dsky.registers.itervalues():
+        for register in list(gc.dsky.registers.values()):
             register.blank()
 
         # re-display the verb number since the register has been blanked

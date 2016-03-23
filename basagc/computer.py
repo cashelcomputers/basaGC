@@ -24,19 +24,31 @@
 #  (http://www.ibiblio.org/apollo/index.html) by Ronald S. Burkey
 #  <info@sandroid.org>
 
+import sys
 
+from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtCore import QTimer
+
+import new_gui
+
+
+#from . import new_gui
 import burn
 import config
 import utils
-import dsky
+
 import verbs
 import nouns
 import programs
-from telemachus import check_connection, get_telemetry
 import telemachus
 
 
-class Computer(object):
+class TestGui(QMainWindow, new_gui.Ui_MainWindow):
+
+    def __init__(self):
+        QMainWindow.__init__(self)
+
+class Computer:
 
     """ This object models the core of the guidance computer.
     """
@@ -48,14 +60,20 @@ class Computer(object):
         :return: None
         """
 
+        # init Qt
+
         utils.log(message="\n\n" + config.SHORT_LICENCE + "\n", log_level="INFO")
+
+        # this has to go here, so we can init the widgets first
+        import dsky
         self.gui = gui
         self.dsky = dsky.DSKY(self.gui, self)
-        self.loop_timer = wx.Timer(gui)
-        gui.Bind(wx.EVT_TIMER, self.main_loop, self.loop_timer)
+
+        self.loop_timer = QTimer()
+        self.loop_timer.timeout.connect(self.main_loop)
         self.is_powered_on = False
         self.main_loop_table = []
-        self.gui.Bind(wx.EVT_CLOSE, self.quit)
+        # self.gui.Bind(wx.EVT_CLOSE, self.quit)
         self.alarm_codes = [0, 0, 0]
         self.running_program = None
         self.noun_data = {
@@ -93,7 +111,9 @@ class Computer(object):
             "00007": "",
             "00024": "",
         }
+        print("FOO")
         self.on()
+
 
     def add_burn_to_queue(self, burn_object, execute=True):
 
@@ -174,12 +194,12 @@ class Computer(object):
             self.dsky.annunciators["no_att"].on()
         else:
             utils.log("Retrieved telemetry listing", log_level="INFO")
-        self.loop_timer.Start(config.LOOP_TIMER_INTERVAL)
+        self.loop_timer.start(config.LOOP_TIMER_INTERVAL)
         self.is_powered_on = True
         for display_item in self.dsky.static_display:
             display_item.on()
 
-    def main_loop(self, event):
+    def main_loop(self):
 
         """ The guidance computer main loop.
         :return: None
@@ -309,7 +329,7 @@ class Computer(object):
         :return: None
         """
 
-        if not check_connection():
+        if not telemachus.check_connection():
             if self.is_ksp_connected:
                 # we have just lost the connection, illuminate NO ATT annunciator and log it
                 self.dsky.annunciators["no_att"].on()
@@ -350,3 +370,11 @@ class Computer(object):
                     self.dsky.annunciators["stby"].on()
                     utils.log("No Telemachus antenna found", log_level="WARNING")
                 self.ksp_paused_state = paused_state
+
+app = QApplication(sys.argv)
+MainWindow = QMainWindow()
+ui = TestGui()
+ui.setupUi(MainWindow)
+computer = Computer(ui)
+MainWindow.show()
+sys.exit(app.exec_())

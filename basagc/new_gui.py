@@ -8,14 +8,8 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-class GUI():
-    
-    """Main window GUI"""
-    
+class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
-        
-        """Setup for PyQt UI elements"""
-        
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(572, 658)
         icon = QtGui.QIcon()

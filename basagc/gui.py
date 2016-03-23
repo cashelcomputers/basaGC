@@ -22,9 +22,9 @@
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>
 
-import computer
-import config
-import utils
+from . import computer
+from . import config
+from . import utils
 
 
 class HelpFrame(wx.Frame):
@@ -616,7 +616,7 @@ class GUI(wx.Frame):
     def verbs_menuitem_click(self, event):
         self.help_viewer.SetTitle("Verbs Listing")
         verbs_list = ""
-        for verb_number, verb in self.computer.verbs.iteritems():
+        for verb_number, verb in list(self.computer.verbs.items()):
             if int(verb_number) < 39:
                 this_verb = verb(None)
             else:
@@ -629,7 +629,7 @@ class GUI(wx.Frame):
     def nouns_menuitem_click(self, event):
         self.help_viewer.SetTitle("Nouns Listing")
         nouns_list = ""
-        for noun_number, noun in self.computer.nouns.iteritems():
+        for noun_number, noun in list(self.computer.nouns.items()):
             this_noun = noun()
             nouns_list += "Noun " + noun_number + ":\t" + this_noun.description + "\n"
         self.help_viewer.viewer.SetValue(nouns_list)
@@ -638,7 +638,7 @@ class GUI(wx.Frame):
     def programs_menuitem_click(self, event):
         self.help_viewer.SetTitle("Programs Listing")
         programs_list = ""
-        for program_number, program in self.computer.programs.iteritems():
+        for program_number, program in list(self.computer.programs.items()):
             this_program = program()
             programs_list += "Program " + program_number + ":\t" + this_program.description + "\n"
         self.help_viewer.viewer.SetValue(programs_list)
@@ -647,7 +647,7 @@ class GUI(wx.Frame):
     def alarm_codes_menuitem_click(self, event):
         self.help_viewer.SetTitle("Alarm Codes")
         alarm_codes_list = ""
-        for alarm_code, description in config.ALARM_CODES.iteritems():
+        for alarm_code, description in list(config.ALARM_CODES.items()):
             alarm_codes_list += "0X" + str(alarm_code) + ":\t" + description + "\n"
         self.help_viewer.viewer.SetValue(alarm_codes_list)
         self.help_viewer.Show()
