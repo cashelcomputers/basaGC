@@ -22,71 +22,25 @@
 #
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>import wx
-from PyQt5 import QtCore
 
 from PyQt5.QtCore import QTimer
-from PyQt5.QtGui import QPixmap, QImage
+from PyQt5.QtGui import QPixmap
 
 import config
-import verbs
 import utils
+import verbs
 
 
-class Digit(object):
-    """ Digit base class.
-    """
-
-    def __init__(self, widget):
-        """ Class constructor.
-        :param dsky: the DSKY instance
-        :return: None
-        """
-
-        self.widget = widget
-
-
-class Separator(object):
-    """ Display separator.
-    """
-
-    def __init__(self, widget):
-        """ Class constructor.
-        :param panel: the wxPython panel that the separator lives in.
-        :return: None
-        """
-
-        self.image_on = QPixmap(config.IMAGES_DIR + "SeparatorOn.jpg")
-        self.image_off = QPixmap(config.IMAGES_DIR + "Separator.jpg")
-        self.widget = widget
-
-    def on(self):
-        """ Illuminates the separator.
-        :return: None
-        """
-
-        self.widget.setPixmap(self.image_on)
-
-    def off(self):
-        """ Deluminates the separator.
-        :return: None
-        """
-
-        self.widget.setPixmap(self.image_off)
-
-
-class NumericDigit(Digit):
+class NumericDigit:
     """ A numeric digit.
     """
 
-    def __init__(self, widget):
+    def __init__(self):
 
         """ Class constructor.
-        :param dsky: the DSKY instance
-        :param panel: the wxPython panel the digit lives in.
         :return: None
         """
 
-        super(NumericDigit, self).__init__(widget)
         self._digit_0 = QPixmap(config.IMAGES_DIR + "7Seg-0.jpg")
         self._digit_1 = QPixmap(config.IMAGES_DIR + "7Seg-1.jpg")
         self._digit_2 = QPixmap(config.IMAGES_DIR + "7Seg-2.jpg")
@@ -107,7 +61,6 @@ class NumericDigit(Digit):
         # setup blink timers
         self.blink_timer = QTimer()
         self.blink_timer.timeout.connect(self._blink)
-        self.widget = widget
 
         self.current_value = "blank"
 
@@ -200,7 +153,7 @@ class NumericDigit(Digit):
                 self.blink_value = new_value
 
 
-class SignDigit(Digit):
+class SignDigit:
     """ A class for a plus or minus digit.
     """
 
@@ -212,7 +165,6 @@ class SignDigit(Digit):
         :return: None
         """
 
-        super(SignDigit, self).__init__(widget)
         self._image_plus = QPixmap(config.IMAGES_DIR + "PlusOn.jpg")
         self._image_minus = QPixmap(config.IMAGES_DIR + "MinusOn.jpg")
         self._blank = QPixmap(config.IMAGES_DIR + "PlusMinusOff.jpg")
@@ -252,7 +204,7 @@ class SignDigit(Digit):
         self.widget.setPixmap(self._blank)
 
 
-class Annunciator(object):
+class Annunciator:
     """ A class for annunciators.
     """
 
@@ -327,7 +279,7 @@ class Annunciator(object):
         self.is_lit = False
 
 
-class DataRegister(object):
+class DataRegister:
     """ A class for the data registers
     """
 
@@ -414,7 +366,7 @@ class DataRegister(object):
             digit.stop_blink()
 
 
-class ControlRegister(object):
+class ControlRegister:
     """ A class for the control registers.
     """
 
@@ -471,7 +423,7 @@ class ControlRegister(object):
             digit.start_blink()
 
 
-class KeyButton(object):
+class KeyButton:
     """ A class for the DSKY keyboard buttons.
     """
 
@@ -502,7 +454,7 @@ class KeyButton(object):
         return
 
 
-class DSKY(object):
+class DSKY:
     """ This class models the DSKY.
     """
 

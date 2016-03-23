@@ -26,14 +26,14 @@
 
 import sys
 
-from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5.QtCore import QTimer
+from PyQt5.QtWidgets import QApplication, QMainWindow
 
 import new_gui
 
 
 #from . import new_gui
-import burn
+import routines
 import config
 import utils
 
@@ -87,8 +87,7 @@ class Computer:
         self.is_thrust_autopilot_engaged = False
         self.moi_burn_delta_v = 0.0  # a bit of a hack, need to rethink this
 
-
-        burn.gc = self
+        routines.gc = self
         telemachus.gc = self
         verbs.gc = self
         verbs.dsky = self.dsky

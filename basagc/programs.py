@@ -23,17 +23,15 @@
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>
 
-from collections import OrderedDict
-import sys
 import inspect
+import sys
+from collections import OrderedDict
 
-
-from basagc import hohmann_transfer
-
-import utils
+import basagc.routines
 import config
+import utils
+from routines import Burn
 from telemachus import get_telemetry, KSPNotConnected
-from burn import Burn
 
 gc = None
 dsky = None
@@ -283,20 +281,20 @@ class Program15(Program):
         current_phase_angle = get_telemetry("body_phaseAngle", body_number=telemachus_target_id)
 
         # calculate the first and second burn Δv parameters
-        self.delta_v_first_burn, gc.moi_burn_delta_v = hohmann_transfer.delta_v(self.departure_altitude,
-                                                                                self.destination_altitude)
+        self.delta_v_first_burn, gc.moi_burn_delta_v = basagc.routines.delta_v(self.departure_altitude,
+                                                                               self.destination_altitude)
         print((gc.moi_burn_delta_v))
 
         # calculate the time to complete the Hohmann transfer
-        self.time_to_transfer = hohmann_transfer.time_to_transfer(self.departure_altitude, self.destination_altitude,
-                                                                  self.grav_param)
+        self.time_to_transfer = basagc.routines.time_to_transfer(self.departure_altitude, self.destination_altitude,
+                                                                 self.grav_param)
 
         # calculate the correct phase angle for the start of the burn
         # note that the burn impulse is calculated as a instantaneous burn, to be correct the burn should be halfway
         # complete at this calculated time
 
-        self.phase_angle_required = hohmann_transfer.phase_angle(self.departure_altitude, self.destination_altitude,
-                                                                 self.grav_param)
+        self.phase_angle_required = basagc.routines.phase_angle(self.departure_altitude, self.destination_altitude,
+                                                                self.grav_param)
 
         # calculate the current difference in phase angle required and current phase angle
         self.phase_angle_difference = current_phase_angle - self.phase_angle_required
