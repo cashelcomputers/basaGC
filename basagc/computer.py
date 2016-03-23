@@ -25,9 +25,7 @@
 #  <info@sandroid.org>
 
 
-import wx
 import burn
-
 import config
 import utils
 import dsky

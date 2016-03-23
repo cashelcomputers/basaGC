@@ -26,7 +26,6 @@
 import sys
 import inspect
 import logging
-import wx
 from collections import OrderedDict
 
 import nouns
