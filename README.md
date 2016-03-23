@@ -10,13 +10,13 @@ This is my reimplementation of the Apollo Guidance Computer (AGC) and Display/Ke
 _IMPORTANT:_ develop branch is broken, please use master branch for now.
 
 UPDATE 16/3/16: I haven't looked at this project for quite some time, but i'm back from Duna now :) my next goal is to 
-drop wxPython and move to Tkinter, stay tuned...
+drop wxPython and move to PyQt5, so I can finally get away from Python 2.7 stay tuned...
 
 Prerequisites:
 
 - KSP (tested on 1.0.4)
-- python 2.7.x
-- wxPython 3.0.x
+- python 3.x
+- PyQt5
 - Telemachus mod for KSP (tested on 1.4.30)
 - Mechjeb mod
 
