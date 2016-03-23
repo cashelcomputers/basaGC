@@ -1,0 +1,1514 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>572</width>
+    <height>658</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>basaGC</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../images/icon.png</normaloff>../images/icon.png</iconset>
+  </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QLabel" name="left_frame_left_border">
+    <property name="geometry">
+     <rect>
+      <x>42</x>
+      <y>14</y>
+      <width>8</width>
+      <height>360</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/FrameVerticalL.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="left_frame_bottom_border">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>362</y>
+      <width>211</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/FrameHorizontal.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="left_frame_right_border">
+    <property name="geometry">
+     <rect>
+      <x>242</x>
+      <y>14</y>
+      <width>8</width>
+      <height>360</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/FrameVerticalL.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="left_frame_top_border">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>10</y>
+      <width>211</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/FrameHorizontal.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="right_frame_right_border">
+    <property name="geometry">
+     <rect>
+      <x>516</x>
+      <y>14</y>
+      <width>8</width>
+      <height>360</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/FrameVerticalL.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="right_frame_bottom_border">
+    <property name="geometry">
+     <rect>
+      <x>324</x>
+      <y>362</y>
+      <width>211</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/FrameHorizontal.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="right_frame_top_border">
+    <property name="geometry">
+     <rect>
+      <x>324</x>
+      <y>10</y>
+      <width>201</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/FrameHorizontal.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="right_frame_left_border">
+    <property name="geometry">
+     <rect>
+      <x>316</x>
+      <y>14</y>
+      <width>8</width>
+      <height>360</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/FrameVerticalL.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lighting_prog">
+    <property name="geometry">
+     <rect>
+      <x>452</x>
+      <y>22</y>
+      <width>64</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/rProgOn.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="annunciator_comp_acty">
+    <property name="geometry">
+     <rect>
+      <x>324</x>
+      <y>22</y>
+      <width>64</width>
+      <height>64</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/CompActyOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="ctrl_reg_prog_d1">
+    <property name="geometry">
+     <rect>
+      <x>452</x>
+      <y>46</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="ctrl_reg_prog_d2">
+    <property name="geometry">
+     <rect>
+      <x>484</x>
+      <y>46</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lighting_verb">
+    <property name="geometry">
+     <rect>
+      <x>324</x>
+      <y>105</y>
+      <width>64</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/VerbOn.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lighting_noun">
+    <property name="geometry">
+     <rect>
+      <x>452</x>
+      <y>105</y>
+      <width>64</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/NounOn.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="ctrl_reg_verb_d1">
+    <property name="geometry">
+     <rect>
+      <x>324</x>
+      <y>129</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="ctrl_reg_verb_d2">
+    <property name="geometry">
+     <rect>
+      <x>356</x>
+      <y>129</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="ctrl_reg_noun_d1">
+    <property name="geometry">
+     <rect>
+      <x>452</x>
+      <y>129</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="ctrl_reg_noun_d2">
+    <property name="geometry">
+     <rect>
+      <x>484</x>
+      <y>129</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lighting_sep_bar_1">
+    <property name="geometry">
+     <rect>
+      <x>324</x>
+      <y>174</y>
+      <width>192</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/SeparatorOn.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="data_reg_1_plus_minus">
+    <property name="geometry">
+     <rect>
+      <x>324</x>
+      <y>193</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/PlusMinusOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lighting_sep_bar_2">
+    <property name="geometry">
+     <rect>
+      <x>324</x>
+      <y>238</y>
+      <width>192</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/SeparatorOn.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="data_reg_2_plus_minus">
+    <property name="geometry">
+     <rect>
+      <x>324</x>
+      <y>257</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/PlusMinusOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lighting_sep_bar_3">
+    <property name="geometry">
+     <rect>
+      <x>324</x>
+      <y>302</y>
+      <width>192</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/SeparatorOn.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="data_reg_3_plus_minus">
+    <property name="geometry">
+     <rect>
+      <x>324</x>
+      <y>321</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/PlusMinusOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="data_reg_1_d1">
+    <property name="geometry">
+     <rect>
+      <x>356</x>
+      <y>193</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="data_reg_1_d2">
+    <property name="geometry">
+     <rect>
+      <x>388</x>
+      <y>193</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="data_reg_1_d3">
+    <property name="geometry">
+     <rect>
+      <x>420</x>
+      <y>193</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="data_reg_1_d4">
+    <property name="geometry">
+     <rect>
+      <x>452</x>
+      <y>193</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="data_reg_1_d5">
+    <property name="geometry">
+     <rect>
+      <x>484</x>
+      <y>193</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="data_reg_2_d3">
+    <property name="geometry">
+     <rect>
+      <x>420</x>
+      <y>257</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="data_reg_2_d1">
+    <property name="geometry">
+     <rect>
+      <x>356</x>
+      <y>257</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="data_reg_2_d4">
+    <property name="geometry">
+     <rect>
+      <x>452</x>
+      <y>257</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="data_reg_2_d2">
+    <property name="geometry">
+     <rect>
+      <x>388</x>
+      <y>257</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="data_reg_2_d5">
+    <property name="geometry">
+     <rect>
+      <x>484</x>
+      <y>257</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="data_reg_3_d3">
+    <property name="geometry">
+     <rect>
+      <x>420</x>
+      <y>321</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="data_reg_3_d1">
+    <property name="geometry">
+     <rect>
+      <x>356</x>
+      <y>321</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="data_reg_3_d4">
+    <property name="geometry">
+     <rect>
+      <x>452</x>
+      <y>321</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="data_reg_3_d2">
+    <property name="geometry">
+     <rect>
+      <x>388</x>
+      <y>321</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="data_reg_3_d5">
+    <property name="geometry">
+     <rect>
+      <x>484</x>
+      <y>321</y>
+      <width>32</width>
+      <height>45</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/7SegOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="static_display_1">
+    <property name="geometry">
+     <rect>
+      <x>388</x>
+      <y>22</y>
+      <width>64</width>
+      <height>152</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/CenterBlock.jpg</pixmap>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="static_display_2">
+    <property name="geometry">
+     <rect>
+      <x>452</x>
+      <y>89</y>
+      <width>64</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/ShortHorizontal.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="static_display_3">
+    <property name="geometry">
+     <rect>
+      <x>324</x>
+      <y>86</y>
+      <width>64</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/ShortHorizontal.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="annunciator_uplink_acty">
+    <property name="geometry">
+     <rect>
+      <x>58</x>
+      <y>28</y>
+      <width>84</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/UplinkActyOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="annunciator_temp">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>28</y>
+      <width>84</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/TempOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="annunciator_no_att">
+    <property name="geometry">
+     <rect>
+      <x>58</x>
+      <y>76</y>
+      <width>84</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/NoAttOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="annunciator_gimbal_lock">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>76</y>
+      <width>84</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/GimbalLockOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="annunciator_stby">
+    <property name="geometry">
+     <rect>
+      <x>58</x>
+      <y>125</y>
+      <width>84</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/StbyOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="annunciator_prog">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>125</y>
+      <width>84</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/ProgOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="annunciator_key_rel">
+    <property name="geometry">
+     <rect>
+      <x>58</x>
+      <y>174</y>
+      <width>84</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/KeyRelOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="annunciator_restart">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>174</y>
+      <width>84</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/RestartOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="annunciator_opr_err">
+    <property name="geometry">
+     <rect>
+      <x>58</x>
+      <y>223</y>
+      <width>84</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/OprErrOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="annunciator_tracker">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>223</y>
+      <width>84</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/TrackerOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="annunciator_blank1">
+    <property name="geometry">
+     <rect>
+      <x>58</x>
+      <y>272</y>
+      <width>84</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/BlankOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="annunciator_blank2">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>272</y>
+      <width>84</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/BlankOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="annunciator_blank3">
+    <property name="geometry">
+     <rect>
+      <x>58</x>
+      <y>321</y>
+      <width>84</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/BlankOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="annunciator_blank4">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>321</y>
+      <width>84</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../images/BlankOff.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_verb">
+    <property name="geometry">
+     <rect>
+      <x>6</x>
+      <y>430</y>
+      <width>75</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../images/VerbUp.jpg</normaloff>../images/VerbUp.jpg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>65</width>
+      <height>65</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_noun">
+    <property name="geometry">
+     <rect>
+      <x>6</x>
+      <y>510</y>
+      <width>75</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../images/NounUp.jpg</normaloff>../images/NounUp.jpg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>65</width>
+      <height>65</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_plus">
+    <property name="geometry">
+     <rect>
+      <x>88</x>
+      <y>390</y>
+      <width>75</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../images/PlusUp.jpg</normaloff>../images/PlusUp.jpg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>65</width>
+      <height>65</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_minus">
+    <property name="geometry">
+     <rect>
+      <x>88</x>
+      <y>470</y>
+      <width>75</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../images/MinusUp.jpg</normaloff>../images/MinusUp.jpg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>65</width>
+      <height>65</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_0">
+    <property name="geometry">
+     <rect>
+      <x>88</x>
+      <y>550</y>
+      <width>75</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../images/0Up.jpg</normaloff>../images/0Up.jpg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>65</width>
+      <height>65</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_4">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>470</y>
+      <width>75</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../images/4Up.jpg</normaloff>../images/4Up.jpg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>65</width>
+      <height>65</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_7">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>390</y>
+      <width>75</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../images/7Up.jpg</normaloff>../images/7Up.jpg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>65</width>
+      <height>65</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_1">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>550</y>
+      <width>75</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../images/1Up.jpg</normaloff>../images/1Up.jpg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>65</width>
+      <height>65</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_9">
+    <property name="geometry">
+     <rect>
+      <x>252</x>
+      <y>470</y>
+      <width>75</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../images/5Up.jpg</normaloff>../images/5Up.jpg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>65</width>
+      <height>65</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_8">
+    <property name="geometry">
+     <rect>
+      <x>252</x>
+      <y>390</y>
+      <width>75</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../images/8Up.jpg</normaloff>../images/8Up.jpg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>65</width>
+      <height>65</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_2">
+    <property name="geometry">
+     <rect>
+      <x>252</x>
+      <y>550</y>
+      <width>75</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../images/2Up.jpg</normaloff>../images/2Up.jpg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>65</width>
+      <height>65</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_6">
+    <property name="geometry">
+     <rect>
+      <x>335</x>
+      <y>470</y>
+      <width>75</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../images/6Up.jpg</normaloff>../images/6Up.jpg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>65</width>
+      <height>65</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_10">
+    <property name="geometry">
+     <rect>
+      <x>335</x>
+      <y>390</y>
+      <width>75</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../images/9Up.jpg</normaloff>../images/9Up.jpg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>65</width>
+      <height>65</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_3">
+    <property name="geometry">
+     <rect>
+      <x>335</x>
+      <y>550</y>
+      <width>75</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../images/3Up.jpg</normaloff>../images/3Up.jpg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>65</width>
+      <height>65</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_pro">
+    <property name="geometry">
+     <rect>
+      <x>418</x>
+      <y>470</y>
+      <width>75</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../images/ProUp.jpg</normaloff>../images/ProUp.jpg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>65</width>
+      <height>65</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_clr">
+    <property name="geometry">
+     <rect>
+      <x>418</x>
+      <y>390</y>
+      <width>75</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../images/ClrUp.jpg</normaloff>../images/ClrUp.jpg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>65</width>
+      <height>65</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_key_rel">
+    <property name="geometry">
+     <rect>
+      <x>418</x>
+      <y>550</y>
+      <width>75</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../images/KeyRelUp.jpg</normaloff>../images/KeyRelUp.jpg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>65</width>
+      <height>65</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_entr">
+    <property name="geometry">
+     <rect>
+      <x>496</x>
+      <y>411</y>
+      <width>75</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../images/EntrUp.jpg</normaloff>../images/EntrUp.jpg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>65</width>
+      <height>65</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_rset">
+    <property name="geometry">
+     <rect>
+      <x>496</x>
+      <y>491</y>
+      <width>75</width>
+      <height>75</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../images/RsetUp.jpg</normaloff>../images/RsetUp.jpg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>65</width>
+      <height>65</height>
+     </size>
+    </property>
+   </widget>
+   <zorder>static_display_2</zorder>
+   <zorder>static_display_3</zorder>
+   <zorder>left_frame_left_border</zorder>
+   <zorder>left_frame_bottom_border</zorder>
+   <zorder>left_frame_right_border</zorder>
+   <zorder>left_frame_top_border</zorder>
+   <zorder>right_frame_right_border</zorder>
+   <zorder>right_frame_bottom_border</zorder>
+   <zorder>right_frame_top_border</zorder>
+   <zorder>right_frame_left_border</zorder>
+   <zorder>lighting_prog</zorder>
+   <zorder>annunciator_comp_acty</zorder>
+   <zorder>ctrl_reg_prog_d1</zorder>
+   <zorder>ctrl_reg_prog_d2</zorder>
+   <zorder>lighting_verb</zorder>
+   <zorder>lighting_noun</zorder>
+   <zorder>ctrl_reg_verb_d1</zorder>
+   <zorder>ctrl_reg_verb_d2</zorder>
+   <zorder>ctrl_reg_noun_d1</zorder>
+   <zorder>ctrl_reg_noun_d2</zorder>
+   <zorder>lighting_sep_bar_1</zorder>
+   <zorder>data_reg_1_plus_minus</zorder>
+   <zorder>lighting_sep_bar_2</zorder>
+   <zorder>data_reg_2_plus_minus</zorder>
+   <zorder>lighting_sep_bar_3</zorder>
+   <zorder>data_reg_3_plus_minus</zorder>
+   <zorder>data_reg_1_d1</zorder>
+   <zorder>data_reg_1_d2</zorder>
+   <zorder>data_reg_1_d3</zorder>
+   <zorder>data_reg_1_d4</zorder>
+   <zorder>data_reg_1_d5</zorder>
+   <zorder>data_reg_2_d3</zorder>
+   <zorder>data_reg_2_d1</zorder>
+   <zorder>data_reg_2_d4</zorder>
+   <zorder>data_reg_2_d2</zorder>
+   <zorder>data_reg_2_d5</zorder>
+   <zorder>data_reg_3_d3</zorder>
+   <zorder>data_reg_3_d1</zorder>
+   <zorder>data_reg_3_d4</zorder>
+   <zorder>data_reg_3_d2</zorder>
+   <zorder>data_reg_3_d5</zorder>
+   <zorder>static_display_1</zorder>
+   <zorder>annunciator_uplink_acty</zorder>
+   <zorder>annunciator_temp</zorder>
+   <zorder>annunciator_no_att</zorder>
+   <zorder>annunciator_gimbal_lock</zorder>
+   <zorder>annunciator_stby</zorder>
+   <zorder>annunciator_prog</zorder>
+   <zorder>annunciator_key_rel</zorder>
+   <zorder>annunciator_restart</zorder>
+   <zorder>annunciator_opr_err</zorder>
+   <zorder>annunciator_tracker</zorder>
+   <zorder>annunciator_blank1</zorder>
+   <zorder>annunciator_blank2</zorder>
+   <zorder>annunciator_blank3</zorder>
+   <zorder>annunciator_blank4</zorder>
+   <zorder>button_verb</zorder>
+   <zorder>button_noun</zorder>
+   <zorder>button_plus</zorder>
+   <zorder>button_minus</zorder>
+   <zorder>button_0</zorder>
+   <zorder>button_4</zorder>
+   <zorder>button_7</zorder>
+   <zorder>button_1</zorder>
+   <zorder>button_9</zorder>
+   <zorder>button_8</zorder>
+   <zorder>button_2</zorder>
+   <zorder>button_6</zorder>
+   <zorder>button_10</zorder>
+   <zorder>button_3</zorder>
+   <zorder>button_pro</zorder>
+   <zorder>button_clr</zorder>
+   <zorder>button_key_rel</zorder>
+   <zorder>button_entr</zorder>
+   <zorder>button_rset</zorder>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>572</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_file">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="action_settings"/>
+    <addaction name="action_show_log"/>
+    <addaction name="separator"/>
+    <addaction name="action_quit"/>
+   </widget>
+   <widget class="QMenu" name="menu_help">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="action_verbs"/>
+    <addaction name="action_nouns"/>
+    <addaction name="action_programs"/>
+    <addaction name="action_alarm_codes"/>
+    <addaction name="separator"/>
+    <addaction name="action_about"/>
+   </widget>
+   <addaction name="menu_file"/>
+   <addaction name="menu_help"/>
+  </widget>
+  <action name="action_settings">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Settings...</string>
+   </property>
+  </action>
+  <action name="action_show_log">
+   <property name="text">
+    <string>Show &amp;Log...</string>
+   </property>
+  </action>
+  <action name="action_quit">
+   <property name="text">
+    <string>&amp;Quit</string>
+   </property>
+  </action>
+  <action name="action_verbs">
+   <property name="text">
+    <string>&amp;Verbs...</string>
+   </property>
+  </action>
+  <action name="action_nouns">
+   <property name="text">
+    <string>&amp;Nouns...</string>
+   </property>
+  </action>
+  <action name="action_programs">
+   <property name="text">
+    <string>&amp;Programs</string>
+   </property>
+  </action>
+  <action name="action_alarm_codes">
+   <property name="text">
+    <string>&amp;Alarm Codes...</string>
+   </property>
+  </action>
+  <action name="action_about">
+   <property name="text">
+    <string>Abou&amp;t...</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

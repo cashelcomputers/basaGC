@@ -38,8 +38,6 @@ from telemachus import check_connection, get_telemetry
 import telemachus
 
 
-
-
 class Computer(object):
 
     """ This object models the core of the guidance computer.
@@ -72,6 +70,7 @@ class Computer(object):
         self.is_direction_autopilot_engaged = False
         self.is_thrust_autopilot_engaged = False
         self.moi_burn_delta_v = 0.0  # a bit of a hack, need to rethink this
+
 
         burn.gc = self
         telemachus.gc = self
@@ -130,14 +129,11 @@ class Computer(object):
         """ Removes a completed burn and loads next queued burn if available.
         :return: None
         """
-        
         utils.log("Removing {} from burn queue".format(self.next_burn))
         self.next_burn = None
         if self._burn_queue:
             utils.log("Adding {} as next burn".format(self._burn_queue[0]))
             self.next_burn = self._burn_queue.pop()
-
-            
 
     def disable_direction_autopilot(self):
 
