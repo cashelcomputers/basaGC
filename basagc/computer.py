@@ -24,36 +24,21 @@
 #  (http://www.ibiblio.org/apollo/index.html) by Ronald S. Burkey
 #  <info@sandroid.org>
 
-import sys
-
-from PyQt5.QtCore import QTimer
-from PyQt5.QtWidgets import QApplication, QMainWindow
-
-import new_gui
-
-
-#from . import new_gui
-import routines
 import config
-import utils
-
-import verbs
 import nouns
 import programs
+import routines
 import telemachus
+import utils
+import verbs
 
-
-class TestGui(QMainWindow, new_gui.Ui_MainWindow):
-
-    def __init__(self):
-        QMainWindow.__init__(self)
 
 class Computer:
 
     """ This object models the core of the guidance computer.
     """
 
-    def __init__(self, gui):
+    def __init__(self):
 
         """ Class constructor.
         :param gui: the wxPython frame object
@@ -66,11 +51,10 @@ class Computer:
 
         # this has to go here, so we can init the widgets first
         import dsky
-        self.gui = gui
-        self.dsky = dsky.DSKY(self.gui, self)
+        self.dsky = dsky.DSKY(self)
 
-        self.loop_timer = QTimer()
-        self.loop_timer.timeout.connect(self.main_loop)
+        # self.loop_timer = QTimer()
+        # self.loop_timer.timeout.connect(self.main_loop)
         self.is_powered_on = False
         self.main_loop_table = []
         # self.gui.Bind(wx.EVT_CLOSE, self.quit)
@@ -91,10 +75,10 @@ class Computer:
         telemachus.gc = self
         verbs.gc = self
         verbs.dsky = self.dsky
-        verbs.frame = self.gui
+        verbs.frame = self
         nouns.gc = self
         nouns.dsky = self.dsky
-        nouns.frame = self.gui
+        nouns.frame = self
         programs.gc = self
         programs.dsky = self.dsky
 
@@ -110,7 +94,7 @@ class Computer:
             "00007": "",
             "00024": "",
         }
-        print("FOO")
+
         self.on()
 
 
@@ -193,10 +177,9 @@ class Computer:
             self.dsky.annunciators["no_att"].on()
         else:
             utils.log("Retrieved telemetry listing", log_level="INFO")
-        self.loop_timer.start(config.LOOP_TIMER_INTERVAL)
+        # self.loop_timer.start(config.LOOP_TIMER_INTERVAL)
         self.is_powered_on = True
-        for display_item in self.dsky.static_display:
-            display_item.on()
+        # TODO: emit signal to turn on static indicators on DSKY
 
     def main_loop(self):
 
@@ -210,8 +193,7 @@ class Computer:
         # check KSP paused state
         self.check_paused_state()
 
-        # if self.run_average_g_routine:
-        #     routines.average_g()
+        # run each item in process queue
         for item in self.main_loop_table:
             item()
 
@@ -370,10 +352,5 @@ class Computer:
                     utils.log("No Telemachus antenna found", log_level="WARNING")
                 self.ksp_paused_state = paused_state
 
-app = QApplication(sys.argv)
-MainWindow = QMainWindow()
-ui = TestGui()
-ui.setupUi(MainWindow)
-computer = Computer(ui)
-MainWindow.show()
-sys.exit(app.exec_())
+if __name__ == "__main__":
+    computer = Computer()

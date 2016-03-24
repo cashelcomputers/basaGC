@@ -28,8 +28,8 @@ import math
 import config
 import telemachus
 import utils
-from basagc.config import TELEMACHUS_BODY_IDS
-from basagc.telemachus import get_telemetry
+from config import TELEMACHUS_BODY_IDS
+from telemachus import get_telemetry
 
 gc = None
 

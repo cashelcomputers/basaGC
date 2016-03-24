@@ -23,8 +23,7 @@
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>import wx
 
-from PyQt5.QtCore import QTimer
-from PyQt5.QtGui import QPixmap
+# from PyQt5.QtCore import QTimer
 
 import config
 import utils
@@ -41,17 +40,6 @@ class NumericDigit:
         :return: None
         """
 
-        self._digit_0 = QPixmap(config.IMAGES_DIR + "7Seg-0.jpg")
-        self._digit_1 = QPixmap(config.IMAGES_DIR + "7Seg-1.jpg")
-        self._digit_2 = QPixmap(config.IMAGES_DIR + "7Seg-2.jpg")
-        self._digit_3 = QPixmap(config.IMAGES_DIR + "7Seg-3.jpg")
-        self._digit_4 = QPixmap(config.IMAGES_DIR + "7Seg-4.jpg")
-        self._digit_5 = QPixmap(config.IMAGES_DIR + "7Seg-5.jpg")
-        self._digit_6 = QPixmap(config.IMAGES_DIR + "7Seg-6.jpg")
-        self._digit_7 = QPixmap(config.IMAGES_DIR + "7Seg-7.jpg")
-        self._digit_8 = QPixmap(config.IMAGES_DIR + "7Seg-8.jpg")
-        self._digit_9 = QPixmap(config.IMAGES_DIR + "7Seg-9.jpg")
-        self._digit_blank = QPixmap(config.IMAGES_DIR + "7SegOff.jpg")
         self.current_value = None
         self.is_blinking = False
         self.is_blinking_lit = True
@@ -59,8 +47,8 @@ class NumericDigit:
         self.last_value = None
 
         # setup blink timers
-        self.blink_timer = QTimer()
-        self.blink_timer.timeout.connect(self._blink)
+        # self.blink_timer = QTimer()
+        # self.blink_timer.timeout.connect(self._blink)
 
         self.current_value = "blank"
 
@@ -157,18 +145,13 @@ class SignDigit:
     """ A class for a plus or minus digit.
     """
 
-    def __init__(self, widget):
+    def __init__(self):
 
         """ Class constructor.
         :param dsky: the DSKY instance to use
         :param panel: wxPython panel to display on
         :return: None
         """
-
-        self._image_plus = QPixmap(config.IMAGES_DIR + "PlusOn.jpg")
-        self._image_minus = QPixmap(config.IMAGES_DIR + "MinusOn.jpg")
-        self._blank = QPixmap(config.IMAGES_DIR + "PlusMinusOff.jpg")
-        self.widget = widget
 
     def set_tooltip(self, tooltip):
 
@@ -177,7 +160,7 @@ class SignDigit:
         :return: None
         """
 
-        self.widget.SetToolTipString(tooltip)
+        # TODO: emit signal
 
     def plus(self):
 
@@ -185,7 +168,7 @@ class SignDigit:
         :return: None
         """
 
-        self.widget.setPixmap(self._image_plus)
+        # TODO: emit signal
 
     def minus(self):
 
@@ -193,7 +176,7 @@ class SignDigit:
         :return: None
         """
 
-        self.widget.setPixmap(self._image_minus)
+        # TODO: emit signal
 
     def blank(self):
 
@@ -201,37 +184,29 @@ class SignDigit:
         :return: None
         """
 
-        self.widget.setPixmap(self._blank)
+        # TODO: emit signal
 
 
 class Annunciator:
     """ A class for annunciators.
     """
 
-    def __init__(self, widget, image_on, image_off, image_orange=None, name=None):
+    def __init__(self, name=None):
 
         """ Class constructor.
         :param dsky: the DSKY instance to use
-        :param image_on: filename of the "on" image
-        :param image_off: filename of the "off" image
-        :param image_orange: filename of the "orange on" image
         :param panel: wxPython panel to display on
         :param name: Name of the annunciator
         :return: None
         """
 
-        self.widget = widget
         self.name = name
-        self._image_on = image_on
-        self._image_off = image_off
-        if image_orange:
-            self._image_orange = QPixmap(image_orange)
         self.is_lit = False
         self.requested_state = False
 
         # setup blink timer
-        self.blink_timer = QTimer()
-        self.blink_timer.timeout.connect(self._blink)
+        # self.blink_timer = QTimer()
+        # self.blink_timer.timeout.connect(self._blink)
 
     def start_blink(self, interval=500):
 
@@ -265,8 +240,7 @@ class Annunciator:
         :return: None
         """
 
-        self.widget.setPixmap(QPixmap(self._image_on))
-
+        # TODO: emit signal
         self.is_lit = True
 
     def off(self):
@@ -275,7 +249,7 @@ class Annunciator:
         :return: None
         """
 
-        self.widget.setPixmap(self._image_off)
+        # TODO: emit signal
         self.is_lit = False
 
 
@@ -283,21 +257,20 @@ class DataRegister:
     """ A class for the data registers
     """
 
-    def __init__(self, widget):
+    def __init__(self):
 
         """ Class constructor.
         :param dsky: the DSKY instance to use
         :return: None
         """
 
-        self.widget = widget
-        self.sign = SignDigit(self.widget)
+        self.sign = SignDigit()
         self.digits = [
-            NumericDigit(self.widget),
-            NumericDigit(self.widget),
-            NumericDigit(self.widget),
-            NumericDigit(self.widget),
-            NumericDigit(self.widget),
+            NumericDigit(),
+            NumericDigit(),
+            NumericDigit(),
+            NumericDigit(),
+            NumericDigit(),
         ]
 
     def display(self, value):
@@ -353,40 +326,41 @@ class DataRegister:
         :param tooltip: The tooltip to display.
         :return: None
         """
-
+        pass
         for digit in self.digits:
-            digit.widget.SetToolTipString(tooltip)
+            pass
+            # TODO: emit signal
 
     def start_blink(self):
+        pass
         for digit in self.digits:
-            digit.start_blink()
+            pass
+            # TODO: emit signal
 
     def stop_blink(self):
+
+        pass
         for digit in self.digits:
-            digit.stop_blink()
+            pass
+            # TODO: emit signal
 
 
 class ControlRegister:
     """ A class for the control registers.
     """
 
-    def __init__(self, widget, name, image_on, image_off):
+    def __init__(self, name):
 
         """ Class constructor.
         :param dsky: the DSKY instance to use
         :param name: Name of the control register.
-        :param image_on: filename of the "on" image
-        :param image_off: filename of the "off" image
         :return: None
         """
 
-        self.widget = widget
         self.name = name
-        self.image_on = image_on
-        self.image_off = image_off
         self.digits = {
-            1: NumericDigit(self.widget),
-            2: NumericDigit(self.widget),
+            1: NumericDigit(),
+            2: NumericDigit(),
         }
 
     def display(self, value):
@@ -416,28 +390,27 @@ class ControlRegister:
         """
 
         for digit in list(self.digits.values()):
-            digit.display("blank")
+            pass
+            # TODO: emit signal
 
     def start_blink(self):
         for digit in list(self.digits.values()):
-            digit.start_blink()
+            pass
+            # TODO: emit signal
 
 
-class KeyButton:
+class KeyPress:
     """ A class for the DSKY keyboard buttons.
     """
 
-    def __init__(self, image, widget):
+    def __init__(self):
 
         """ Class constructor.
         :param wxid: wxPython ID
-        :param image: Image file to use
         :param dsky: instance of the DSKY
         :return: None
         """
-
-        self.widget = widget
-        self.image = QPixmap(config.IMAGES_DIR + image)
+        # TODO: receive signal
 
     def press(self, event):
 
@@ -458,7 +431,7 @@ class DSKY:
     """ This class models the DSKY.
     """
 
-    def __init__(self, gui, computer):
+    def __init__(self, computer):
 
         """ Class constructor.
         :param gui: QtPy5 window object
@@ -467,7 +440,6 @@ class DSKY:
         """
 
         self.computer = computer
-        self.gui = gui
 
         # self.display_update_timer = wx.Timer(frame)
         # frame.Bind(wx.EVT_TIMER, self.display_update, self.display_update_timer)
@@ -491,70 +463,57 @@ class DSKY:
         self.is_expecting_proceed = False
         self.object_requesting_data = None
         self.display_location_to_load = None
-        self.static_display = [
-            Annunciator(widget=self.gui.lighting_prog, image_on="rProgOn.jpg", image_off="rProgOff.jpg"),
-            Annunciator(widget=self.gui.lighting_verb, image_on="VerbOn.jpg", image_off="VerbOff.jpg"),
-            Annunciator(widget=self.gui.lighting_noun, image_on="NounOn.jpg", image_off="NounOff.jpg"),
-            Separator(widget=self.gui.lighting_sep_bar_1),
-            Separator(widget=self.gui.lighting_sep_bar_2),
-            Separator(widget=self.gui.lighting_sep_bar_3),
-        ]
 
         self.annunciators = {
-            "uplink_acty": Annunciator(widget=self.gui.annunciator_uplink_acty, name="uplink_acty", image_on="UplinkActyOn.jpg",
-                                       image_off="UplinkActyOff.jpg"),
-            "temp": Annunciator(widget=self.gui.annunciator_temp, name="temp", image_on="TempOn.jpg", image_off="TempOff.jpg"),
-            "no_att": Annunciator(widget=self.gui.annunciator_no_att, name="no_att", image_on="NoAttOn.jpg", image_off="NoAttOff.jpg"),
-            "gimbal_lock": Annunciator(widget=self.gui.annunciator_gimbal_lock, name="gimbal_lock", image_on="GimbalLockOn.jpg",
-                                       image_off="GimbalLockOff.jpg"),
-            "stby": Annunciator(widget=self.gui.annunciator_stby, name="stby", image_on="StbyOn.jpg", image_off="StbyOff.jpg"),
-            "prog": Annunciator(widget=self.gui.annunciator_prog, name="prog", image_on="ProgOn.jpg", image_off="ProgOff.jpg"),
-            "key_rel": Annunciator(widget=self.gui.annunciator_key_rel, name="key_rel", image_on="KeyRelOn.jpg", image_off="KeyRelOff.jpg"),
-            "restart": Annunciator(widget=self.gui.annunciator_restart, name="restart", image_on="RestartOn.jpg",
-                                   image_off="RestartOff.jpg"),
-            "opr_err": Annunciator(widget=self.gui.annunciator_opr_err, name="opr_err", image_on="OprErrOn.jpg", image_off="OprErrOff.jpg"),
-            "tracker": Annunciator(widget=self.gui.annunciator_tracker, name="tracker", image_on="TrackerOn.jpg",
-                                   image_off="TrackerOff.jpg"),
+            "uplink_acty": Annunciator(name="uplink_acty"),
+            "temp": Annunciator(name="temp"),
+            "no_att": Annunciator(name="no_att"),
+            "gimbal_lock": Annunciator(name="gimbal_lock"),
+            "stby": Annunciator(name="stby"),
+            "prog": Annunciator(name="prog"),
+            "key_rel": Annunciator(name="key_rel"),
+            "restart": Annunciator(name="restart"),
+            "opr_err": Annunciator(name="opr_err"),
+            "tracker": Annunciator(name="tracker"),
             #"no_dap": Annunciator(self, name="no_dap", image_on="BlankOff.jpg", image_off="BlankOff.jpg"),
             #"alt": Annunciator(self, name="alt", image_on="BlankOff.jpg", image_off="BlankOff.jpg"),
             #"prio_disp": Annunciator(self, name="prio_disp", image_on="BlankOff.jpg", image_off="BlankOff.jpg"),
             #"vel": Annunciator(self, name="vel", image_on="BlankOff.jpg", image_off="BlankOff.jpg"),
-            "comp_acty": Annunciator(widget=self.gui.annunciator_comp_acty, name="comp_acty", image_on="CompActyOn.jpg",
-                                     image_off="CompActyOff.jpg"),
+            "comp_acty": Annunciator(name="comp_acty"),
         }
 
         self.registers = {
-            1: DataRegister(self),
-            2: DataRegister(self),
-            3: DataRegister(self),
+            1: DataRegister(),
+            2: DataRegister(),
+            3: DataRegister(),
         }
 
         self.control_registers = {
-            "program": ControlRegister(self, "program", "rProgOn.jpg", "rProgOff.jpg"),
-            "verb": ControlRegister(self, "verb", "VerbOn.jpg", "VerbOff.jpg"),
-            "noun": ControlRegister(self, "noun", "NounOn.jpg", "NounOff.jpg"),
+            "program": ControlRegister("program"),
+            "verb": ControlRegister("verb"),
+            "noun": ControlRegister("noun"),
         }
 
         self.keyboard = {
-            "verb": KeyButton("VerbUp.jpg", self),
-            "noun": KeyButton("NounUp.jpg", self),
-            "plus": KeyButton("PlusUp.jpg", self),
-            "minus": KeyButton("MinusUp.jpg", self),
-            0: KeyButton("0Up.jpg", self),
-            1: KeyButton("1Up.jpg", self),
-            2: KeyButton("2Up.jpg", self),
-            3: KeyButton("3Up.jpg", self),
-            4: KeyButton("4Up.jpg", self),
-            5: KeyButton("5Up.jpg", self),
-            6: KeyButton("6Up.jpg", self),
-            7: KeyButton("7Up.jpg", self),
-            8: KeyButton("8Up.jpg", self),
-            9: KeyButton("9Up.jpg", self),
-            "clear": KeyButton("ClrUp.jpg", self),
-            "proceed": KeyButton("ProUp.jpg", self),
-            "key_release": KeyButton("KeyRelUp.jpg", self),
-            "enter": KeyButton("EntrUp.jpg", self),
-            "reset": KeyButton("RsetUp.jpg", self),
+            "verb": KeyPress(),
+            "noun": KeyPress(),
+            "plus": KeyPress(),
+            "minus": KeyPress(),
+            0: KeyPress(),
+            1: KeyPress(),
+            2: KeyPress(),
+            3: KeyPress(),
+            4: KeyPress(),
+            5: KeyPress(),
+            6: KeyPress(),
+            7: KeyPress(),
+            8: KeyPress(),
+            9: KeyPress(),
+            "clear": KeyPress(),
+            "proceed": KeyPress(),
+            "key_release": KeyPress(),
+            "enter": KeyPress(),
+            "reset": KeyPress(),
         }
 
     def operator_error(self, message=None):
@@ -566,7 +525,7 @@ class DSKY:
 
         if message:
             utils.log("OPERATOR ERROR: " + message)
-        self.annunciators["opr_err"].blink_timer.Start(500)
+        self.annunciators["opr_err"].blink_timer.start(500)
 
     def stop_comp_acty_flash(self, event):
 

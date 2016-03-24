@@ -24,9 +24,11 @@
 
 import sys
 
-from PyQt5 import QtWidgets
-
 import new_gui
+from PyQt5 import QtWidgets
+from computer import Computer
+
+
 
 if __name__ == "__main__":
 
@@ -35,6 +37,7 @@ if __name__ == "__main__":
     ui = new_gui.Ui_MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
+    computer = Computer()
     sys.exit(app.exec_())
 
 # class HelpFrame(wx.Frame):

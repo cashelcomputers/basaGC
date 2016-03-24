@@ -8,6 +8,12 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+class Digit(QtWidgets.QLabel):
+
+    def __init__(self, central_widget):
+        super().__init__(self, central_widget)
+
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -64,10 +70,7 @@ class Ui_MainWindow(object):
         self.lighting_prog.setPixmap(QtGui.QPixmap("../images/rProgOn.jpg"))
         self.lighting_prog.setObjectName("lighting_prog")
         self.annunciator_comp_acty = QtWidgets.QLabel(self.centralwidget)
-        self.annunciator_comp_acty.setGeometry(QtCore.QRect(324, 22, 64, 64))
-        self.annunciator_comp_acty.setText("")
-        self.annunciator_comp_acty.setPixmap(QtGui.QPixmap("../images/CompActyOff.jpg"))
-        self.annunciator_comp_acty.setObjectName("annunciator_comp_acty")
+
         self.ctrl_reg_prog_d1 = QtWidgets.QLabel(self.centralwidget)
         self.ctrl_reg_prog_d1.setGeometry(QtCore.QRect(452, 46, 32, 45))
         self.ctrl_reg_prog_d1.setText("")
@@ -299,6 +302,10 @@ class Ui_MainWindow(object):
         self.annunciator_blank4.setText("")
         self.annunciator_blank4.setPixmap(QtGui.QPixmap("../images/BlankOff.jpg"))
         self.annunciator_blank4.setObjectName("annunciator_blank4")
+        self.annunciator_comp_acty.setGeometry(QtCore.QRect(324, 22, 64, 64))
+        self.annunciator_comp_acty.setText("")
+        self.annunciator_comp_acty.setPixmap(QtGui.QPixmap("../images/CompActyOff.jpg"))
+        self.annunciator_comp_acty.setObjectName("annunciator_comp_acty")
         self.button_verb = QtWidgets.QPushButton(self.centralwidget)
         self.button_verb.setGeometry(QtCore.QRect(6, 430, 75, 75))
         self.button_verb.setText("")
@@ -581,4 +588,14 @@ class Ui_MainWindow(object):
         self.action_programs.setText(_translate("MainWindow", "&Programs"))
         self.action_alarm_codes.setText(_translate("MainWindow", "&Alarm Codes..."))
         self.action_about.setText(_translate("MainWindow", "Abou&t..."))
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec_())
 
