@@ -34,10 +34,11 @@ if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
-    ui = new_gui.Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
     computer = Computer()
+    ui = new_gui.Ui_MainWindow(MainWindow)
+    new_gui.CHARIN = computer.dsky.charin
+    MainWindow.show()
+
     sys.exit(app.exec_())
 
 # class HelpFrame(wx.Frame):

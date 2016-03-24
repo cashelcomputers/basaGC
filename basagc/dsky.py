@@ -25,6 +25,8 @@
 
 # from PyQt5.QtCore import QTimer
 
+from PyQt5.QtCore import pyqtSignal
+
 import config
 import utils
 import verbs
@@ -39,13 +41,11 @@ class NumericDigit:
         """ Class constructor.
         :return: None
         """
-
         self.current_value = None
         self.is_blinking = False
         self.is_blinking_lit = True
         self.blink_value = None
         self.last_value = None
-
         # setup blink timers
         # self.blink_timer = QTimer()
         # self.blink_timer.timeout.connect(self._blink)
@@ -257,13 +257,14 @@ class DataRegister:
     """ A class for the data registers
     """
 
-    def __init__(self):
+    def __init__(self, name):
 
         """ Class constructor.
         :param dsky: the DSKY instance to use
         :return: None
         """
-
+        self.display_signal = pyqtSignal()
+        self.name = name
         self.sign = SignDigit()
         self.digits = [
             NumericDigit(),
@@ -277,7 +278,6 @@ class DataRegister:
 
         """ Displays a given value on the whole data register (including sign).
         :param value: The value to display
-        :param sign: The sign to display
         :return: None
         """
 
@@ -294,17 +294,29 @@ class DataRegister:
                       log_level="WARNING")
             value.zfill(5)
 
-        if value[0] == "-":
-            self.sign.minus()
-            value = value[1:]
-        elif value[0] == "+":
-            self.sign.plus()
-            value = value[1:]
-        elif value[0] == "b":
-            self.sign.blank()
-            value = value[1:]
-        else:
-            self.sign.blank()
+        self.display_signal = pyqtSignal({
+            "type": "update_data_register",
+            "register": self.name,
+            "digit_sign": value[0],
+            "digit_1": value[1],
+            "digit_2": value[2],
+            "digit_3": value[3],
+            "digit_4": value[4],
+            "digit_5": value[5],
+        })
+        self.display_signal.emit()
+
+        # if value[0] == "-":
+        #     self.sign.minus()
+        #     value = value[1:]
+        # elif value[0] == "+":
+        #     self.sign.plus()
+        #     value = value[1:]
+        # elif value[0] == "b":
+        #     self.sign.blank()
+        #     value = value[1:]
+        # else:
+        #     self.sign.blank()
 
         # display each digit
         for index, digit in enumerate(value):
@@ -357,6 +369,7 @@ class ControlRegister:
         :return: None
         """
 
+        self.display_signal = pyqtSignal()
         self.name = name
         self.digits = {
             1: NumericDigit(),
@@ -370,18 +383,13 @@ class ControlRegister:
         :return:
         """
 
-        if len(value) == 1:
-            self.digits[1].display(value)
-        else:
-            self.digits[1].display(value[0])
-            self.digits[2].display(value[1])
-
-            #for index, digit in enumerate(self.digits, start=1):
-            #try:
-            #self.digits[index].display(int(value[index]))
-            #except IndexError:
-            #utils.log(value, index)
-            #utils.log("Too many values to display, silently ignoring further data")
+        self.display_signal = pyqtSignal({
+            "type": "update_control_register",
+            "register": self.name,
+            "digit_1": value[0],
+            "digit_2": value[1]
+        })
+        self.display_signal.emit()
 
     def blank(self):
 
@@ -389,43 +397,12 @@ class ControlRegister:
         :return: None
         """
 
-        for digit in list(self.digits.values()):
-            pass
-            # TODO: emit signal
+        self.display(["blank", "blank"])
 
     def start_blink(self):
         for digit in list(self.digits.values()):
             pass
             # TODO: emit signal
-
-
-class KeyPress:
-    """ A class for the DSKY keyboard buttons.
-    """
-
-    def __init__(self):
-
-        """ Class constructor.
-        :param wxid: wxPython ID
-        :param dsky: instance of the DSKY
-        :return: None
-        """
-        # TODO: receive signal
-
-    def press(self, event):
-
-        """Called when a keypress event has been received.
-        :param event: wxPython event
-        """
-        keypress = str(event.GetId())
-
-        # set up the correct key codes for non-numeric keys
-        if keypress in config.KEY_IDS:
-            keypress = config.KEY_IDS[keypress]
-        # call the actual handler
-        self.dsky.charin(keypress)
-        return
-
 
 class DSKY:
     """ This class models the DSKY.
@@ -440,7 +417,6 @@ class DSKY:
         """
 
         self.computer = computer
-
         # self.display_update_timer = wx.Timer(frame)
         # frame.Bind(wx.EVT_TIMER, self.display_update, self.display_update_timer)
         # self.comp_acty_timer = wx.Timer(frame)
@@ -475,17 +451,13 @@ class DSKY:
             "restart": Annunciator(name="restart"),
             "opr_err": Annunciator(name="opr_err"),
             "tracker": Annunciator(name="tracker"),
-            #"no_dap": Annunciator(self, name="no_dap", image_on="BlankOff.jpg", image_off="BlankOff.jpg"),
-            #"alt": Annunciator(self, name="alt", image_on="BlankOff.jpg", image_off="BlankOff.jpg"),
-            #"prio_disp": Annunciator(self, name="prio_disp", image_on="BlankOff.jpg", image_off="BlankOff.jpg"),
-            #"vel": Annunciator(self, name="vel", image_on="BlankOff.jpg", image_off="BlankOff.jpg"),
             "comp_acty": Annunciator(name="comp_acty"),
         }
 
         self.registers = {
-            1: DataRegister(),
-            2: DataRegister(),
-            3: DataRegister(),
+            1: DataRegister(name="data_register_1"),
+            2: DataRegister(name="data_register_2"),
+            3: DataRegister(name="data_register_3"),
         }
 
         self.control_registers = {
@@ -494,27 +466,28 @@ class DSKY:
             "noun": ControlRegister("noun"),
         }
 
-        self.keyboard = {
-            "verb": KeyPress(),
-            "noun": KeyPress(),
-            "plus": KeyPress(),
-            "minus": KeyPress(),
-            0: KeyPress(),
-            1: KeyPress(),
-            2: KeyPress(),
-            3: KeyPress(),
-            4: KeyPress(),
-            5: KeyPress(),
-            6: KeyPress(),
-            7: KeyPress(),
-            8: KeyPress(),
-            9: KeyPress(),
-            "clear": KeyPress(),
-            "proceed": KeyPress(),
-            "key_release": KeyPress(),
-            "enter": KeyPress(),
-            "reset": KeyPress(),
-        }
+        # self.keyboard = {
+        #     "verb": KeyPress(),
+        #     "noun": KeyPress(),
+        #     "plus": KeyPress(),
+        #     "minus": KeyPress(),
+        #     0: KeyPress(),
+        #     1: KeyPress(),
+        #     2: KeyPress(),
+        #     3: KeyPress(),
+        #     4: KeyPress(),
+        #     5: KeyPress(),
+        #     6: KeyPress(),
+        #     7: KeyPress(),
+        #     8: KeyPress(),
+        #     9: KeyPress(),
+        #     "clear": KeyPress(),
+        #     "proceed": KeyPress(),
+        #     "key_release": KeyPress(),
+        #     "enter": KeyPress(),
+        #     "reset": KeyPress(),
+        # }
+
 
     def operator_error(self, message=None):
 
@@ -600,7 +573,7 @@ class DSKY:
         Handles key input from DSKY keyboard.
         :param keypress: contains the key code
         """
-
+        print("Computer received {}".format(keypress))
         if self.is_expecting_data:
             self._handle_expected_data(keypress)
             return

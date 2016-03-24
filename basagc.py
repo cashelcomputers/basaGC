@@ -38,7 +38,7 @@ if __name__ == "__main__":
     #from basagc.computer import Computer
     main_window = QMainWindow()
     gui = new_gui.GUI()
-    gui.setupUi(main_window)
+    gui.setup_ui(main_window)
     main_window.show()
     #computer = Computer(gui)
     sys.exit(q_app.exec_())

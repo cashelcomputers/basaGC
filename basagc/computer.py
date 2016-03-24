@@ -44,9 +44,6 @@ class Computer:
         :param gui: the wxPython frame object
         :return: None
         """
-
-        # init Qt
-
         utils.log(message="\n\n" + config.SHORT_LICENCE + "\n", log_level="INFO")
 
         # this has to go here, so we can init the widgets first
