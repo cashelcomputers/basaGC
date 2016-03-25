@@ -973,28 +973,28 @@ class Verb35(Verb):
 
         #commands the control registers
         for name, register in dsky.control_registers.items():
+            register.display([10,10])
             register.display("88")
             if name != "program":
                 register.start_blink()
 
-        self.stop_timer.singleShot(5000, self.terminate)
+        QTimer.singleShot(5000, self.terminate)
 
     def terminate(self):
 
         """ Terminates the verb.
         :return: None
         """
-
-        for annunciator in list(dsky.annunciators.values()):
+        print("GOO")
+        for annunciator in dsky.annunciators.values():
             annunciator.off()
-        for name, register in list(dsky.control_registers.items()):
+        for name, register in dsky.control_registers.items():
             if name == "program":
-                for digit in list(register.digits.values()):
-                    digit.display("blank")
-            else:
-                for digit in list(register.digits.values()):
-                    digit.stop_blink()
-                    digit.display("8")
+                register.display([10,10])
+            # else:
+            #     for digit in list(register.digits.values()):
+            #         digit.stop_blink()
+            #         digit.display("8")
 
     def stop_timer_event(self, event):
 

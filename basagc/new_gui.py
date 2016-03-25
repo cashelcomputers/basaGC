@@ -31,9 +31,9 @@ class ControlRegister:
 
         self.display([10, 10])
 
-    def start_blink(self):
-        self.digits[0].start_blink()
-        self.digits[1].start_blink()
+    def start_blink(self, count=None):
+        self.digits[0].start_blink(count)
+        self.digits[1].start_blink(count)
 
 class DataRegister:
 
@@ -182,19 +182,29 @@ class Digit(QtWidgets.QLabel):
         self.blink_timer.timeout.connect(self.flip)
         self.setText("")
         self.display(10)
+        self.blink_counter = 0
+        self.blink_number_requested = 0
 
-    def start_blink(self):
+    def start_blink(self, count=None):
 
         """ Starts the digit blinking.
         :param value: Value to blink with
         :return: None
         """
-        print("BLINK")
+        if count:
+            self.blink_counter = 0
+            self.blink_number_requested = count
         self.blink_timer.start(500)
 
     def flip(self):
 
         self.display(self.last_value)
+        if self.blink_number_requested > 0:
+            self.blink_counter += 1
+            if self.blink_counter == self.blink_number_requested:
+                self.blink_timer.stop()
+                self.blink_number_requested = 0
+                self.blink_counter = 0
         # if self.is_blinking_lit:
         #     self.display(10)
         #     self.is_blinking_lit = False
