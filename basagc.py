@@ -23,9 +23,10 @@
 #  by Ronald S. Burkey <info@sandroid.org> (thanks Ronald!)
 
 import sys
+
 from PyQt5.QtWidgets import QApplication, QMainWindow
 
-from basagc import new_gui
+from basagc import gui
 
 if __name__ == "__main__":
 
@@ -37,7 +38,7 @@ if __name__ == "__main__":
 
     #from basagc.computer import Computer
     main_window = QMainWindow()
-    gui = new_gui.GUI()
+    gui = gui.GUI()
     gui.setup_ui(main_window)
     main_window.show()
     #computer = Computer(gui)

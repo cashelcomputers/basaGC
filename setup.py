@@ -1,8 +1,8 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
-from basagc import config
-
 from distutils.core import setup
+
+from basagc import config
 
 setup(
     name='basaGC',
@@ -13,5 +13,5 @@ setup(
     author=config.DEVELOPERS,
     author_email='cashelcomputers@gmail.com',
     description='A implementation of the Apollo Guidance Computer for Kerbal Space Program',
-    requires=[]
+    requires=['PyQt5', ]
 )

@@ -75,7 +75,7 @@ class NounNotAcceptableError(Exception):
 # ------------------------BEGIN BASE CLASS DEFINITIONS---------------------------
 
 
-class Verb(object):
+class Verb:
 
     """ Base class for verbs
     """
@@ -306,7 +306,7 @@ class MonitorVerb(DisplayVerb):
 
         """ a simple wrapper to call the display update method """
 
-        # if not self.activity_timer.IsRunning():
+        # if not self.activity_timer.active():
         #     self.activity_timer.Start(1000)
         self._send_output()
 
@@ -928,7 +928,7 @@ class Verb34(Verb):
         if dsky.backgrounded_update:
             utils.log("Terminating backgrounded update")
             dsky.backgrounded_update.terminate()
-            if dsky.annunciators["key_rel"].blink_timer.IsRunning():
+            if dsky.annunciators["key_rel"].blink_timer.active():
                 dsky.annunciators["key_rel"].stop_blink()
         if gc.running_program:
             utils.log("Terminating active program {}".format(gc.running_program.number))
@@ -945,6 +945,8 @@ class Verb35(Verb):
 
     """Lamp test"""
 
+    stop_timer = QTimer()
+
     def __init__(self, noun):
 
         """ Class constructor
@@ -952,7 +954,8 @@ class Verb35(Verb):
         """
 
         super(Verb35, self).__init__(name="Test lights", verb_number="35", noun=noun)
-        self.stop_timer = QTimer()
+
+        Verb35.stop_timer.timeout.connect(self.terminate)
         self.loop_counter = 0
 
     def execute(self):
@@ -978,13 +981,14 @@ class Verb35(Verb):
             if name != "program":
                 register.start_blink()
 
-        QTimer.singleShot(5000, self.terminate)
+        Verb35.stop_timer.start(5000)
 
     def terminate(self):
 
         """ Terminates the verb.
         :return: None
         """
+        self.stop_timer.stop()
         print("GOO")
         for annunciator in dsky.annunciators.values():
             annunciator.off()

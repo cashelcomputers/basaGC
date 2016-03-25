@@ -23,303 +23,9 @@
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>import wx
 
-# from PyQt5.QtCore import QTimer
-
-
 import utils
 import verbs
 
-
-class NumericDigit:
-    """ A numeric digit.
-    """
-
-    def __init__(self):
-
-        """ Class constructor.
-        :return: None
-        """
-        self.current_value = None
-        self.is_blinking = False
-        self.is_blinking_lit = True
-        self.blink_value = None
-        self.last_value = None
-        # setup blink timers
-        # self.blink_timer = QTimer()
-        # self.blink_timer.timeout.connect(self._blink)
-
-        self.current_value = "blank"
-
-    def set_tooltip(self, tooltip):
-
-        """ Sets the wxPython tooltip to the provided value.
-        :param tooltip: The tooltip to display.
-        :return: None
-        """
-
-        #self.widget.SetToolTipString(tooltip)
-
-    def start_blink(self, value=None):
-
-        """ Starts the digit blinking.
-        :param value: Value to blink with
-        :return: None
-        """
-
-        if value:
-            self.blink_value = value
-        else:
-            self.blink_value = self.current_value
-        self.is_blinking = True
-
-        self.blink_timer.Start(500)
-
-    def _blink(self, event):
-
-        if self.is_blinking_lit:
-            self.display("blank")
-            self.is_blinking_lit = False
-        else:
-            self.display(self.blink_value)
-            self.is_blinking_lit = True
-
-    def stop_blink(self):
-
-        """ Stops the digit blinking.
-        :return: None
-        """
-
-        self.blink_timer.Stop()
-        self.display(self.blink_value)
-        self.blink_value = None
-
-    def blank(self):
-
-        """ Blanks the digit.
-        :return: None
-        """
-
-        self.last_value = self.current_value
-        self.display("blank")
-
-    def display(self, new_value):
-
-        """ Displays the required number on the digit.
-        :param new_value: the value to display (string)
-        :return: None
-        """
-
-        if new_value == "0":
-            self.widget.setPixmap(self._digit_0)
-        elif new_value == "1":
-            self.widget.setPixmap(self._digit_1)
-        elif new_value == "2":
-            self.widget.setPixmap(self._digit_2)
-        elif new_value == "3":
-            self.widget.setPixmap(self._digit_3)
-        elif new_value == "4":
-            self.widget.setPixmap(self._digit_4)
-        elif new_value == "5":
-            self.widget.setPixmap(self._digit_5)
-        elif new_value == "6":
-            self.widget.setPixmap(self._digit_6)
-        elif new_value == "7":
-            self.widget.setPixmap(self._digit_7)
-        elif new_value == "8":
-            self.widget.setPixmap(self._digit_8)
-        elif new_value == "9":
-            self.widget.setPixmap(self._digit_9)
-        elif new_value == "blank":
-            self.widget.setPixmap(self._digit_blank)
-        elif new_value == "b":
-            self.widget.setPixmap(self._digit_blank)
-        self.current_value = new_value
-        if self.is_blinking:
-            if new_value != "blank":
-                self.blink_value = new_value
-
-
-class SignDigit:
-    """ A class for a plus or minus digit.
-    """
-
-    def __init__(self):
-
-        """ Class constructor.
-        :param dsky: the DSKY instance to use
-        :param panel: wxPython panel to display on
-        :return: None
-        """
-
-    def set_tooltip(self, tooltip):
-
-        """ Sets the wxPython tooltip to the provided value.
-        :param tooltip: The tooltip to display.
-        :return: None
-        """
-
-        # TODO: emit signal
-
-    def plus(self):
-
-        """ Sets the digit to "+"
-        :return: None
-        """
-
-        # TODO: emit signal
-
-    def minus(self):
-
-        """ Sets the digit to "-"
-        :return: None
-        """
-
-        # TODO: emit signal
-
-    def blank(self):
-
-        """ Blanks the digit.
-        :return: None
-        """
-
-        # TODO: emit signal
-
-
-
-class DataRegister:
-    """ A class for the data registers
-    """
-
-    def __init__(self, name):
-
-        """ Class constructor.
-        :param dsky: the DSKY instance to use
-        :return: None
-        """
-        self.name = name
-        self.sign = SignDigit()
-        self.digits = [
-            NumericDigit(),
-            NumericDigit(),
-            NumericDigit(),
-            NumericDigit(),
-            NumericDigit(),
-        ]
-
-    def display(self, value):
-
-        """ Displays a given value on the whole data register (including sign).
-        :param value: The value to display
-        :return: None
-        """
-
-        # some value length checks
-        value_length = len(value)
-        if value_length > 6:
-            utils.log("Too many digits passed to display(), got {} digits".format(value_length), log_level="ERROR")
-            return
-        elif value_length == 5:
-            utils.log("display() received only 5 digits, assuming sign is blank", log_level="WARNING")
-
-        elif value_length < 5:
-            utils.log("display() received {} digits, padding with zeros to the left".format(value_length),
-                      log_level="WARNING")
-            value.zfill(5)
-
-
-
-        # if value[0] == "-":
-        #     self.sign.minus()
-        #     value = value[1:]
-        # elif value[0] == "+":
-        #     self.sign.plus()
-        #     value = value[1:]
-        # elif value[0] == "b":
-        #     self.sign.blank()
-        #     value = value[1:]
-        # else:
-        #     self.sign.blank()
-
-        # display each digit
-        for index, digit in enumerate(value):
-            self.digits[index].display(digit)
-
-    def blank(self):
-
-        """ Blanks the whole data register.
-        :return: None
-        """
-
-        self.sign.blank()
-        for digit in self.digits:
-            digit.display("blank")
-
-    def set_tooltip(self, tooltip):
-
-        """ Sets the wxPython tooltip to the provided value.
-        :param tooltip: The tooltip to display.
-        :return: None
-        """
-        pass
-        for digit in self.digits:
-            pass
-            # TODO: emit signal
-
-    def start_blink(self):
-        pass
-        for digit in self.digits:
-            pass
-            # TODO: emit signal
-
-    def stop_blink(self):
-
-        pass
-        for digit in self.digits:
-            pass
-            # TODO: emit signal
-
-
-class ControlRegister:
-    """ A class for the control registers.
-    """
-
-
-    def __init__(self, name):
-
-        """ Class constructor.
-        :param dsky: the DSKY instance to use
-        :param name: Name of the control register.
-        :return: None
-        """
-
-        self.name = name
-        self.digits = {
-            1: NumericDigit(),
-            2: NumericDigit(),
-        }
-
-    def display(self, value):
-
-        """ Displays the given value on the whole control register.
-        :param value: The value to display.
-        :return:
-        """
-        print(value)
-        #self.display_signal = pyqtSignal(str)
-        ControlRegister.display_signal.connect()
-
-    def blank(self):
-
-        """ Blanks the whole control register.
-        :return: None
-        """
-
-        self.display(["blank", "blank"])
-
-    def start_blink(self):
-        for digit in list(self.digits.values()):
-            pass
-            # TODO: emit signal
 
 class DSKY:
     """ This class models the DSKY.
@@ -334,10 +40,7 @@ class DSKY:
         """
 
         self.computer = computer
-        # self.display_update_timer = wx.Timer(frame)
-        # frame.Bind(wx.EVT_TIMER, self.display_update, self.display_update_timer)
-        # self.comp_acty_timer = wx.Timer(frame)
-        # frame.Bind(wx.EVT_TIMER, self.stop_comp_acty_flash, self.comp_acty_timer)
+
         self.input_data_buffer = ""
         self.register_index = 0
         self.is_verb_being_loaded = False
@@ -382,28 +85,6 @@ class DSKY:
             "verb": self.computer.ui.control_registers["verb"],
             "noun": self.computer.ui.control_registers["noun"],
         }
-
-        # self.keyboard = {
-        #     "verb": KeyPress(),
-        #     "noun": KeyPress(),
-        #     "plus": KeyPress(),
-        #     "minus": KeyPress(),
-        #     0: KeyPress(),
-        #     1: KeyPress(),
-        #     2: KeyPress(),
-        #     3: KeyPress(),
-        #     4: KeyPress(),
-        #     5: KeyPress(),
-        #     6: KeyPress(),
-        #     7: KeyPress(),
-        #     8: KeyPress(),
-        #     9: KeyPress(),
-        #     "clear": KeyPress(),
-        #     "proceed": KeyPress(),
-        #     "key_release": KeyPress(),
-        #     "enter": KeyPress(),
-        #     "reset": KeyPress(),
-        # }
 
 
     def operator_error(self, message=None):
@@ -468,10 +149,10 @@ class DSKY:
         :return: None
         """
 
+        self.control_registers["verb"].digits[0].start_blink()
         self.control_registers["verb"].digits[1].start_blink()
-        self.control_registers["verb"].digits[2].start_blink()
+        self.control_registers["noun"].digits[0].start_blink()
         self.control_registers["noun"].digits[1].start_blink()
-        self.control_registers["noun"].digits[2].start_blink()
 
     def verb_noun_flash_off(self):
 
@@ -627,7 +308,8 @@ class DSKY:
             if isinstance(self.display_location_to_load, DataRegister):
                 self.display_location_to_load.display(sign="", value=self.input_data_buffer)
             else:
-                self.display_location_to_load.display(value=self.input_data_buffer)
+                print(self.input_data_buffer)
+                self.display_location_to_load.display(self.input_data_buffer)
             # self.is_noun_being_loaded = True
             return
 
@@ -734,8 +416,8 @@ class DSKY:
         """
 
         self.computer.reset_alarm_codes()
-        for annunciator in list(self.annunciators.values()):
-            if annunciator.blink_timer.IsRunning():
+        for annunciator in self.annunciators.values():
+            if annunciator.blink_timer.active():
                 annunciator.stop_blink()
             annunciator.off()
 
