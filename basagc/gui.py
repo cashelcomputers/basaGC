@@ -3,13 +3,16 @@ import sys
 import config
 from PyQt5 import QtCore, QtGui, QtWidgets
 from computer import Computer
+from config import BLANK
 
+gui_instance = None
 
 class ControlRegister:
 
-    def __init__(self, central_widget, *digits):
+    def __init__(self, central_widget, name, *digits):
 
         self.central_widget = central_widget
+        self.name = name
         self.verb_35_timer = QtCore.QTimer()
         self.digits = [
             digits[0],
@@ -17,14 +20,27 @@ class ControlRegister:
         ]
     
     def start_verb_35_blink(self):
-        self.digits[0].start_blink()
-        self.digits[1].start_blink()
+        
+        if self.name != "program":
+            self.digits[0].start_blink()
+            self.digits[1].start_blink()
+        else:
+            self.display("88")
+            
         self.verb_35_timer.singleShot(5000, self.stop_verb_35_blink)
     
     def stop_verb_35_blink(self):
         self.digits[0].stop_blink()
         self.digits[1].stop_blink()
-    
+        if self.name == "program":
+            self.display(BLANK)
+        else:
+            self.display("88")
+        for annunciator in gui_instance.annunciators.values():
+            annunciator.off()
+            
+        
+        
     def display(self, data):
 
         self.digits[0].display(data[0])
@@ -36,7 +52,7 @@ class ControlRegister:
         :return: None
         """
 
-        self.display([10, 10])
+        self.display(BLANK)
 
     # def start_blink(self, count=None):
     #     self.digits[0].start_blink(count)
@@ -223,12 +239,12 @@ class Digit(QtWidgets.QLabel):
     def flip(self):
 
         self.display(self.last_value)
-        if self.blink_number_requested > 0:
-            self.blink_counter += 1
-            if self.blink_counter == self.blink_number_requested:
-                self.blink_timer.stop()
-                self.blink_number_requested = 0
-                self.blink_counter = 0
+        # if self.blink_number_requested > 0:
+        #     self.blink_counter += 1
+        #     if self.blink_counter == self.blink_number_requested:
+        #         self.blink_timer.stop()
+        #         self.blink_number_requested = 0
+        #         self.blink_counter = 0
         # if self.is_blinking_lit:
         #     self.display(10)
         #     self.is_blinking_lit = False
@@ -255,7 +271,8 @@ class GUI:
     def __init__(self, main_window):
         
         """Class constructor."""
-        
+        global gui_instance
+        gui_instance = self
         self.main_window = main_window
         self.main_window.setObjectName("MainWindow")
         self.main_window.resize(572, 658)
@@ -388,6 +405,7 @@ class GUI:
 
         self.control_registers = {
             "program": ControlRegister(self.centralwidget,
+                                       "program",
                                        Digit(self.centralwidget,
                                              name="control_register:program:1",
                                              geometry=QtCore.QRect(452, 46, 32, 45)),
@@ -395,6 +413,7 @@ class GUI:
                                              name="control_register:program:2",
                                              geometry=QtCore.QRect(484, 46, 32, 45))),
             "verb": ControlRegister(self.centralwidget,
+                                    "verb",
                                     Digit(self.centralwidget,
                                           name="control_register:verb:1",
                                           geometry=QtCore.QRect(324, 129, 32, 45)),
@@ -402,6 +421,7 @@ class GUI:
                                           name="control_register:verb:2",
                                           geometry=QtCore.QRect(356, 129, 32, 45))),
             "noun": ControlRegister(self.centralwidget,
+                                    "noun",
                                     Digit(self.centralwidget,
                                           name="control_register:noun:1",
                                           geometry=QtCore.QRect(452, 129, 32, 45)),
@@ -730,6 +750,7 @@ class GUI:
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        
 
     @QtCore.pyqtSlot()
     def accept_data_to_display(self, data):

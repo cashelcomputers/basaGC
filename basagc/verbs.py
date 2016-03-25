@@ -951,6 +951,7 @@ class Verb35(Verb):
         """
 
         super(Verb35, self).__init__(name="Test lights", verb_number="35", noun=noun)
+        #self.flash_timer = QtCore.QTimer()
         self.loop_counter = 0
 
     def execute(self):
@@ -970,11 +971,12 @@ class Verb35(Verb):
             #     digit.display("8")
 
         #commands the control registers
-        for name, register in dsky.control_registers.items():
+        for register in dsky.control_registers.values():
             register.display([10,10])
             register.display("88")
-            if name != "program":
-                register.start_verb_35_blink()
+            register.start_verb_35_blink()
+            
+        #self.flash_timer.singleShot(5000, self.terminate)
 
 
     def terminate(self):
@@ -987,12 +989,10 @@ class Verb35(Verb):
             annunciator.off()
         for name, register in dsky.control_registers.items():
             if name == "program":
-                register.display([10,10])
-            # else:
-            #     for digit in list(register.digits.values()):
-            #         digit.stop_blink()
-            #         digit.display("8")
-
+                register.display([10, 10])
+            else:
+                register.display("88")
+                
     def stop_timer_event(self, event):
 
         """ Event handler for when the timer stops

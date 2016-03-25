@@ -72,6 +72,8 @@ KEY_IDS = {
     "18": "R",
 }
 
+BLANK = [10, 10]
+
 TELEMACHUS_BODY_IDS = {
     "Kerbol": "0",
     "Kerbin": "1",
