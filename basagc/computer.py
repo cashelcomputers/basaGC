@@ -25,6 +25,7 @@
 #  <info@sandroid.org>
 
 import config
+import dsky
 import nouns
 import programs
 import routines
@@ -38,16 +39,16 @@ class Computer:
     """ This object models the core of the guidance computer.
     """
 
-    def __init__(self):
+    def __init__(self, ui):
 
         """ Class constructor.
         :param gui: the wxPython frame object
         :return: None
         """
         utils.log(message="\n\n" + config.SHORT_LICENCE + "\n", log_level="INFO")
-
+        self.ui = ui
         # this has to go here, so we can init the widgets first
-        import dsky
+
         self.dsky = dsky.DSKY(self)
 
         # self.loop_timer = QTimer()

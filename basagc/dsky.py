@@ -25,9 +25,7 @@
 
 # from PyQt5.QtCore import QTimer
 
-from PyQt5.QtCore import pyqtSignal
 
-import config
 import utils
 import verbs
 
@@ -187,71 +185,6 @@ class SignDigit:
         # TODO: emit signal
 
 
-class Annunciator:
-    """ A class for annunciators.
-    """
-
-    def __init__(self, name=None):
-
-        """ Class constructor.
-        :param dsky: the DSKY instance to use
-        :param panel: wxPython panel to display on
-        :param name: Name of the annunciator
-        :return: None
-        """
-
-        self.name = name
-        self.is_lit = False
-        self.requested_state = False
-
-        # setup blink timer
-        # self.blink_timer = QTimer()
-        # self.blink_timer.timeout.connect(self._blink)
-
-    def start_blink(self, interval=500):
-
-        """ Starts the annunciator blinking.
-        :param interval: the blink interval
-        :return: None
-        """
-
-        self.blink_timer.start(interval)
-
-    def stop_blink(self):
-
-        """ Stops the annunciator blinking.
-        :return: None
-        """
-
-        self.blink_timer.stop()
-        self.off()
-
-    def _blink(self, event):
-        """ Blinks indicator """
-
-        if self.is_lit:
-            self.off()
-        else:
-            self.on()
-
-    def on(self):
-
-        """ Illuminates the annunciator.
-        :return: None
-        """
-
-        # TODO: emit signal
-        self.is_lit = True
-
-    def off(self):
-
-        """ Deluminates the annunciator.
-        :return: None
-        """
-
-        # TODO: emit signal
-        self.is_lit = False
-
 
 class DataRegister:
     """ A class for the data registers
@@ -263,7 +196,6 @@ class DataRegister:
         :param dsky: the DSKY instance to use
         :return: None
         """
-        self.display_signal = pyqtSignal()
         self.name = name
         self.sign = SignDigit()
         self.digits = [
@@ -294,17 +226,7 @@ class DataRegister:
                       log_level="WARNING")
             value.zfill(5)
 
-        self.display_signal = pyqtSignal({
-            "type": "update_data_register",
-            "register": self.name,
-            "digit_sign": value[0],
-            "digit_1": value[1],
-            "digit_2": value[2],
-            "digit_3": value[3],
-            "digit_4": value[4],
-            "digit_5": value[5],
-        })
-        self.display_signal.emit()
+
 
         # if value[0] == "-":
         #     self.sign.minus()
@@ -361,6 +283,7 @@ class ControlRegister:
     """ A class for the control registers.
     """
 
+
     def __init__(self, name):
 
         """ Class constructor.
@@ -369,7 +292,6 @@ class ControlRegister:
         :return: None
         """
 
-        self.display_signal = pyqtSignal()
         self.name = name
         self.digits = {
             1: NumericDigit(),
@@ -382,14 +304,9 @@ class ControlRegister:
         :param value: The value to display.
         :return:
         """
-
-        self.display_signal = pyqtSignal({
-            "type": "update_control_register",
-            "register": self.name,
-            "digit_1": value[0],
-            "digit_2": value[1]
-        })
-        self.display_signal.emit()
+        print(value)
+        #self.display_signal = pyqtSignal(str)
+        ControlRegister.display_signal.connect()
 
     def blank(self):
 
@@ -441,29 +358,29 @@ class DSKY:
         self.display_location_to_load = None
 
         self.annunciators = {
-            "uplink_acty": Annunciator(name="uplink_acty"),
-            "temp": Annunciator(name="temp"),
-            "no_att": Annunciator(name="no_att"),
-            "gimbal_lock": Annunciator(name="gimbal_lock"),
-            "stby": Annunciator(name="stby"),
-            "prog": Annunciator(name="prog"),
-            "key_rel": Annunciator(name="key_rel"),
-            "restart": Annunciator(name="restart"),
-            "opr_err": Annunciator(name="opr_err"),
-            "tracker": Annunciator(name="tracker"),
-            "comp_acty": Annunciator(name="comp_acty"),
+            "uplink_acty": self.computer.ui.annunciators["uplink_acty"],
+            "temp": self.computer.ui.annunciators["temp"],
+            "no_att": self.computer.ui.annunciators["no_att"],
+            "gimbal_lock": self.computer.ui.annunciators["gimbal_lock"],
+            "stby": self.computer.ui.annunciators["stby"],
+            "prog": self.computer.ui.annunciators["prog"],
+            "key_rel": self.computer.ui.annunciators["key_rel"],
+            "restart": self.computer.ui.annunciators["restart"],
+            "opr_err": self.computer.ui.annunciators["opr_err"],
+            "tracker": self.computer.ui.annunciators["tracker"],
+            "comp_acty": self.computer.ui.annunciators["comp_acty"],
         }
 
-        self.registers = {
-            1: DataRegister(name="data_register_1"),
-            2: DataRegister(name="data_register_2"),
-            3: DataRegister(name="data_register_3"),
+        self.data_registers = {
+            1: self.computer.ui.data_registers[1],
+            2: self.computer.ui.data_registers[2],
+            3: self.computer.ui.data_registers[3],
         }
 
         self.control_registers = {
-            "program": ControlRegister("program"),
-            "verb": ControlRegister("verb"),
-            "noun": ControlRegister("noun"),
+            "program": self.computer.ui.control_registers["program"],
+            "verb": self.computer.ui.control_registers["verb"],
+            "noun": self.computer.ui.control_registers["noun"],
         }
 
         # self.keyboard = {
@@ -540,7 +457,7 @@ class DSKY:
         # if PROCEED is a valid option, don't blank the data register (user needs to be able to see value :)
         if not is_proceed_available:
             if isinstance(display_location, DataRegister):
-                for register in list(self.registers.values()):
+                for register in list(self.data_registers.values()):
                     register.blank()
             else:
                 display_location.blank()
@@ -738,11 +655,11 @@ class DSKY:
             self.operator_error("Expected a number for verb choice")
             return
         elif self.verb_position == 0:
-            self.control_registers["verb"].digits[1].display(keypress)
+            self.control_registers["verb"].digits[0].display(keypress)
             self.requested_verb = keypress
             self.verb_position = 1
         elif self.verb_position == 1:
-            self.control_registers["verb"].digits[2].display(keypress)
+            self.control_registers["verb"].digits[1].display(keypress)
             self.requested_verb += keypress
             self.verb_position = 2
 
@@ -891,3 +808,9 @@ class DSKY:
 
         self.requested_noun = noun
         self.control_registers["noun"].display(noun)
+
+    def key_button_input(self):
+        self.computer.ui.key_press_signal.connect(self.foob)
+
+    def foob(self):
+        print("K")

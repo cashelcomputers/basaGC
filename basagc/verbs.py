@@ -23,16 +23,17 @@
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org> (thanks Ronald!)
 
-import sys
 import inspect
 import logging
+import sys
 from collections import OrderedDict
 
-import nouns
 import config
-from telemachus import KSPNotConnected, TelemetryNotAvailable
-import utils
+import nouns
 import programs
+import utils
+from PyQt5.QtCore import QTimer
+from telemachus import KSPNotConnected, TelemetryNotAvailable
 
 gc = None
 dsky = None
@@ -951,9 +952,8 @@ class Verb35(Verb):
         """
 
         super(Verb35, self).__init__(name="Test lights", verb_number="35", noun=noun)
-        self.stop_timer = wx.Timer(frame)
+        self.stop_timer = QTimer()
         self.loop_counter = 0
-        frame.Bind(wx.EVT_TIMER, self.stop_timer_event, self.stop_timer)
 
     def execute(self):
 
@@ -962,23 +962,22 @@ class Verb35(Verb):
         """
 
         # commands the annunciators
-        for annunciator in list(dsky.annunciators.values()):
+        for annunciator in dsky.annunciators.values():
             annunciator.on()
         #commands the data registers
-        for register in list(dsky.registers.values()):
-            register.sign.plus()
-            for digit in register.digits:
-                digit.display("8")
+        for register in dsky.data_registers.values():
+            register.display("+88888")
+            # register.sign.plus()
+            # for digit in register.digits:
+            #     digit.display("8")
+
         #commands the control registers
-        for name, register in list(dsky.control_registers.items()):
-            if name == "program":
-                for digit in list(register.digits.values()):
-                    digit.display("8")
-            else:
-                for digit in list(register.digits.values()):
-                    digit.display("8")
-                    digit.start_blink()
-        self.stop_timer.Start(5000, oneShot=True)
+        for name, register in dsky.control_registers.items():
+            register.display("88")
+            if name != "program":
+                register.start_blink()
+
+        self.stop_timer.singleShot(5000, self.terminate)
 
     def terminate(self):
 

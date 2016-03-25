@@ -34,8 +34,9 @@ if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
-    computer = Computer()
+
     ui = new_gui.Ui_MainWindow(MainWindow)
+    computer = Computer(ui)
     new_gui.CHARIN = computer.dsky.charin
     MainWindow.show()
 
