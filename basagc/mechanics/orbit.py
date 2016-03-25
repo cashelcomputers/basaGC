@@ -22,9 +22,10 @@
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org> (thanks Ronald!)
 
-from basagc.telemachus import get_telemetry
-from basagc import utils
 from basagc import config
+from basagc import utils
+from basagc.telemachus import get_telemetry
+
 
 class Orbit(object):
 
