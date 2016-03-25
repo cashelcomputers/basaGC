@@ -494,5 +494,3 @@ class DSKY:
     def key_button_input(self):
         self.computer.ui.key_press_signal.connect(self.foob)
 
-    def foob(self):
-        print("K")

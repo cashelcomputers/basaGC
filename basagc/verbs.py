@@ -32,7 +32,6 @@ import config
 import nouns
 import programs
 import utils
-from PyQt5.QtCore import QTimer
 from telemachus import KSPNotConnected, TelemetryNotAvailable
 
 gc = None
@@ -945,8 +944,6 @@ class Verb35(Verb):
 
     """Lamp test"""
 
-    stop_timer = QTimer()
-
     def __init__(self, noun):
 
         """ Class constructor
@@ -954,8 +951,6 @@ class Verb35(Verb):
         """
 
         super(Verb35, self).__init__(name="Test lights", verb_number="35", noun=noun)
-
-        Verb35.stop_timer.timeout.connect(self.terminate)
         self.loop_counter = 0
 
     def execute(self):
@@ -979,17 +974,15 @@ class Verb35(Verb):
             register.display([10,10])
             register.display("88")
             if name != "program":
-                register.start_blink()
+                register.start_verb_35_blink()
 
-        Verb35.stop_timer.start(5000)
 
     def terminate(self):
 
         """ Terminates the verb.
         :return: None
         """
-        self.stop_timer.stop()
-        print("GOO")
+        
         for annunciator in dsky.annunciators.values():
             annunciator.off()
         for name, register in dsky.control_registers.items():

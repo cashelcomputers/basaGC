@@ -10,11 +10,21 @@ class ControlRegister:
     def __init__(self, central_widget, *digits):
 
         self.central_widget = central_widget
+        self.verb_35_timer = QtCore.QTimer()
         self.digits = [
             digits[0],
             digits[1],
         ]
-
+    
+    def start_verb_35_blink(self):
+        self.digits[0].start_blink()
+        self.digits[1].start_blink()
+        self.verb_35_timer.singleShot(5000, self.stop_verb_35_blink)
+    
+    def stop_verb_35_blink(self):
+        self.digits[0].stop_blink()
+        self.digits[1].stop_blink()
+    
     def display(self, data):
 
         self.digits[0].display(data[0])
@@ -28,9 +38,9 @@ class ControlRegister:
 
         self.display([10, 10])
 
-    def start_blink(self, count=None):
-        self.digits[0].start_blink(count)
-        self.digits[1].start_blink(count)
+    # def start_blink(self, count=None):
+    #     self.digits[0].start_blink(count)
+    #     self.digits[1].start_blink(count)
 
 class DataRegister:
 
@@ -206,6 +216,9 @@ class Digit(QtWidgets.QLabel):
             self.blink_counter = 0
             self.blink_number_requested = count
         self.blink_timer.start(500)
+    
+    def stop_blink(self):
+        self.blink_timer.stop()
 
     def flip(self):
 
