@@ -147,7 +147,7 @@ class Program11(Program):
             return
 
         # --> call average G integration with ΔV integration
-        gc.run_average_g_routine = True
+        #gc.run_average_g_routine = True
 
         # --> terminate gyrocompassing
         if "02" in gc.running_programs:

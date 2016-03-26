@@ -177,7 +177,7 @@ class Computer:
             self.dsky.annunciators["no_att"].on()
         else:
             utils.log("Retrieved telemetry listing", log_level="INFO")
-        #self.main_loop_timer.start(config.LOOP_TIMER_INTERVAL)
+        self.main_loop_timer.start(config.LOOP_TIMER_INTERVAL)
         self.is_powered_on = True
 
     def main_loop(self):
