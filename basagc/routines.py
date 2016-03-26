@@ -25,11 +25,11 @@
 #  <info@sandroid.org>
 import math
 
-import config
-import telemachus
-import utils
-from config import TELEMACHUS_BODY_IDS
-from telemachus import get_telemetry
+from . import config
+from . import telemachus
+from . import utils
+from .config import TELEMACHUS_BODY_IDS
+from .telemachus import get_telemetry
 
 gc = None
 

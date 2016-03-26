@@ -26,7 +26,7 @@
 import logging
 import time
 
-import config
+from . import config
 
 LOG_VIEWER = None
 

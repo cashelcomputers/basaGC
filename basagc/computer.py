@@ -24,16 +24,16 @@
 #  (http://www.ibiblio.org/apollo/index.html) by Ronald S. Burkey
 #  <info@sandroid.org>
 
-import config
-import dsky
-import nouns
-import programs
-import routines
-import telemachus
-import utils
-import verbs
-
 from PyQt5.QtCore import QTimer
+
+from . import config
+from . import dsky
+from . import nouns
+from . import programs
+from . import routines
+from . import telemachus
+from . import utils
+from . import verbs
 
 
 class Computer:

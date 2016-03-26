@@ -27,10 +27,10 @@ import inspect
 import sys
 from collections import OrderedDict
 
-import config
-import utils
-from routines import Burn
-from telemachus import get_telemetry, KSPNotConnected
+from . import config
+from . import utils
+from .routines import Burn
+from .telemachus import get_telemetry, KSPNotConnected
 
 gc = None
 dsky = None

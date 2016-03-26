@@ -28,8 +28,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-import config
-import utils
+from . import config
+from . import utils
 
 telemetry = {}
 commands = {}

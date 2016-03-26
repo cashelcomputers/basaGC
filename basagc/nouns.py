@@ -23,13 +23,13 @@
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>
 
-from collections import OrderedDict
 import inspect
 import sys
+from collections import OrderedDict
 
-from telemachus import get_telemetry, TelemetryNotAvailable
-import utils
-import config
+from . import config
+from . import utils
+from .telemachus import get_telemetry, TelemetryNotAvailable
 
 gc = None
 

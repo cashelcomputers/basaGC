@@ -1,11 +1,13 @@
 import sys
 
-import config
 from PyQt5 import QtCore, QtGui, QtWidgets
-from computer import Computer
-from config import BLANK
+
+from . import config
+from .computer import Computer
+from .config import BLANK
 
 gui_instance = None
+
 
 class ControlRegister:
 
@@ -297,7 +299,7 @@ class GUI:
 
         # init icon
         self.icon = QtGui.QIcon()
-        self.icon.addPixmap(QtGui.QPixmap("../images/icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.icon.addPixmap(QtGui.QPixmap(config.IMAGES_DIR + "icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.main_window.setWindowIcon(self.icon)
 
         # init central widget
@@ -613,86 +615,86 @@ class GUI:
 
         self.left_frame_left_border.setGeometry(QtCore.QRect(42, 14, 8, 360))
         self.left_frame_left_border.setText("")
-        self.left_frame_left_border.setPixmap(QtGui.QPixmap("../images/FrameVerticalL.jpg"))
+        self.left_frame_left_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameVerticalL.jpg"))
         self.left_frame_left_border.setObjectName("left_frame_left_border")
 
         self.left_frame_bottom_border.setGeometry(QtCore.QRect(50, 362, 211, 16))
         self.left_frame_bottom_border.setText("")
-        self.left_frame_bottom_border.setPixmap(QtGui.QPixmap("../images/FrameHorizontal.jpg"))
+        self.left_frame_bottom_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameHorizontal.jpg"))
         self.left_frame_bottom_border.setObjectName("left_frame_bottom_border")
 
         self.left_frame_right_border.setGeometry(QtCore.QRect(242, 14, 8, 360))
         self.left_frame_right_border.setText("")
-        self.left_frame_right_border.setPixmap(QtGui.QPixmap("../images/FrameVerticalL.jpg"))
+        self.left_frame_right_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameVerticalL.jpg"))
         self.left_frame_right_border.setObjectName("left_frame_right_border")
 
         self.left_frame_top_border.setGeometry(QtCore.QRect(50, 10, 211, 16))
         self.left_frame_top_border.setText("")
-        self.left_frame_top_border.setPixmap(QtGui.QPixmap("../images/FrameHorizontal.jpg"))
+        self.left_frame_top_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameHorizontal.jpg"))
         self.left_frame_top_border.setObjectName("left_frame_top_border")
 
         self.right_frame_right_border.setGeometry(QtCore.QRect(516, 14, 8, 360))
         self.right_frame_right_border.setText("")
-        self.right_frame_right_border.setPixmap(QtGui.QPixmap("../images/FrameVerticalL.jpg"))
+        self.right_frame_right_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameVerticalL.jpg"))
         self.right_frame_right_border.setObjectName("right_frame_right_border")
 
         self.right_frame_bottom_border.setGeometry(QtCore.QRect(324, 362, 211, 16))
         self.right_frame_bottom_border.setText("")
-        self.right_frame_bottom_border.setPixmap(QtGui.QPixmap("../images/FrameHorizontal.jpg"))
+        self.right_frame_bottom_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameHorizontal.jpg"))
         self.right_frame_bottom_border.setObjectName("right_frame_bottom_border")
 
         self.right_frame_top_border.setGeometry(QtCore.QRect(324, 10, 201, 16))
         self.right_frame_top_border.setText("")
-        self.right_frame_top_border.setPixmap(QtGui.QPixmap("../images/FrameHorizontal.jpg"))
+        self.right_frame_top_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameHorizontal.jpg"))
         self.right_frame_top_border.setObjectName("right_frame_top_border")
 
         self.right_frame_left_border.setGeometry(QtCore.QRect(316, 14, 8, 360))
         self.right_frame_left_border.setText("")
-        self.right_frame_left_border.setPixmap(QtGui.QPixmap("../images/FrameVerticalL.jpg"))
+        self.right_frame_left_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameVerticalL.jpg"))
         self.right_frame_left_border.setObjectName("right_frame_left_border")
 
         self.lighting_prog.setGeometry(QtCore.QRect(452, 22, 64, 24))
         self.lighting_prog.setText("")
-        self.lighting_prog.setPixmap(QtGui.QPixmap("../images/rProgOn.jpg"))
+        self.lighting_prog.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "rProgOn.jpg"))
         self.lighting_prog.setObjectName("lighting_prog")
 
         self.lighting_verb.setGeometry(QtCore.QRect(324, 105, 64, 24))
         self.lighting_verb.setText("")
-        self.lighting_verb.setPixmap(QtGui.QPixmap("../images/VerbOn.jpg"))
+        self.lighting_verb.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "VerbOn.jpg"))
         self.lighting_verb.setObjectName("lighting_verb")
         self.lighting_noun.setGeometry(QtCore.QRect(452, 105, 64, 24))
         self.lighting_noun.setText("")
-        self.lighting_noun.setPixmap(QtGui.QPixmap("../images/NounOn.jpg"))
+        self.lighting_noun.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "NounOn.jpg"))
         self.lighting_noun.setObjectName("lighting_noun")
         self.lighting_sep_bar_1 = QtWidgets.QLabel(self.centralwidget)
         self.lighting_sep_bar_1.setGeometry(QtCore.QRect(324, 174, 192, 19))
         self.lighting_sep_bar_1.setText("")
-        self.lighting_sep_bar_1.setPixmap(QtGui.QPixmap("../images/SeparatorOn.jpg"))
+        self.lighting_sep_bar_1.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "SeparatorOn.jpg"))
         self.lighting_sep_bar_1.setObjectName("lighting_sep_bar_1")
         self.lighting_sep_bar_2.setGeometry(QtCore.QRect(324, 238, 192, 19))
         self.lighting_sep_bar_2.setText("")
-        self.lighting_sep_bar_2.setPixmap(QtGui.QPixmap("../images/SeparatorOn.jpg"))
+        self.lighting_sep_bar_2.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "SeparatorOn.jpg"))
         self.lighting_sep_bar_2.setObjectName("lighting_sep_bar_2")
         self.lighting_sep_bar_3.setGeometry(QtCore.QRect(324, 302, 192, 19))
         self.lighting_sep_bar_3.setText("")
-        self.lighting_sep_bar_3.setPixmap(QtGui.QPixmap("../images/SeparatorOn.jpg"))
+        self.lighting_sep_bar_3.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "SeparatorOn.jpg"))
         self.lighting_sep_bar_3.setObjectName("lighting_sep_bar_3")
 
         self.static_display_1 = QtWidgets.QLabel(self.centralwidget)
         self.static_display_1.setGeometry(QtCore.QRect(388, 22, 64, 152))
         self.static_display_1.setText("")
-        self.static_display_1.setPixmap(QtGui.QPixmap("../images/CenterBlock.jpg"))
+        self.static_display_1.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "CenterBlock.jpg"))
         self.static_display_1.setScaledContents(True)
         self.static_display_1.setObjectName("static_display_1")
         self.static_display_2 = QtWidgets.QLabel(self.centralwidget)
         self.static_display_2.setGeometry(QtCore.QRect(452, 89, 64, 19))
         self.static_display_2.setText("")
-        self.static_display_2.setPixmap(QtGui.QPixmap("../images/ShortHorizontal.jpg"))
+        self.static_display_2.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "ShortHorizontal.jpg"))
         self.static_display_2.setObjectName("static_display_2")
         self.static_display_3 = QtWidgets.QLabel(self.centralwidget)
         self.static_display_3.setGeometry(QtCore.QRect(324, 86, 64, 19))
         self.static_display_3.setText("")
-        self.static_display_3.setPixmap(QtGui.QPixmap("../images/ShortHorizontal.jpg"))
+        self.static_display_3.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "ShortHorizontal.jpg"))
         self.static_display_3.setObjectName("static_display_3")
         self.static_display_2.raise_()
         self.static_display_3.raise_()

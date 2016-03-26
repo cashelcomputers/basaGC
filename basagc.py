@@ -26,20 +26,16 @@ import sys
 
 from PyQt5.QtWidgets import QApplication, QMainWindow
 
-from basagc import gui
+from basagc import gui, computer
 
 if __name__ == "__main__":
-
-    # from basagc.gui import BASAGCApp
-    # basaGC = BASAGCApp(0)
-    # basaGC.MainLoop()
-
-    q_app = QApplication(sys.argv)
-
-    #from basagc.computer import Computer
-    main_window = QMainWindow()
-    gui = gui.GUI()
-    gui.setup_ui(main_window)
-    main_window.show()
-    #computer = Computer(gui)
-    sys.exit(q_app.exec_())
+    
+    app = QApplication(sys.argv)
+    MainWindow = QMainWindow()
+    
+    ui = gui.GUI(MainWindow)
+    computer = computer.Computer(ui)
+    ui.CHARIN = computer.dsky.charin
+    MainWindow.show()
+    
+    sys.exit(app.exec_())

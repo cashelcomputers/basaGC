@@ -28,12 +28,13 @@ import logging
 import sys
 from collections import OrderedDict
 
-import config
-import nouns
-import programs
-import utils
 from PyQt5.QtCore import QTimer
-from telemachus import KSPNotConnected, TelemetryNotAvailable
+
+from . import config
+from . import nouns
+from . import programs
+from . import utils
+from .telemachus import KSPNotConnected, TelemetryNotAvailable
 
 gc = None
 dsky = None
