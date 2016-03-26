@@ -38,8 +38,10 @@ class ControlRegister:
             self.display("88")
         for annunciator in gui_instance.annunciators.values():
             annunciator.off()
-            
-        
+
+    def stop_blink(self):
+        self.digits[0].stop_blink()
+        self.digits[1].stop_blink()
         
     def display(self, data):
 
@@ -752,7 +754,6 @@ class GUI:
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         
 
-    @QtCore.pyqtSlot()
     def accept_data_to_display(self, data):
         print("INCOMING DATA: " + data)
 

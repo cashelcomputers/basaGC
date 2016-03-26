@@ -24,13 +24,15 @@
 #  by Ronald S. Burkey <info@sandroid.org>
 
 import json
-import urllib.request, urllib.error, urllib.parse
+import urllib.error
+import urllib.parse
+import urllib.request
 
-import utils
 import config
+import utils
 
-telemetry = None
-commands = None
+telemetry = {}
+commands = {}
 
 
 class TelemetryNotAvailable(Exception):
@@ -62,15 +64,16 @@ def get_api_listing():
     """ Gets the list of API calls provided by Telemachus
     :rtype: dict
     """
-
+    global telemetry
+    global commands
     try:
         response = urllib.request.urlopen(config.URL + "api=a.api")
     except urllib.error.URLError:
         raise KSPNotConnected
-    data = json.load(response)
-    telemetry_available = {}
-    commands_available = {}
-    for a in list(data.values()):
+    response_string = response.read().decode('utf-8')
+    data = json.loads(response_string)
+
+    for a in data.values():
         for b in a:
             if b["apistring"].startswith("b."):
                 name = "body_" + b["apistring"].rsplit(".", 1)[1]
@@ -79,15 +82,12 @@ def get_api_listing():
             elif b["apistring"].startswith("f.") or b["apistring"].startswith("mj.") or \
                     b["apistring"].startswith("v.set"):
                 command = b["apistring"].rsplit(".", 1)[1]
-                commands_available[command] = b["apistring"]
+                commands[command] = b["apistring"]
                 continue
             else:
                 name = b["apistring"].rsplit(".", 1)[1]
-            telemetry_available[name] = b["apistring"]
-    global telemetry
-    global commands
-    telemetry = telemetry_available
-    commands = commands_available
+            telemetry[name] = b["apistring"]
+
 
 
 def get_telemetry(data, body_number=None):
@@ -99,8 +99,9 @@ def get_telemetry(data, body_number=None):
     :type body_number: string
     :rtype: string
     """
-    if telemetry is None:
-        raise TelemetryNotAvailable
+    
+    # if telemetry is None:
+    #     raise TelemetryNotAvailable
     try:
         query_string = data + "=" + telemetry[data]
     except KeyError as e:
@@ -115,7 +116,8 @@ def get_telemetry(data, body_number=None):
         utils.log("Query string: {}".format(query_string), log_level="ERROR")
         utils.log("Caught exception urllib2.URLERROR", log_level="ERROR")
         raise KSPNotConnected
-    json_response = json.load(raw_response)
+    response_string = raw_response.read().decode("utf-8)")
+    json_response = json.loads(response_string)
     return json_response[data]
 
 # def enable_smartass():

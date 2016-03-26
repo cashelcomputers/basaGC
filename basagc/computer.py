@@ -33,6 +33,8 @@ import telemachus
 import utils
 import verbs
 
+from PyQt5.QtCore import QTimer
+
 
 class Computer:
 
@@ -51,13 +53,13 @@ class Computer:
 
         self.dsky = dsky.DSKY(self)
 
-        # self.loop_timer = QTimer()
-        # self.loop_timer.timeout.connect(self.main_loop)
+        self.main_loop_timer = QTimer()
+        self.main_loop_timer.timeout.connect(self.main_loop)
         self.is_powered_on = False
         self.main_loop_table = []
         # self.gui.Bind(wx.EVT_CLOSE, self.quit)
         self.alarm_codes = [0, 0, 0]
-        self.running_program = None
+        self.running_programs = []
         self.noun_data = {
             "30": [],
         }
@@ -83,7 +85,7 @@ class Computer:
         self.nouns = nouns.nouns
         self.verbs = verbs.verbs
         self.programs = programs.programs
-
+        
         self.option_codes = {
             "00001": "",
             "00002": "",
@@ -169,22 +171,21 @@ class Computer:
 
         # attempt to load telemetry listing
         try:
-            telemachus.telemetry = telemachus.get_api_listing()
+            telemachus.get_api_listing()
         except telemachus.KSPNotConnected:
             utils.log("Cannot retrieve telemetry listing - no connection to KSP", log_level="WARNING")
             self.dsky.annunciators["no_att"].on()
         else:
             utils.log("Retrieved telemetry listing", log_level="INFO")
-        # self.loop_timer.start(config.LOOP_TIMER_INTERVAL)
+        #self.main_loop_timer.start(config.LOOP_TIMER_INTERVAL)
         self.is_powered_on = True
-        # TODO: emit signal to turn on static indicators on DSKY
 
     def main_loop(self):
 
         """ The guidance computer main loop.
         :return: None
         """
-
+        
         # Check if we have a connection to KSP
         self.check_ksp_connection()
 
@@ -330,7 +331,7 @@ class Computer:
         """
 
         if self.is_ksp_connected:
-            paused_state = get_telemetry("paused")
+            paused_state = telemachus.get_telemetry("paused")
             # if the paused state hasn't changed, skip any annunciator changes
             if paused_state != self.ksp_paused_state:
                 if paused_state == 0:

@@ -32,6 +32,7 @@ import config
 import nouns
 import programs
 import utils
+from PyQt5.QtCore import QTimer
 from telemachus import KSPNotConnected, TelemetryNotAvailable
 
 gc = None
@@ -223,8 +224,8 @@ class MonitorVerb(DisplayVerb):
     def __init__(self, name, verb_number, noun):
 
         super(MonitorVerb, self).__init__(name, verb_number, noun)
-        self.timer = wx.Timer(frame)  # TODO: try making this a utils.Timer object instead
-        frame.Bind(wx.EVT_TIMER, self._update_display, self.timer)
+        self.timer = QTimer()
+        self.timer.timeout.connect(self._update_display)
         self.is_tooltips_set = False
 
     def _send_output(self):
@@ -232,10 +233,10 @@ class MonitorVerb(DisplayVerb):
         """ Sends the requested output to the DSKY """
 
         # check if the display update interval needs to be changed
-        if self.timer.GetInterval() != config.DISPLAY_UPDATE_INTERVAL:
+        if self.timer.interval() != config.DISPLAY_UPDATE_INTERVAL:
             # stop and start the timer to change the update interval
-            self.timer.Stop()
-            self.timer.Start(config.DISPLAY_UPDATE_INTERVAL)
+            self.timer.stop()
+            self.timer.start(config.DISPLAY_UPDATE_INTERVAL)
 
         if self.noun is None:
             self.noun = gc.dsky.requested_noun
@@ -269,15 +270,15 @@ class MonitorVerb(DisplayVerb):
 
 
         # set tooltips
-        if not self.is_tooltips_set:
-            gc.dsky.registers[1].set_tooltip(data["tooltips"][0])
-            gc.dsky.registers[2].set_tooltip(data["tooltips"][1])
-            gc.dsky.registers[3].set_tooltip(data["tooltips"][2])
-            self.is_tooltips_set = True
+        # if not self.is_tooltips_set:
+        #     gc.dsky.data_registers[1].set_tooltip(data["tooltips"][0])
+        #     gc.dsky.data_registers[2].set_tooltip(data["tooltips"][1])
+        #     gc.dsky.data_registers[3].set_tooltip(data["tooltips"][2])
+        #     self.is_tooltips_set = True
 
         # display data on DSKY registers
         for index, display_line in enumerate(output, start=1):
-            gc.dsky.registers[index].display(display_line)
+            gc.dsky.data_registers[index].display(display_line)
 
         dsky.flash_comp_acty()
 
@@ -296,12 +297,12 @@ class MonitorVerb(DisplayVerb):
         except TelemetryNotAvailable:
             return
 
-        self.timer.Start(config.DISPLAY_UPDATE_INTERVAL)
+        self.timer.start(config.DISPLAY_UPDATE_INTERVAL)
 
     def execute(self):
         super(MonitorVerb, self).execute()
 
-    def _update_display(self, event):
+    def _update_display(self):
 
         """ a simple wrapper to call the display update method """
 
@@ -319,7 +320,7 @@ class MonitorVerb(DisplayVerb):
         dsky.annunciators["key_rel"].off()
         dsky.display_lock = None
         # dsky.backgrounded_update = None
-        self.timer.Stop()
+        self.timer.stop()
         self.noun = None
         # self.activity_timer.Stop()
         # reset tooltips to ""
@@ -335,7 +336,7 @@ class MonitorVerb(DisplayVerb):
 
         dsky.backgrounded_update = self
         dsky.display_lock = None
-        self.timer.Stop()
+        self.timer.stop()
         dsky.annunciators["key_rel"].start_blink()
 
     def resume(self):
@@ -1059,8 +1060,12 @@ class Verb37(Verb):
             dsky.operator_error("Expected exactly two digits, received {} digits".format(len(data)))
             self.terminate()
             return
-        #computer.programs[data].execute()
-        program = gc.programs[data]()
+
+        try:
+            program = gc.programs[data]()
+        except KeyError:
+            dsky.operator_error()
+            return
         program.execute()
 
 #-------------------------------BEGIN EXTENDED VERBS----------------------------

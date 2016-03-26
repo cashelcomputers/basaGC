@@ -40,7 +40,6 @@ class DSKY:
         """
 
         self.computer = computer
-
         self.input_data_buffer = ""
         self.register_index = 0
         self.is_verb_being_loaded = False
@@ -136,12 +135,12 @@ class DSKY:
         self.is_expecting_data = True
         self.display_location_to_load = display_location
         # if PROCEED is a valid option, don't blank the data register (user needs to be able to see value :)
-        if not is_proceed_available:
-            if isinstance(display_location, DataRegister):
-                for register in list(self.data_registers.values()):
-                    register.blank()
-            else:
-                display_location.blank()
+        # if not is_proceed_available:
+        #     if isinstance(display_location, DataRegister):
+        #         for register in list(self.data_registers.values()):
+        #             register.blank()
+        #     else:
+        display_location.blank()
 
     def verb_noun_flash_on(self):
 
@@ -213,10 +212,10 @@ class DSKY:
         """
 
         self.is_expecting_data = False
-        for d in list(self.control_registers["verb"].digits.values()):
+        for d in self.control_registers.values():
             d.stop_blink()
-        for d in list(self.control_registers["noun"].digits.values()):
-            d.stop_blink()
+        # for d in self.control_registers["noun"]:
+        #     d.stop_blink()
 
     def _handle_data_register_load(self, keypress):
 
@@ -284,11 +283,14 @@ class DSKY:
             self.object_requesting_data(self.input_data_buffer)
             self.input_data_buffer = ""
             return
-
-        if isinstance(self.display_location_to_load, DataRegister):
+        
+        if self.display_location_to_load in self.data_registers.items():
             self._handle_data_register_load(keypress)
+        
+        # if isinstance(self.display_location_to_load, DataRegister):
+        #     self._handle_data_register_load(keypress)
 
-        elif isinstance(self.display_location_to_load, ControlRegister):
+        elif self.display_location_to_load in self.control_registers.items():
             self._handle_control_register_load(keypress)
 
         # if the user as entered anything other than a numeric d,
@@ -305,7 +307,7 @@ class DSKY:
         else:
             self.input_data_buffer += keypress
 
-            if isinstance(self.display_location_to_load, DataRegister):
+            if self.display_location_to_load in self.data_registers.items():
                 self.display_location_to_load.display(sign="", value=self.input_data_buffer)
             else:
                 print(self.input_data_buffer)
@@ -370,11 +372,11 @@ class DSKY:
             self.operator_error("Expected a number for noun choice")
             return
         elif self.noun_position == 0:
-            self.control_registers["noun"].digits[1].display(keypress)
+            self.control_registers["noun"].digits[0].display(keypress)
             self.requested_noun = keypress
             self.noun_position = 1
         elif self.noun_position == 1:
-            self.control_registers["noun"].digits[2].display(keypress)
+            self.control_registers["noun"].digits[1].display(keypress)
             self.requested_noun += keypress
             self.noun_position = 2
 
@@ -417,7 +419,7 @@ class DSKY:
 
         self.computer.reset_alarm_codes()
         for annunciator in self.annunciators.values():
-            if annunciator.blink_timer.active():
+            if annunciator.blink_timer.isActive():
                 annunciator.stop_blink()
             annunciator.off()
 
