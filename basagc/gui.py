@@ -18,6 +18,11 @@ class ControlRegister:
             digits[0],
             digits[1],
         ]
+
+    def set_tooltip(self, tooltip):
+    
+        for digit in self.digits:
+            digit.set_tooltip(tooltip)
     
     def start_verb_35_blink(self):
         
@@ -75,7 +80,12 @@ class DataRegister:
 
         ]
         self.display(["b", 10, 10, 10, 10, 10])
-
+    
+    def set_tooltip(self, tooltip):
+        
+        for digit in self.digits:
+            digit.set_tooltip(tooltip)
+    
     def display(self, data):
 
         if isinstance(data, str):
@@ -188,7 +198,10 @@ class SignDigit(QtWidgets.QLabel):
 
         self.setText("")
         self.display("b")
-
+    
+    def set_tooltip(self, tooltip):
+        self.setToolTip(tooltip)
+    
     def display(self, digit_to_display):
         # get pixmap
         image = self.digit_pixmaps[digit_to_display]
@@ -223,7 +236,10 @@ class Digit(QtWidgets.QLabel):
         self.display(10)
         self.blink_counter = 0
         self.blink_number_requested = 0
-
+    
+    def set_tooltip(self, tooltip):
+        self.setToolTip(tooltip)
+    
     def start_blink(self, count=None):
 
         """ Starts the digit blinking.

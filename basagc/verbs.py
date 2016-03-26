@@ -267,14 +267,13 @@ class MonitorVerb(DisplayVerb):
             self.terminate()
             return
         output = self._format_output_data(data)
-
-
+        
         # set tooltips
-        # if not self.is_tooltips_set:
-        #     gc.dsky.data_registers[1].set_tooltip(data["tooltips"][0])
-        #     gc.dsky.data_registers[2].set_tooltip(data["tooltips"][1])
-        #     gc.dsky.data_registers[3].set_tooltip(data["tooltips"][2])
-        #     self.is_tooltips_set = True
+        if not self.is_tooltips_set:
+            gc.dsky.data_registers[1].set_tooltip(data["tooltips"][0])
+            gc.dsky.data_registers[2].set_tooltip(data["tooltips"][1])
+            gc.dsky.data_registers[3].set_tooltip(data["tooltips"][2])
+            self.is_tooltips_set = True
 
         # display data on DSKY registers
         for index, display_line in enumerate(output, start=1):
@@ -324,9 +323,9 @@ class MonitorVerb(DisplayVerb):
         self.noun = None
         # self.activity_timer.Stop()
         # reset tooltips to ""
-        gc.dsky.registers[1].set_tooltip("")
-        gc.dsky.registers[2].set_tooltip("")
-        gc.dsky.registers[3].set_tooltip("")
+        gc.dsky.data_registers[1].set_tooltip("")
+        gc.dsky.data_registers[2].set_tooltip("")
+        gc.dsky.data_registers[3].set_tooltip("")
 
     def background(self):
 
@@ -404,7 +403,7 @@ class Verb01(DisplayVerb):
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
             return
         output = self._format_output_data(noun_data)
-        gc.dsky.registers[1].display(output[0])
+        gc.dsky.data_registers[1].display(output[0])
 
 
 class Verb02(DisplayVerb):
@@ -484,8 +483,8 @@ class Verb04(DisplayVerb):
         noun_function = gc.nouns[gc.dsky.state["requested_noun"]]
         noun_data = noun_function(calling_verb=self)
         output = self._format_output_data(noun_data)
-        gc.dsky.registers[1].display(output[0])
-        gc.dsky.registers[2].display(output[1])
+        gc.dsky.data_registers[1].display(output[0])
+        gc.dsky.data_registers[2].display(output[1])
 
 
 class Verb05(DisplayVerb):
@@ -515,9 +514,9 @@ class Verb05(DisplayVerb):
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
             return
         output = self._format_output_data(noun_data)
-        gc.dsky.registers[1].display(output[0])
-        gc.dsky.registers[2].display(output[1])
-        gc.dsky.registers[3].display(output[2])
+        gc.dsky.data_registers[1].display(output[0])
+        gc.dsky.data_registers[2].display(output[1])
+        gc.dsky.data_registers[3].display(output[2])
 
 
 class Verb06(DisplayVerb):
@@ -548,13 +547,13 @@ class Verb06(DisplayVerb):
             return
         output = self._format_output_data(noun_data)
 
-        gc.dsky.registers[1].set_tooltip(noun_data["tooltips"][0])
-        gc.dsky.registers[2].set_tooltip(noun_data["tooltips"][1])
-        gc.dsky.registers[3].set_tooltip(noun_data["tooltips"][2])
+        gc.dsky.data_registers[1].set_tooltip(noun_data["tooltips"][0])
+        gc.dsky.data_registers[2].set_tooltip(noun_data["tooltips"][1])
+        gc.dsky.data_registers[3].set_tooltip(noun_data["tooltips"][2])
         
-        gc.dsky.registers[1].display(output[0])
-        gc.dsky.registers[2].display(output[1])
-        gc.dsky.registers[3].display(output[2])
+        gc.dsky.data_registers[1].display(output[0])
+        gc.dsky.data_registers[2].display(output[1])
+        gc.dsky.data_registers[3].display(output[2])
 
         # if self.data is None:
         #     noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
@@ -1372,7 +1371,7 @@ class Verb99(ExtendedVerb):
         # blank the DSKY
         for register in list(gc.dsky.control_registers.values()):
             register.blank()
-        for register in list(gc.dsky.registers.values()):
+        for register in list(gc.dsky.data_registers.values()):
             register.blank()
 
         # re-display the verb number since the register has been blanked
