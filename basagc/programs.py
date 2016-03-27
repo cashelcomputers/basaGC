@@ -27,6 +27,7 @@ import inspect
 import sys
 from collections import OrderedDict
 
+from . import routines
 from . import config
 from . import utils
 from .routines import Burn
@@ -147,7 +148,7 @@ class Program11(Program):
             return
 
         # --> call average G integration with ΔV integration
-        #gc.run_average_g_routine = True
+        # gc.run_average_g_routine = True
 
         # --> terminate gyrocompassing
         if "02" in gc.running_programs:
@@ -220,10 +221,11 @@ class Program15(Program):
         if not self._check_orbital_parameters():
             return
         self.target_name = self._check_target()
-        gc.noun_data["30"] = config.OCTAL_BODY_IDS[self.target_name]
+        
+        gc.noun_data["30"] = config.OCTAL_BODY_NAMES[self.target_name]
 
         gc.execute_verb(verb="01", noun="30")
-        gc.dsky.request_data(requesting_object=self._accept_target_input, display_location=dsky.registers[1],
+        gc.dsky.request_data(requesting_object=self._accept_target_input, display_location=dsky.data_registers[1],
                              is_proceed_available=True)
 
     def terminate(self):
@@ -280,19 +282,19 @@ class Program15(Program):
         current_phase_angle = get_telemetry("body_phaseAngle", body_number=telemachus_target_id)
 
         # calculate the first and second burn Δv parameters
-        self.delta_v_first_burn, gc.moi_burn_delta_v = basagc.routines.delta_v(self.departure_altitude,
-                                                                               self.destination_altitude)
+        self.delta_v_first_burn, gc.moi_burn_delta_v = routines.delta_v(self.departure_altitude,
+                                                                        self.destination_altitude)
         print((gc.moi_burn_delta_v))
 
         # calculate the time to complete the Hohmann transfer
-        self.time_to_transfer = basagc.routines.time_to_transfer(self.departure_altitude, self.destination_altitude,
+        self.time_to_transfer = routines.time_to_transfer(self.departure_altitude, self.destination_altitude,
                                                                  self.grav_param)
 
         # calculate the correct phase angle for the start of the burn
         # note that the burn impulse is calculated as a instantaneous burn, to be correct the burn should be halfway
         # complete at this calculated time
 
-        self.phase_angle_required = basagc.routines.phase_angle(self.departure_altitude, self.destination_altitude,
+        self.phase_angle_required = routines.phase_angle(self.departure_altitude, self.destination_altitude,
                                                                 self.grav_param)
 
         # calculate the current difference in phase angle required and current phase angle

@@ -67,6 +67,7 @@ class ControlRegister:
     #     self.digits[0].start_blink(count)
     #     self.digits[1].start_blink(count)
 
+
 class DataRegister:
 
     def __init__(self, central_widget, sign_digit, *digits):
@@ -83,6 +84,11 @@ class DataRegister:
         ]
         self.display(["b", 10, 10, 10, 10, 10])
     
+    def blank(self):
+        
+        """Blanks (clears) the whole data register."""
+        self.display(["b", 10, 10, 10, 10, 10])
+            
     def set_tooltip(self, tooltip):
         
         for digit in self.digits:
@@ -91,7 +97,16 @@ class DataRegister:
     def display(self, data):
 
         if isinstance(data, str):
-            formatted_data = [data[0], int(data[1]), int(data[2]), int(data[3]), int(data[4]), int(data[5])]
+            # if any chars are b, need to change this value to 10 cause thats what Digit class expects for blank
+            # create list without the sign digit
+            chars = []
+            # perform the substitution
+            for char in data[1:]:
+                if char == "b":
+                    chars.append(10)
+                else:
+                    chars.append(char)
+            formatted_data = [data[0], int(chars[0]), int(chars[1]), int(chars[2]), int(chars[3]), int(chars[4])]
             data = formatted_data
 
         # some value length checks
@@ -107,13 +122,13 @@ class DataRegister:
         #               log_level="WARNING")
         #     value.zfill(5)
         
-
         self.digits[0].display(data[0])
         self.digits[1].display(data[1])
         self.digits[2].display(data[2])
         self.digits[3].display(data[3])
         self.digits[4].display(data[4])
         self.digits[5].display(data[5])
+
 
 class Key(QtWidgets.QPushButton):
 
@@ -186,6 +201,7 @@ class Annunciator(QtWidgets.QLabel):
         image = self.pixmaps["off"]
         self.setPixmap(image)
 
+
 class SignDigit(QtWidgets.QLabel):
 
     def __init__(self, central_widget, name, geometry):
@@ -209,6 +225,7 @@ class SignDigit(QtWidgets.QLabel):
         image = self.digit_pixmaps[digit_to_display]
         # change picture
         self.setPixmap(image)
+
 
 class Digit(QtWidgets.QLabel):
 
@@ -242,15 +259,12 @@ class Digit(QtWidgets.QLabel):
     def set_tooltip(self, tooltip):
         self.setToolTip(tooltip)
     
-    def start_blink(self, count=None):
+    def start_blink(self):
 
         """ Starts the digit blinking.
-        :param value: Value to blink with
         :return: None
         """
-        if count:
-            self.blink_counter = 0
-            self.blink_number_requested = count
+
         self.blink_timer.start(500)
     
     def stop_blink(self):
@@ -510,7 +524,6 @@ class GUI:
                          geometry=QtCore.QRect(484, 321, 32, 45)))
         }
 
-
         self.keyboard = {
             "verb": Key(self.centralwidget,
                         name="V",
@@ -768,36 +781,30 @@ class GUI:
         self.menubar.addAction(self.menu_file.menuAction())
         self.menubar.addAction(self.menu_help.menuAction())
 
-        self.retranslateUi(MainWindow)
+        # self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-        
 
-    def accept_data_to_display(self, data):
-        print("INCOMING DATA: " + data)
-
-    def retranslateUi(self, MainWindow):
-        _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "basaGC"))
-        self.menu_file.setTitle(_translate("MainWindow", "&File"))
-        self.menu_help.setTitle(_translate("MainWindow", "&Help"))
-        self.action_settings.setText(_translate("MainWindow", "&Settings..."))
-        self.action_show_log.setText(_translate("MainWindow", "Show &Log..."))
-        self.action_quit.setText(_translate("MainWindow", "&Quit"))
-        self.action_verbs.setText(_translate("MainWindow", "&Verbs..."))
-        self.action_nouns.setText(_translate("MainWindow", "&Nouns..."))
-        self.action_programs.setText(_translate("MainWindow", "&Programs"))
-        self.action_alarm_codes.setText(_translate("MainWindow", "&Alarm Codes..."))
-        self.action_about.setText(_translate("MainWindow", "Abou&t..."))
+    # def retranslateUi(self, MainWindow):
+    #     _translate = QtCore.QCoreApplication.translate
+    #     MainWindow.setWindowTitle(_translate("MainWindow", "basaGC"))
+    #     self.menu_file.setTitle(_translate("MainWindow", "&File"))
+    #     self.menu_help.setTitle(_translate("MainWindow", "&Help"))
+    #     self.action_settings.setText(_translate("MainWindow", "&Settings..."))
+    #     self.action_show_log.setText(_translate("MainWindow", "Show &Log..."))
+    #     self.action_quit.setText(_translate("MainWindow", "&Quit"))
+    #     self.action_verbs.setText(_translate("MainWindow", "&Verbs..."))
+    #     self.action_nouns.setText(_translate("MainWindow", "&Nouns..."))
+    #     self.action_programs.setText(_translate("MainWindow", "&Programs"))
+    #     self.action_alarm_codes.setText(_translate("MainWindow", "&Alarm Codes..."))
+    #     self.action_about.setText(_translate("MainWindow", "Abou&t..."))
 
 
 if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
-
     ui = GUI(MainWindow)
     computer = Computer(ui)
     CHARIN = computer.dsky.charin
     MainWindow.show()
-
     sys.exit(app.exec_())

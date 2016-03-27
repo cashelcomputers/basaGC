@@ -102,9 +102,9 @@ class Burn(object):
         # ensure we only blank display first time through the loop
         if int(self.time_until_ignition) == 105 and not self.is_display_blanked:
             gc.dsky.current_verb.terminate()
-            for register in list(gc.dsky.control_registers.values()):
+            for register in listgc.dsky.control_registers.values():
                 register.blank()
-            for register in list(gc.dsky.registers.values()):
+            for register in listgc.dsky.data_registers.values():
                 register.blank()
             self.is_display_blanked = True
         # at TIG - 100 seconds, reenable display and enable directional autopilot
@@ -285,9 +285,9 @@ class Burn(object):
 #         # set V04N12 and request data entry
 #         computer.dsky.set_noun(12)
 #         computer.dsky.control_registers["verb"].display("04")
-#         computer.dsky.registers[1].display(value="00002")
-#         computer.dsky.registers[2].display(value=computer.option_codes["00002"])
-#         computer.dsky.request_data(receive_data, computer.dsky.registers[3])
+#         computer.dsky.data_registers[1].display(value="00002")
+#         computer.dsky.data_registers[2].display(value=computer.option_codes["00002"])
+#         computer.dsky.request_data(receive_data, computer.dsky.data_registers[3])
 
 
 def delta_v(departure_altitude, destination_altitude, departure_body="Kerbin"):

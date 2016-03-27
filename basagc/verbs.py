@@ -430,7 +430,7 @@ class Verb02(DisplayVerb):
             #noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
             #self.noun_data = noun_function(calling_verb=self, data=self.data, base=8)
             #output = _format_output_data(self.noun_data)
-            #computer.dsky.registers[1].display(output[2], output[3])
+            #computer.dsky.data_registers[1].display(output[2], output[3])
             #self.data = None
 
 
@@ -457,7 +457,7 @@ class Verb03(DisplayVerb):
             #noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
             #self.noun_data = noun_function(calling_verb=self, data=self.data, base=8)
             #output = _format_output_data(self.noun_data)
-            #computer.dsky.registers[1].display(output[4], output[5])
+            #computer.dsky.data_registers[1].display(output[4], output[5])
             #self.data = None
 
 
@@ -564,9 +564,9 @@ class Verb06(DisplayVerb):
         #     noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
         #     noun_data = noun_function()
         #     output = _format_output_data(noun_data)
-        #     computer.dsky.registers[1].display(sign=output[0], value=output[1])
-        #     computer.dsky.registers[2].display(sign=output[2], value=output[3])
-        #     computer.dsky.registers[3].display(sign=output[4], value=output[5])
+        #     computer.dsky.data_registers[1].display(sign=output[0], value=output[1])
+        #     computer.dsky.data_registers[2].display(sign=output[2], value=output[3])
+        #     computer.dsky.data_registers[3].display(sign=output[4], value=output[5])
             #self.data = None
 
 
@@ -724,7 +724,7 @@ class Verb21(LoadVerb):
         :return: None
         """
 
-        dsky.request_data(self.accept_input, dsky.registers[1])
+        dsky.request_data(self.accept_input, dsky.data_registers[1])
 
     # def accept_input(self, data):
     #
@@ -756,7 +756,7 @@ class Verb22(LoadVerb):
         :return: None
         """
 
-        dsky.request_data(self.accept_input, dsky.registers[2])
+        dsky.request_data(self.accept_input, dsky.data_registers[2])
 
 
 class Verb23(LoadVerb):
@@ -778,7 +778,7 @@ class Verb23(LoadVerb):
         :return: None
         """
 
-        gc.dsky.request_data(requesting_object=self.accept_input, display_location=dsky.registers[3])
+        gc.dsky.request_data(requesting_object=self.accept_input, display_location=dsky.data_registers[3])
 
     def accept_input(self, data):
 

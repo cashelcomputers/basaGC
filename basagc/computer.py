@@ -97,7 +97,6 @@ class Computer:
 
         self.on()
 
-
     def add_burn_to_queue(self, burn_object, execute=True):
 
         """ Adds a Burn object to the computer burn queue. If no burn is assigned to next_burn, load new burn to
@@ -146,10 +145,9 @@ class Computer:
         self.is_direction_autopilot_engaged = False
         utils.log("Autopilot disabled", log_level="INFO")
 
-    def quit(self, event=None):
+    def quit(self):
 
         """ Quits basaGC.
-        :param event: wxPython event (not used)
         :return: None
         """
 
@@ -351,5 +349,3 @@ class Computer:
                     utils.log("No Telemachus antenna found", log_level="WARNING")
                 self.ksp_paused_state = paused_state
 
-if __name__ == "__main__":
-    computer = Computer()

@@ -108,10 +108,15 @@ _UNSORTED_ALARM_CODES = {
 }
 
 ALARM_CODES = OrderedDict(sorted(_UNSORTED_ALARM_CODES.items()))
+OCTAL_BODY_IDS = {}
 
-# OCTAL_BODY_IDS = {key: str(int(oct(int(value)))) for key, value in
-#                 TELEMACHUS_BODY_IDS.items()}  # FIXME: abomination
-# OCTAL_BODY_NAMES = {value: key for key, value in list(OCTAL_BODY_IDS.items())}
+for key, value in TELEMACHUS_BODY_IDS.items():
+    value = oct(int(value))
+    value = value[2:]
+    OCTAL_BODY_IDS[value] = key
+
+# OCTAL_BODY_IDS = {key: str(int(oct(int(value)))) for key, value in TELEMACHUS_BODY_IDS.items()}  # FIXME: abomination
+OCTAL_BODY_NAMES = {value: key for key, value in OCTAL_BODY_IDS.items()}
 
 PROGRAM_DESCRIPTION = "basaGC is a implementation of the Apollo Guidance Computer (AGC) for Kerbal Space Program." + (
                       "\n\nbasaGC includes code and images from the Virtual AGC Project ") + (
@@ -130,7 +135,7 @@ SHORT_LICENCE = "basaGC is free software; you can redistribute it and/or modify 
                 "this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, ") + (
                 "Fifth Floor, Boston, MA 02110-1301, USA.")
 
-COPYRIGHT = "(C) 2014 Tim Buchanan (cashelcomputers@gmail.com)"
+COPYRIGHT = "(C) 2014-2016 Tim Buchanan (cashelcomputers@gmail.com)"
 WEBSITE = "https://github.com/cashelcomputers/basaGC/"
 DEVELOPERS = "Tim Buchanan"
 ICON = IMAGES_DIR + "icon.png"
