@@ -63,9 +63,9 @@ class ControlRegister:
 
         self.display(BLANK)
 
-    # def start_blink(self, count=None):
-    #     self.digits[0].start_blink(count)
-    #     self.digits[1].start_blink(count)
+    def start_blink(self):
+        self.digits[0].start_blink()
+        self.digits[1].start_blink()
 
 
 class DataRegister:
@@ -141,10 +141,10 @@ class Key(QtWidgets.QPushButton):
         self.icon.addPixmap(QtGui.QPixmap(config.IMAGES_DIR + image), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.setIcon(self.icon)
         self.setIconSize(QtCore.QSize(65, 65))
-        self.clicked.connect(self.foo)
+        self.clicked.connect(self.charin)
         self.setText("")
 
-    def foo(self):
+    def charin(self):
 
         CHARIN(self.objectName())
 
@@ -248,13 +248,12 @@ class Digit(QtWidgets.QLabel):
         ]
         self.is_blinking_lit = True
         self.current_display = None
-        self.last_value = None
+        self.value_to_blink = None
         self.blink_timer = QtCore.QTimer()
         self.blink_timer.timeout.connect(self.flip)
         self.setText("")
         self.display(10)
-        self.blink_counter = 0
-        self.blink_number_requested = 0
+
     
     def set_tooltip(self, tooltip):
         self.setToolTip(tooltip)
@@ -264,15 +263,25 @@ class Digit(QtWidgets.QLabel):
         """ Starts the digit blinking.
         :return: None
         """
-
+        self.is_blinking_lit = False
+        self.display(10)
         self.blink_timer.start(500)
     
     def stop_blink(self):
         self.blink_timer.stop()
 
     def flip(self):
-
-        self.display(self.last_value)
+        
+        if self.is_blinking_lit:
+            self.display(10)
+            self.is_blinking_lit = False
+        else:
+            # dont flash two blanks on first runthru
+            if self.current_display == 10:
+                self.value_to_blink = 8 # FIXME! tired, off to bed
+            self.value_to_blink = self.current_display
+            self.display(self.value_to_blink)
+            self.is_blinking_lit = True
         # if self.blink_number_requested > 0:
         #     self.blink_counter += 1
         #     if self.blink_counter == self.blink_number_requested:
@@ -289,13 +298,12 @@ class Digit(QtWidgets.QLabel):
     def display(self, number_to_display):
         # first cast number_to_display to int
         number_to_display = int(number_to_display)
-        self.last_value = self.current_display
+        # self.last_value = self.current_display
         self.current_display = number_to_display
         # now get image filename
         image = self.digit_pixmaps[number_to_display]
         # change picture
         self.setPixmap(image)
-        self.raise_()
 
 
 class GUI:
@@ -305,11 +313,15 @@ class GUI:
     def __init__(self, main_window):
         
         """Class constructor."""
+        
         global gui_instance
         gui_instance = self
         self.main_window = main_window
-        self.main_window.setObjectName("MainWindow")
+        self.main_window.setObjectName("main_window")
         self.main_window.resize(572, 658)
+        
+        self.verb_noun_flash_timer = QtCore.QTimer()
+        self.verb_noun_flash_timer.timeout.connect(self._flash_verb_noun)
 
         # init icon
         self.icon = QtGui.QIcon()
@@ -342,7 +354,24 @@ class GUI:
         self.lighting_sep_bar_1 = QtWidgets.QLabel(self.centralwidget)
         self.lighting_sep_bar_2 = QtWidgets.QLabel(self.centralwidget)
         self.lighting_sep_bar_3 = QtWidgets.QLabel(self.centralwidget)
-
+        
+        # other gui stuff
+        self.menubar = QtWidgets.QMenuBar(self.main_window)
+        self.action_about = QtWidgets.QAction(self.main_window)
+        self.action_alarm_codes = QtWidgets.QAction(self.main_window)
+        self.action_programs = QtWidgets.QAction(self.main_window)
+        self.action_nouns = QtWidgets.QAction(self.main_window)
+        self.action_verbs = QtWidgets.QAction(self.main_window)
+        self.action_quit = QtWidgets.QAction(self.main_window)
+        self.action_show_log = QtWidgets.QAction(self.main_window)
+        self.action_settings = QtWidgets.QAction(self.main_window)
+        self.menu_help = QtWidgets.QMenu(self.menubar)
+        self.menu_file = QtWidgets.QMenu(self.menubar)
+        
+        self.static_display_3 = QtWidgets.QLabel(self.centralwidget)
+        self.static_display_2 = QtWidgets.QLabel(self.centralwidget)
+        self.static_display_1 = QtWidgets.QLabel(self.centralwidget)
+        
         # annunciators:
         self.annunciators = {
             "uplink_acty": Annunciator(
@@ -624,7 +653,21 @@ class GUI:
         
         self.setup_ui(self.main_window)
 
-    def setup_ui(self, MainWindow):
+    def set_verb_noun_flash(self, state_to_set):
+        if state_to_set == "on":
+            self.control_registers["verb"].start_blink()
+            self.control_registers["noun"].start_blink()
+        elif state_to_set == "off":
+            self.control_registers["verb"].stop_blink()
+            self.control_registers["noun"].stop_blink()
+        else:
+            print("Didn't understand your command, do you want me to flash or what?")
+            
+
+    def _flash_verb_noun(self):
+        pass
+
+    def setup_ui(self, main_window):
 
         self.left_frame_left_border.setGeometry(QtCore.QRect(42, 14, 8, 360))
         self.left_frame_left_border.setText("")
@@ -693,18 +736,15 @@ class GUI:
         self.lighting_sep_bar_3.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "SeparatorOn.jpg"))
         self.lighting_sep_bar_3.setObjectName("lighting_sep_bar_3")
 
-        self.static_display_1 = QtWidgets.QLabel(self.centralwidget)
         self.static_display_1.setGeometry(QtCore.QRect(388, 22, 64, 152))
         self.static_display_1.setText("")
         self.static_display_1.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "CenterBlock.jpg"))
         self.static_display_1.setScaledContents(True)
         self.static_display_1.setObjectName("static_display_1")
-        self.static_display_2 = QtWidgets.QLabel(self.centralwidget)
         self.static_display_2.setGeometry(QtCore.QRect(452, 89, 64, 19))
         self.static_display_2.setText("")
         self.static_display_2.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "ShortHorizontal.jpg"))
         self.static_display_2.setObjectName("static_display_2")
-        self.static_display_3 = QtWidgets.QLabel(self.centralwidget)
         self.static_display_3.setGeometry(QtCore.QRect(324, 86, 64, 19))
         self.static_display_3.setText("")
         self.static_display_3.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "ShortHorizontal.jpg"))
@@ -742,31 +782,20 @@ class GUI:
 
         self.static_display_1.raise_()
 
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
+        main_window.setCentralWidget(self.centralwidget)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 572, 21))
         self.menubar.setObjectName("menubar")
-        self.menu_file = QtWidgets.QMenu(self.menubar)
         self.menu_file.setObjectName("menu_file")
-        self.menu_help = QtWidgets.QMenu(self.menubar)
         self.menu_help.setObjectName("menu_help")
-        MainWindow.setMenuBar(self.menubar)
-        self.action_settings = QtWidgets.QAction(MainWindow)
+        main_window.setMenuBar(self.menubar)
         self.action_settings.setEnabled(True)
         self.action_settings.setObjectName("action_settings")
-        self.action_show_log = QtWidgets.QAction(MainWindow)
         self.action_show_log.setObjectName("action_show_log")
-        self.action_quit = QtWidgets.QAction(MainWindow)
         self.action_quit.setObjectName("action_quit")
-        self.action_verbs = QtWidgets.QAction(MainWindow)
         self.action_verbs.setObjectName("action_verbs")
-        self.action_nouns = QtWidgets.QAction(MainWindow)
         self.action_nouns.setObjectName("action_nouns")
-        self.action_programs = QtWidgets.QAction(MainWindow)
         self.action_programs.setObjectName("action_programs")
-        self.action_alarm_codes = QtWidgets.QAction(MainWindow)
         self.action_alarm_codes.setObjectName("action_alarm_codes")
-        self.action_about = QtWidgets.QAction(MainWindow)
         self.action_about.setObjectName("action_about")
         self.menu_file.addAction(self.action_settings)
         self.menu_file.addAction(self.action_show_log)
@@ -781,30 +810,30 @@ class GUI:
         self.menubar.addAction(self.menu_file.menuAction())
         self.menubar.addAction(self.menu_help.menuAction())
 
-        # self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        # self.retranslateUi(main_window)
+        QtCore.QMetaObject.connectSlotsByName(main_window)
 
-    # def retranslateUi(self, MainWindow):
+    # def retranslateUi(self, main_window):
     #     _translate = QtCore.QCoreApplication.translate
-    #     MainWindow.setWindowTitle(_translate("MainWindow", "basaGC"))
-    #     self.menu_file.setTitle(_translate("MainWindow", "&File"))
-    #     self.menu_help.setTitle(_translate("MainWindow", "&Help"))
-    #     self.action_settings.setText(_translate("MainWindow", "&Settings..."))
-    #     self.action_show_log.setText(_translate("MainWindow", "Show &Log..."))
-    #     self.action_quit.setText(_translate("MainWindow", "&Quit"))
-    #     self.action_verbs.setText(_translate("MainWindow", "&Verbs..."))
-    #     self.action_nouns.setText(_translate("MainWindow", "&Nouns..."))
-    #     self.action_programs.setText(_translate("MainWindow", "&Programs"))
-    #     self.action_alarm_codes.setText(_translate("MainWindow", "&Alarm Codes..."))
-    #     self.action_about.setText(_translate("MainWindow", "Abou&t..."))
+    #     main_window.setWindowTitle(_translate("main_window", "basaGC"))
+    #     self.menu_file.setTitle(_translate("main_window", "&File"))
+    #     self.menu_help.setTitle(_translate("main_window", "&Help"))
+    #     self.action_settings.setText(_translate("main_window", "&Settings..."))
+    #     self.action_show_log.setText(_translate("main_window", "Show &Log..."))
+    #     self.action_quit.setText(_translate("main_window", "&Quit"))
+    #     self.action_verbs.setText(_translate("main_window", "&Verbs..."))
+    #     self.action_nouns.setText(_translate("main_window", "&Nouns..."))
+    #     self.action_programs.setText(_translate("main_window", "&Programs"))
+    #     self.action_alarm_codes.setText(_translate("main_window", "&Alarm Codes..."))
+    #     self.action_about.setText(_translate("main_window", "Abou&t..."))
 
 
 if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = GUI(MainWindow)
+    main_window = QtWidgets.QMainWindow()
+    ui = GUI(main_window)
     computer = Computer(ui)
     CHARIN = computer.dsky.charin
-    MainWindow.show()
+    main_window.show()
     sys.exit(app.exec_())

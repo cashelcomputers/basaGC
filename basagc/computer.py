@@ -177,6 +177,7 @@ class Computer:
             utils.log("Retrieved telemetry listing", log_level="INFO")
         self.main_loop_timer.start(config.LOOP_TIMER_INTERVAL)
         self.is_powered_on = True
+        self.ui.set_verb_noun_flash("on")
 
     def main_loop(self):
 
