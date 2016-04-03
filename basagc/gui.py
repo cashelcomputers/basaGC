@@ -109,7 +109,7 @@ class DataRegister:
                     chars.append(10)
                 else:
                     chars.append(char)
-            data = [int(chars[0]), int(chars[1]), int(chars[2]), int(chars[3]), int(chars[4]), int(chars[5])]
+            data = [chars[0], int(chars[1]), int(chars[2]), int(chars[3]), int(chars[4]), int(chars[5])]
 
         # some value length checks
         # value_length = len(value)
@@ -256,7 +256,7 @@ class Digit(QtWidgets.QLabel):
         self.blink_timer.timeout.connect(self.flip)
         self.setText("")
         self.display(10)
-        self.last_display = None
+        self.last_value = None
 
     
     def set_tooltip(self, tooltip):
@@ -294,7 +294,8 @@ class Digit(QtWidgets.QLabel):
         
         # first cast number_to_display to int
         number_to_display = int(number_to_display)
-
+        
+        # stores the last value displayed, in case we need to flash
         self.last_value = self.current_display
 
         # store the value we shall be displaying

@@ -261,7 +261,7 @@ class Computer:
         self.alarm_codes[2] = self.alarm_codes[0]
         self.dsky.annunciators["prog"].on()
         try:
-            self.running_program[-1].terminate()
+            self.running_program.terminate()
         except programs.ProgramTerminated:
             # this should happen if the program terminated successfully
             utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), alarm_message), log_level="ERROR")

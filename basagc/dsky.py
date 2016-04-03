@@ -148,10 +148,9 @@ class DSKY:
         :return: None
         """
 
-        self.control_registers["verb"].digits[0].start_blink()
-        self.control_registers["verb"].digits[1].start_blink()
-        self.control_registers["noun"].digits[0].start_blink()
-        self.control_registers["noun"].digits[1].start_blink()
+        self.control_registers["verb"].start_blink()
+        self.control_registers["noun"].start_blink()
+
 
     def verb_noun_flash_off(self):
 

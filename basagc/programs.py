@@ -27,11 +27,11 @@ import inspect
 import sys
 from collections import OrderedDict
 
-from . import routines
 from . import config
+from . import routines
 from . import utils
 from .routines import Burn
-from .telemachus import get_telemetry, KSPNotConnected
+from .telemachus import get_telemetry, KSPNotConnected, check_connection
 
 gc = None
 dsky = None
@@ -207,6 +207,7 @@ class Program15(Program):
         self.orbital_period = 0
         self.departure_body_orbital_period = 0
         self.first_burn = None
+        self.second_burn = None
 
     def execute(self):
 
@@ -215,6 +216,11 @@ class Program15(Program):
         """
 
         super(Program15, self).execute()
+        
+        # if no connection to KSP, do P00DOO abort
+        if not check_connection():
+            gc.poodoo_abort(111)
+            return
         self.departure_body = get_telemetry("body")
         self.orbiting_body = get_telemetry("body")
 
