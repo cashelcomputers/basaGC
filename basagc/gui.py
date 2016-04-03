@@ -95,19 +95,21 @@ class DataRegister:
             digit.set_tooltip(tooltip)
     
     def display(self, data):
-
+        
+        """displays the data given, sending the call thru to gui"""
+        
+        # if input data is a string, need to do some further processing
         if isinstance(data, str):
             # if any chars are b, need to change this value to 10 cause thats what Digit class expects for blank
             # create list without the sign digit
             chars = []
             # perform the substitution
-            for char in data[1:]:
+            for char in data:
                 if char == "b":
                     chars.append(10)
                 else:
                     chars.append(char)
-            formatted_data = [data[0], int(chars[0]), int(chars[1]), int(chars[2]), int(chars[3]), int(chars[4])]
-            data = formatted_data
+            data = [int(chars[0]), int(chars[1]), int(chars[2]), int(chars[3]), int(chars[4]), int(chars[5])]
 
         # some value length checks
         # value_length = len(value)
@@ -212,6 +214,7 @@ class SignDigit(QtWidgets.QLabel):
             "+": QtGui.QPixmap(config.IMAGES_DIR + "PlusOn.jpg"),
             "-": QtGui.QPixmap(config.IMAGES_DIR + "MinusOn.jpg"),
             "b": QtGui.QPixmap(config.IMAGES_DIR + "PlusMinusOff.jpg"),
+            10: QtGui.QPixmap(config.IMAGES_DIR + "PlusMinusOff.jpg"), # for compatibility with digits
         }
 
         self.setText("")
@@ -253,6 +256,7 @@ class Digit(QtWidgets.QLabel):
         self.blink_timer.timeout.connect(self.flip)
         self.setText("")
         self.display(10)
+        self.last_display = None
 
     
     def set_tooltip(self, tooltip):
@@ -272,37 +276,33 @@ class Digit(QtWidgets.QLabel):
 
     def flip(self):
         
+        """alternates the digit between a value and blank ie to flash the digit."""
+        
+        # digit displaying the number, switch to blank
         if self.is_blinking_lit:
             self.display(10)
             self.is_blinking_lit = False
         else:
-            # dont flash two blanks on first runthru
-            if self.current_display == 10:
-                self.value_to_blink = 8 # FIXME! tired, off to bed
-            self.value_to_blink = self.current_display
-            self.display(self.value_to_blink)
+            # digit displaying blank, change to number
+            self.display(self.last_value)
             self.is_blinking_lit = True
-        # if self.blink_number_requested > 0:
-        #     self.blink_counter += 1
-        #     if self.blink_counter == self.blink_number_requested:
-        #         self.blink_timer.stop()
-        #         self.blink_number_requested = 0
-        #         self.blink_counter = 0
-        # if self.is_blinking_lit:
-        #     self.display(10)
-        #     self.is_blinking_lit = False
-        # else:
-        #     self.display(self.blink_value)
-        #     self.is_blinking_lit = True
+
 
     def display(self, number_to_display):
+        
+        """displays a given digit"""
+        
         # first cast number_to_display to int
         number_to_display = int(number_to_display)
-        # self.last_value = self.current_display
+
+        self.last_value = self.current_display
+
+        # store the value we shall be displaying
         self.current_display = number_to_display
-        # now get image filename
+        
+        
+        # now get image filename and display it
         image = self.digit_pixmaps[number_to_display]
-        # change picture
         self.setPixmap(image)
 
 

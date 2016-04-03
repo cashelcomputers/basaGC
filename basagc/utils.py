@@ -86,3 +86,6 @@ def log(message, log_level="DEBUG"):
         gc_log.error(message)
     elif log_level == "CRITICAL":
         gc_log.critical(message)
+    
+    # since there is no logging window yet, print message to stdout
+    print(message)
