@@ -51,7 +51,7 @@ class Computer:
         self.ui = ui
         # this has to go here, so we can init the widgets first
 
-        self.dsky = dsky.DSKY(self)
+        self.dsky = dsky.DSKY(self, self.ui)
 
         self.main_loop_timer = QTimer()
         self.main_loop_timer.timeout.connect(self.main_loop)

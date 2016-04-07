@@ -35,7 +35,7 @@ if __name__ == "__main__":
     
     ui = gui.GUI(MainWindow)
     computer = computer.Computer(ui)
-    gui.CHARIN = computer.dsky.charin
+    # gui.CHARIN = computer.dsky.charin
     MainWindow.show()
     
     sys.exit(app.exec_())

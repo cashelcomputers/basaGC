@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-# -*- coding: UTF-8 -*-
-""" This module contains code for the DSKY (the guidance computer/user interface)
+"""
+This module contains code for the DSKY (the guidance computer/user interface). It should be considered to be the
+interface between the computer and the gui toolkit.
 """
 # This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
 #  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
@@ -23,23 +24,24 @@
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>import wx
 
-from . import utils
-from . import verbs
+from basagc import utils, verbs
 
 
 class DSKY:
     """ This class models the DSKY.
     """
 
-    def __init__(self, computer):
-
+    def __init__(self, computer, ui):
+    
         """ Class constructor.
+        :type ui: object
         :param gui: QtPy5 window object
         :param computer: the instance of the guidance computer
         :return: None
         """
 
         self.computer = computer
+        self.ui = ui
         self.input_data_buffer = ""
         self.register_index = 0
         self.is_verb_being_loaded = False
@@ -58,33 +60,12 @@ class DSKY:
         self.is_expecting_proceed = False
         self.object_requesting_data = None
         self.display_location_to_load = None
-
-        self.annunciators = {
-            "uplink_acty": self.computer.ui.annunciators["uplink_acty"],
-            "temp": self.computer.ui.annunciators["temp"],
-            "no_att": self.computer.ui.annunciators["no_att"],
-            "gimbal_lock": self.computer.ui.annunciators["gimbal_lock"],
-            "stby": self.computer.ui.annunciators["stby"],
-            "prog": self.computer.ui.annunciators["prog"],
-            "key_rel": self.computer.ui.annunciators["key_rel"],
-            "restart": self.computer.ui.annunciators["restart"],
-            "opr_err": self.computer.ui.annunciators["opr_err"],
-            "tracker": self.computer.ui.annunciators["tracker"],
-            "comp_acty": self.computer.ui.annunciators["comp_acty"],
-        }
-
-        self.data_registers = {
-            1: self.computer.ui.data_registers[1],
-            2: self.computer.ui.data_registers[2],
-            3: self.computer.ui.data_registers[3],
-        }
-
-        self.control_registers = {
-            "program": self.computer.ui.control_registers["program"],
-            "verb": self.computer.ui.control_registers["verb"],
-            "noun": self.computer.ui.control_registers["noun"],
-        }
-
+        
+        output_widgets = self.ui.get_output_widgets()
+        
+        self.annunciators = output_widgets[0]
+        self.control_registers = output_widgets[1]
+        self.data_registers = output_widgets[2]
 
     def operator_error(self, message=None):
 
