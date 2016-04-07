@@ -10,9 +10,8 @@ gui_instance = None
 
 
 class ControlRegister:
-
     def __init__(self, central_widget, name, *digits):
-
+        
         self.central_widget = central_widget
         self.name = name
         self.verb_35_timer = QtCore.QTimer()
@@ -20,9 +19,9 @@ class ControlRegister:
             digits[0],
             digits[1],
         ]
-
-    def set_tooltip(self, tooltip):
     
+    def set_tooltip(self, tooltip):
+        
         for digit in self.digits:
             digit.set_tooltip(tooltip)
     
@@ -33,7 +32,7 @@ class ControlRegister:
             self.digits[1].start_blink()
         else:
             self.display("88")
-            
+        
         self.verb_35_timer.singleShot(5000, self.stop_verb_35_blink)
     
     def stop_verb_35_blink(self):
@@ -45,33 +44,32 @@ class ControlRegister:
             self.display("88")
         for annunciator in gui_instance.annunciators.values():
             annunciator.off()
-
+    
     def stop_blink(self):
         self.digits[0].stop_blink()
         self.digits[1].stop_blink()
-        
+    
     def display(self, data):
-
+        
         self.digits[0].display(data[0])
         if len(data) > 1:
             self.digits[1].display(data[1])
-
+    
     def blank(self):
         """ Blanks the whole control register.
         :return: None
         """
-
+        
         self.display(BLANK)
-
+    
     def start_blink(self):
         self.digits[0].start_blink()
         self.digits[1].start_blink()
 
 
 class DataRegister:
-
     def __init__(self, central_widget, sign_digit, *digits):
-
+        
         self.central_widget = central_widget
         self.digits = [
             sign_digit,
@@ -80,7 +78,7 @@ class DataRegister:
             digits[2],
             digits[3],
             digits[4],
-
+        
         ]
         self.display(["b", 10, 10, 10, 10, 10])
     
@@ -88,7 +86,7 @@ class DataRegister:
         
         """Blanks (clears) the whole data register."""
         self.display(["b", 10, 10, 10, 10, 10])
-            
+    
     def set_tooltip(self, tooltip):
         
         for digit in self.digits:
@@ -110,7 +108,7 @@ class DataRegister:
                 else:
                     chars.append(char)
             data = [chars[0], int(chars[1]), int(chars[2]), int(chars[3]), int(chars[4]), int(chars[5])]
-
+        
         # some value length checks
         # value_length = len(value)
         # if value_length > 6:
@@ -133,10 +131,9 @@ class DataRegister:
 
 
 class Key(QtWidgets.QPushButton):
-
     def __init__(self, central_widget, name, image, geometry):
         super().__init__(central_widget)
-
+        
         self.setGeometry(geometry)
         self.setObjectName(name)
         self.icon = QtGui.QIcon()
@@ -145,16 +142,14 @@ class Key(QtWidgets.QPushButton):
         self.setIconSize(QtCore.QSize(65, 65))
         self.clicked.connect(self.charin)
         self.setText("")
-
+    
     def charin(self):
-
         CHARIN(self.objectName())
 
 
 class Annunciator(QtWidgets.QLabel):
-
     def __init__(self, central_widget, name, image_on, image_off, geometry):
-
+        
         super().__init__(central_widget)
         self.setGeometry(geometry)
         self.setObjectName(name)
@@ -168,36 +163,36 @@ class Annunciator(QtWidgets.QLabel):
         self.blink_timer = QtCore.QTimer()
         self.blink_timer.timeout.connect(self.invert)
         self.off()
-
+    
     def start_blink(self, interval=500):
         """ Starts the annunciator blinking.
         :param interval: the blink interval
         :return: None
         """
-
+        
         self.blink_timer.start(interval)
-
+    
     def stop_blink(self):
         """ Stops the annunciator blinking.
         :return: None
         """
-
+        
         self.blink_timer.stop()
         self.off()
-
+    
     def invert(self):
         """ Blinks indicator """
-
+        
         if self.is_lit:
             self.off()
         else:
             self.on()
-
+    
     def on(self):
         self.is_lit = True
         image = self.pixmaps["on"]
         self.setPixmap(image)
-
+    
     def off(self):
         self.is_lit = False
         image = self.pixmaps["off"]
@@ -205,7 +200,6 @@ class Annunciator(QtWidgets.QLabel):
 
 
 class SignDigit(QtWidgets.QLabel):
-
     def __init__(self, central_widget, name, geometry):
         super().__init__(central_widget)
         self.setGeometry(geometry)
@@ -214,9 +208,8 @@ class SignDigit(QtWidgets.QLabel):
             "+": QtGui.QPixmap(config.IMAGES_DIR + "PlusOn.jpg"),
             "-": QtGui.QPixmap(config.IMAGES_DIR + "MinusOn.jpg"),
             "b": QtGui.QPixmap(config.IMAGES_DIR + "PlusMinusOff.jpg"),
-            10: QtGui.QPixmap(config.IMAGES_DIR + "PlusMinusOff.jpg"), # for compatibility with digits
+            10: QtGui.QPixmap(config.IMAGES_DIR + "PlusMinusOff.jpg"),  # for compatibility with digits
         }
-
         self.setText("")
         self.display("b")
     
@@ -231,7 +224,6 @@ class SignDigit(QtWidgets.QLabel):
 
 
 class Digit(QtWidgets.QLabel):
-
     def __init__(self, central_widget, name, geometry):
         super().__init__(central_widget)
         self.setGeometry(geometry)
@@ -257,23 +249,25 @@ class Digit(QtWidgets.QLabel):
         self.setText("")
         self.display(10)
         self.last_value = None
-
+        self.is_blinking = False
     
     def set_tooltip(self, tooltip):
         self.setToolTip(tooltip)
     
     def start_blink(self):
-
+        
         """ Starts the digit blinking.
         :return: None
         """
         self.is_blinking_lit = False
+        self.is_blinking = True
         self.display(10)
         self.blink_timer.start(500)
     
     def stop_blink(self):
+        self.is_blinking = False
         self.blink_timer.stop()
-
+    
     def flip(self):
         
         """alternates the digit between a value and blank ie to flash the digit."""
@@ -286,8 +280,7 @@ class Digit(QtWidgets.QLabel):
             # digit displaying blank, change to number
             self.display(self.last_value)
             self.is_blinking_lit = True
-
-
+    
     def display(self, number_to_display):
         
         """displays a given digit"""
@@ -295,20 +288,22 @@ class Digit(QtWidgets.QLabel):
         # first cast number_to_display to int
         number_to_display = int(number_to_display)
         
-        # stores the last value displayed, in case we need to flash
-        self.last_value = self.current_display
-
-        # store the value we shall be displaying
-        self.current_display = number_to_display
-        
-        
-        # now get image filename and display it
-        image = self.digit_pixmaps[number_to_display]
-        self.setPixmap(image)
+        # if we are flashing, only need to change stored digit
+        if self.is_blinking:
+            if self.is_blinking_lit:
+                self.last_value = number_to_display
+        else:
+            # stores the last value displayed, in case we need to flash
+            self.last_value = self.current_display
+            
+            # store the value we shall be displaying
+            self.current_display = number_to_display
+            # now get image filename and display it
+            image = self.digit_pixmaps[number_to_display]
+            self.setPixmap(image)
 
 
 class GUI:
-    
     """This class represents the GUI. It contains the DSKY and its elements."""
     
     def __init__(self, main_window):
@@ -323,34 +318,34 @@ class GUI:
         
         self.verb_noun_flash_timer = QtCore.QTimer()
         self.verb_noun_flash_timer.timeout.connect(self._flash_verb_noun)
-
+        
         # init icon
         self.icon = QtGui.QIcon()
         self.icon.addPixmap(QtGui.QPixmap(config.IMAGES_DIR + "icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.main_window.setWindowIcon(self.icon)
-
+        
         # init central widget
         self.centralwidget = QtWidgets.QWidget(self.main_window)
         self.centralwidget.setObjectName("centralwidget")
-
+        
         # create frame borders for left and right frames
         # left:
         self.left_frame_left_border = QtWidgets.QLabel(self.centralwidget)
         self.left_frame_bottom_border = QtWidgets.QLabel(self.centralwidget)
         self.left_frame_right_border = QtWidgets.QLabel(self.centralwidget)
         self.left_frame_top_border = QtWidgets.QLabel(self.centralwidget)
-
+        
         # right:
         self.right_frame_right_border = QtWidgets.QLabel(self.centralwidget)
         self.right_frame_bottom_border = QtWidgets.QLabel(self.centralwidget)
         self.right_frame_top_border = QtWidgets.QLabel(self.centralwidget)
         self.right_frame_left_border = QtWidgets.QLabel(self.centralwidget)
-
+        
         # indicators that are usually on for display purposes:
         self.lighting_prog = QtWidgets.QLabel(self.centralwidget)
         self.lighting_verb = QtWidgets.QLabel(self.centralwidget)
         self.lighting_noun = QtWidgets.QLabel(self.centralwidget)
-
+        
         # seperators:
         self.lighting_sep_bar_1 = QtWidgets.QLabel(self.centralwidget)
         self.lighting_sep_bar_2 = QtWidgets.QLabel(self.centralwidget)
@@ -466,7 +461,7 @@ class GUI:
                 image_on="CompActyOn.jpg",
                 geometry=QtCore.QRect(324, 22, 64, 64)),
         }
-
+        
         self.control_registers = {
             "program": ControlRegister(self.centralwidget,
                                        "program",
@@ -493,167 +488,167 @@ class GUI:
                                           name="control_register:noun:2",
                                           geometry=QtCore.QRect(484, 129, 32, 45))),
         }
-
+        
         self.data_registers = {
             1: DataRegister(self.centralwidget,
-                SignDigit(self.centralwidget,
-                             name="data_register:1:sign",
-                             geometry=QtCore.QRect(324, 193, 32, 45)),  # sign
-                Digit(self.centralwidget,
-                         name="data_register:1:1",
-                         geometry=QtCore.QRect(356, 193, 32, 45)),
-                Digit(self.centralwidget,
-                         name="data_register:1:2",
-                         geometry=QtCore.QRect(388, 193, 32, 45)),
-                Digit(self.centralwidget,
-                         name="data_register:1:3",
-                         geometry=QtCore.QRect(420, 193, 32, 45)),
-                Digit(self.centralwidget,
-                         name="data_register:1:4",
-                         geometry=QtCore.QRect(452, 193, 32, 45)),
-                Digit(self.centralwidget,
-                         name="data_register:1:5",
-                         geometry=QtCore.QRect(484, 193, 32, 45))),
+                            SignDigit(self.centralwidget,
+                                      name="data_register:1:sign",
+                                      geometry=QtCore.QRect(324, 193, 32, 45)),  # sign
+                            Digit(self.centralwidget,
+                                  name="data_register:1:1",
+                                  geometry=QtCore.QRect(356, 193, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:1:2",
+                                  geometry=QtCore.QRect(388, 193, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:1:3",
+                                  geometry=QtCore.QRect(420, 193, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:1:4",
+                                  geometry=QtCore.QRect(452, 193, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:1:5",
+                                  geometry=QtCore.QRect(484, 193, 32, 45))),
             2: DataRegister(self.centralwidget,
-                SignDigit(self.centralwidget,
-                             name="data_register:2:sign",
-                             geometry=QtCore.QRect(324, 257, 32, 45)),  # sign
-                Digit(self.centralwidget,
-                         name="data_register:2:1",
-                         geometry=QtCore.QRect(356, 257, 32, 45)),
-                Digit(self.centralwidget,
-                         name="data_register:2:2",
-                         geometry=QtCore.QRect(388, 257, 32, 45)),
-                Digit(self.centralwidget,
-                         name="data_register:2:3",
-                         geometry=QtCore.QRect(420, 257, 32, 45)),
-                Digit(self.centralwidget,
-                         name="data_register:2:4",
-                         geometry=QtCore.QRect(452, 257, 32, 45)),
-                Digit(self.centralwidget,
-                         name="data_register:2:5",
-                         geometry=QtCore.QRect(484, 257, 32, 45))),
+                            SignDigit(self.centralwidget,
+                                      name="data_register:2:sign",
+                                      geometry=QtCore.QRect(324, 257, 32, 45)),  # sign
+                            Digit(self.centralwidget,
+                                  name="data_register:2:1",
+                                  geometry=QtCore.QRect(356, 257, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:2:2",
+                                  geometry=QtCore.QRect(388, 257, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:2:3",
+                                  geometry=QtCore.QRect(420, 257, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:2:4",
+                                  geometry=QtCore.QRect(452, 257, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:2:5",
+                                  geometry=QtCore.QRect(484, 257, 32, 45))),
             3: DataRegister(self.centralwidget,
-                SignDigit(self.centralwidget,
-                             name="data_register:3:sign",
-                             geometry=QtCore.QRect(324, 321, 32, 45)),  # sign
-                Digit(self.centralwidget,
-                         name="data_register:3:1",
-                         geometry=QtCore.QRect(356, 321, 32, 45)),
-                Digit(self.centralwidget,
-                         name="data_register:3:2",
-                         geometry=QtCore.QRect(388, 321, 32, 45)),
-                Digit(self.centralwidget,
-                         name="data_register:3:3",
-                         geometry=QtCore.QRect(420, 321, 32, 45)),
-                Digit(self.centralwidget,
-                         name="data_register:3:4",
-                         geometry=QtCore.QRect(452, 321, 32, 45)),
-                Digit(self.centralwidget,
-                         name="data_register:3:5",
-                         geometry=QtCore.QRect(484, 321, 32, 45)))
+                            SignDigit(self.centralwidget,
+                                      name="data_register:3:sign",
+                                      geometry=QtCore.QRect(324, 321, 32, 45)),  # sign
+                            Digit(self.centralwidget,
+                                  name="data_register:3:1",
+                                  geometry=QtCore.QRect(356, 321, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:3:2",
+                                  geometry=QtCore.QRect(388, 321, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:3:3",
+                                  geometry=QtCore.QRect(420, 321, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:3:4",
+                                  geometry=QtCore.QRect(452, 321, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:3:5",
+                                  geometry=QtCore.QRect(484, 321, 32, 45)))
         }
-
+        
         self.keyboard = {
             "verb": Key(self.centralwidget,
                         name="V",
                         image="VerbUp.jpg",
                         geometry=QtCore.QRect(6, 430, 75, 75)),
-                        #keypress_signal=self.keypress_signal),
+            # keypress_signal=self.keypress_signal),
             "noun": Key(self.centralwidget,
                         name="N",
                         image="NounUp.jpg",
                         geometry=QtCore.QRect(6, 510, 75, 75)),
-                        #keypress_signal = self.keypress_signal),
+            # keypress_signal = self.keypress_signal),
             "plus": Key(self.centralwidget,
                         name="+",
                         image="PlusUp.jpg",
                         geometry=QtCore.QRect(88, 390, 75, 75)),
-                        #keypress_signal=self.keypress_signal),
+            # keypress_signal=self.keypress_signal),
             "minus": Key(self.centralwidget,
                          name="-",
                          image="MinusUp.jpg",
                          geometry=QtCore.QRect(88, 470, 75, 75)),
-                         #keypress_signal=self.keypress_signal),
+            # keypress_signal=self.keypress_signal),
             0: Key(self.centralwidget,
                    name="0",
                    image="0Up.jpg",
                    geometry=QtCore.QRect(88, 550, 75, 75)),
-                   #keypress_signal=self.keypress_signal),
+            # keypress_signal=self.keypress_signal),
             1: Key(self.centralwidget,
                    name="1",
                    image="1Up.jpg",
                    geometry=QtCore.QRect(170, 550, 75, 75)),
-                   #keypress_signal=self.keypress_signal),
+            # keypress_signal=self.keypress_signal),
             2: Key(self.centralwidget,
                    name="2",
                    image="2Up.jpg",
                    geometry=QtCore.QRect(252, 550, 75, 75)),
-                   #keypress_signal=self.keypress_signal),
+            # keypress_signal=self.keypress_signal),
             3: Key(self.centralwidget,
                    name="3",
                    image="3Up.jpg",
                    geometry=QtCore.QRect(335, 550, 75, 75)),
-                   #keypress_signal=self.keypress_signal),
+            # keypress_signal=self.keypress_signal),
             4: Key(self.centralwidget,
                    name="4",
                    image="4Up.jpg",
                    geometry=QtCore.QRect(170, 470, 75, 75)),
-                   #keypress_signal=self.keypress_signal),
+            # keypress_signal=self.keypress_signal),
             5: Key(self.centralwidget,
                    name="5",
                    image="5Up.jpg",
                    geometry=QtCore.QRect(252, 470, 75, 75)),
-                   #keypress_signal=self.keypress_signal),
+            # keypress_signal=self.keypress_signal),
             6: Key(self.centralwidget,
                    name="6",
                    image="6Up.jpg",
                    geometry=QtCore.QRect(335, 470, 75, 75)),
-                   #keypress_signal=self.keypress_signal),
+            # keypress_signal=self.keypress_signal),
             7: Key(self.centralwidget,
                    name="7",
                    image="7Up.jpg",
                    geometry=QtCore.QRect(170, 390, 75, 75)),
-                   #keypress_signal=self.keypress_signal),
+            # keypress_signal=self.keypress_signal),
             8: Key(self.centralwidget,
                    name="8",
                    image="8Up.jpg",
                    geometry=QtCore.QRect(252, 390, 75, 75)),
-                   #keypress_signal=self.keypress_signal),
+            # keypress_signal=self.keypress_signal),
             9: Key(self.centralwidget,
                    name="9",
                    image="9Up.jpg",
                    geometry=QtCore.QRect(335, 390, 75, 75)),
-                   #keypress_signal=self.keypress_signal),
+            # keypress_signal=self.keypress_signal),
             "clr": Key(self.centralwidget,
                        name="C",
                        image="ClrUp.jpg",
                        geometry=QtCore.QRect(418, 470, 75, 75)),
-                       #keypress_signal=self.keypress_signal),
+            # keypress_signal=self.keypress_signal),
             "pro": Key(self.centralwidget,
                        name="P",
                        image="ProUp.jpg",
                        geometry=QtCore.QRect(418, 390, 75, 75)),
-                       #keypress_signal=self.keypress_signal),
+            # keypress_signal=self.keypress_signal),
             "key_rel": Key(self.centralwidget,
                            name="K",
                            image="KeyRelUp.jpg",
                            geometry=QtCore.QRect(418, 550, 75, 75)),
-                           #keypress_signal=self.keypress_signal),
+            # keypress_signal=self.keypress_signal),
             "entr": Key(self.centralwidget,
                         name="E",
                         image="EntrUp.jpg",
                         geometry=QtCore.QRect(496, 411, 75, 75)),
-                        #keypress_signal=self.keypress_signal),
+            # keypress_signal=self.keypress_signal),
             "rset": Key(self.centralwidget,
                         name="R",
                         image="RsetUp.jpg",
                         geometry=QtCore.QRect(496, 491, 75, 75)),
-                        #keypress_signal=self.keypress_signal),
+            # keypress_signal=self.keypress_signal),
         }
         
         self.setup_ui(self.main_window)
-
+    
     def set_verb_noun_flash(self, state_to_set):
         if state_to_set == "on":
             self.control_registers["verb"].start_blink()
@@ -663,58 +658,57 @@ class GUI:
             self.control_registers["noun"].stop_blink()
         else:
             print("Didn't understand your command, do you want me to flash or what?")
-            
-
+    
     def _flash_verb_noun(self):
         pass
-
+    
     def setup_ui(self, main_window):
-
+        
         self.left_frame_left_border.setGeometry(QtCore.QRect(42, 14, 8, 360))
         self.left_frame_left_border.setText("")
         self.left_frame_left_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameVerticalL.jpg"))
         self.left_frame_left_border.setObjectName("left_frame_left_border")
-
+        
         self.left_frame_bottom_border.setGeometry(QtCore.QRect(50, 362, 211, 16))
         self.left_frame_bottom_border.setText("")
         self.left_frame_bottom_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameHorizontal.jpg"))
         self.left_frame_bottom_border.setObjectName("left_frame_bottom_border")
-
+        
         self.left_frame_right_border.setGeometry(QtCore.QRect(242, 14, 8, 360))
         self.left_frame_right_border.setText("")
         self.left_frame_right_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameVerticalL.jpg"))
         self.left_frame_right_border.setObjectName("left_frame_right_border")
-
+        
         self.left_frame_top_border.setGeometry(QtCore.QRect(50, 10, 211, 16))
         self.left_frame_top_border.setText("")
         self.left_frame_top_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameHorizontal.jpg"))
         self.left_frame_top_border.setObjectName("left_frame_top_border")
-
+        
         self.right_frame_right_border.setGeometry(QtCore.QRect(516, 14, 8, 360))
         self.right_frame_right_border.setText("")
         self.right_frame_right_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameVerticalL.jpg"))
         self.right_frame_right_border.setObjectName("right_frame_right_border")
-
+        
         self.right_frame_bottom_border.setGeometry(QtCore.QRect(324, 362, 211, 16))
         self.right_frame_bottom_border.setText("")
         self.right_frame_bottom_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameHorizontal.jpg"))
         self.right_frame_bottom_border.setObjectName("right_frame_bottom_border")
-
+        
         self.right_frame_top_border.setGeometry(QtCore.QRect(324, 10, 201, 16))
         self.right_frame_top_border.setText("")
         self.right_frame_top_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameHorizontal.jpg"))
         self.right_frame_top_border.setObjectName("right_frame_top_border")
-
+        
         self.right_frame_left_border.setGeometry(QtCore.QRect(316, 14, 8, 360))
         self.right_frame_left_border.setText("")
         self.right_frame_left_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameVerticalL.jpg"))
         self.right_frame_left_border.setObjectName("right_frame_left_border")
-
+        
         self.lighting_prog.setGeometry(QtCore.QRect(452, 22, 64, 24))
         self.lighting_prog.setText("")
         self.lighting_prog.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "rProgOn.jpg"))
         self.lighting_prog.setObjectName("lighting_prog")
-
+        
         self.lighting_verb.setGeometry(QtCore.QRect(324, 105, 64, 24))
         self.lighting_verb.setText("")
         self.lighting_verb.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "VerbOn.jpg"))
@@ -736,7 +730,7 @@ class GUI:
         self.lighting_sep_bar_3.setText("")
         self.lighting_sep_bar_3.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "SeparatorOn.jpg"))
         self.lighting_sep_bar_3.setObjectName("lighting_sep_bar_3")
-
+        
         self.static_display_1.setGeometry(QtCore.QRect(388, 22, 64, 152))
         self.static_display_1.setText("")
         self.static_display_1.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "CenterBlock.jpg"))
@@ -761,28 +755,28 @@ class GUI:
         self.right_frame_top_border.raise_()
         self.right_frame_left_border.raise_()
         self.lighting_prog.raise_()
-
+        
         for key in self.annunciators:
             self.annunciators[key].raise_()
-
+        
         # for register in self.control_registers:
         #     for digit in self.control_registers[register]:
         #         self.control_registers[register][digit].raise_()
-
+        
         # for register in self.data_registers:
         #     for digit in self.data_registers[register]:
         #         self.data_registers[register][digit].raise_()
-
+        
         # misc setup
         self.lighting_verb.raise_()
         self.lighting_noun.raise_()
-
+        
         self.lighting_sep_bar_1.raise_()
         self.lighting_sep_bar_2.raise_()
         self.lighting_sep_bar_3.raise_()
-
+        
         self.static_display_1.raise_()
-
+        
         main_window.setCentralWidget(self.centralwidget)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 572, 21))
         self.menubar.setObjectName("menubar")
@@ -810,27 +804,26 @@ class GUI:
         self.menu_help.addAction(self.action_about)
         self.menubar.addAction(self.menu_file.menuAction())
         self.menubar.addAction(self.menu_help.menuAction())
-
+        
         # self.retranslateUi(main_window)
         QtCore.QMetaObject.connectSlotsByName(main_window)
-
-    # def retranslateUi(self, main_window):
-    #     _translate = QtCore.QCoreApplication.translate
-    #     main_window.setWindowTitle(_translate("main_window", "basaGC"))
-    #     self.menu_file.setTitle(_translate("main_window", "&File"))
-    #     self.menu_help.setTitle(_translate("main_window", "&Help"))
-    #     self.action_settings.setText(_translate("main_window", "&Settings..."))
-    #     self.action_show_log.setText(_translate("main_window", "Show &Log..."))
-    #     self.action_quit.setText(_translate("main_window", "&Quit"))
-    #     self.action_verbs.setText(_translate("main_window", "&Verbs..."))
-    #     self.action_nouns.setText(_translate("main_window", "&Nouns..."))
-    #     self.action_programs.setText(_translate("main_window", "&Programs"))
-    #     self.action_alarm_codes.setText(_translate("main_window", "&Alarm Codes..."))
-    #     self.action_about.setText(_translate("main_window", "Abou&t..."))
+        
+        # def retranslateUi(self, main_window):
+        #     _translate = QtCore.QCoreApplication.translate
+        #     main_window.setWindowTitle(_translate("main_window", "basaGC"))
+        #     self.menu_file.setTitle(_translate("main_window", "&File"))
+        #     self.menu_help.setTitle(_translate("main_window", "&Help"))
+        #     self.action_settings.setText(_translate("main_window", "&Settings..."))
+        #     self.action_show_log.setText(_translate("main_window", "Show &Log..."))
+        #     self.action_quit.setText(_translate("main_window", "&Quit"))
+        #     self.action_verbs.setText(_translate("main_window", "&Verbs..."))
+        #     self.action_nouns.setText(_translate("main_window", "&Nouns..."))
+        #     self.action_programs.setText(_translate("main_window", "&Programs"))
+        #     self.action_alarm_codes.setText(_translate("main_window", "&Alarm Codes..."))
+        #     self.action_about.setText(_translate("main_window", "Abou&t..."))
 
 
 if __name__ == "__main__":
-
     app = QtWidgets.QApplication(sys.argv)
     main_window = QtWidgets.QMainWindow()
     ui = GUI(main_window)
