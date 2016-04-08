@@ -27,10 +27,11 @@ import inspect
 import sys
 from collections import OrderedDict
 
+import basagc.maneuver
 from . import config
 from . import routines
 from . import utils
-from .routines import Burn
+from basagc.maneuver import Burn
 from .telemachus import get_telemetry, KSPNotConnected, check_connection
 
 gc = None
@@ -288,19 +289,19 @@ class Program15(Program):
         current_phase_angle = get_telemetry("body_phaseAngle", body_number=telemachus_target_id)
 
         # calculate the first and second burn Δv parameters
-        self.delta_v_first_burn, gc.moi_burn_delta_v = routines.delta_v(self.departure_altitude,
-                                                                        self.destination_altitude)
+        self.delta_v_first_burn, gc.moi_burn_delta_v = basagc.maneuver.calculate_delta_v_hohmann(self.departure_altitude,
+                                                                                                 self.destination_altitude)
         print((gc.moi_burn_delta_v))
 
         # calculate the time to complete the Hohmann transfer
-        self.time_to_transfer = routines.time_to_transfer(self.departure_altitude, self.destination_altitude,
+        self.time_to_transfer = basagc.maneuver.time_to_transfer(self.departure_altitude, self.destination_altitude,
                                                                  self.grav_param)
 
         # calculate the correct phase angle for the start of the burn
         # note that the burn impulse is calculated as a instantaneous burn, to be correct the burn should be halfway
         # complete at this calculated time
 
-        self.phase_angle_required = routines.phase_angle(self.departure_altitude, self.destination_altitude,
+        self.phase_angle_required = basagc.maneuver.phase_angle(self.departure_altitude, self.destination_altitude,
                                                                 self.grav_param)
 
         # calculate the current difference in phase angle required and current phase angle

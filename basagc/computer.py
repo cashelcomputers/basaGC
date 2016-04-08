@@ -26,14 +26,14 @@
 
 from PyQt5.QtCore import QTimer
 
-from . import config
-from . import dsky
-from . import nouns
-from . import programs
-from . import routines
-from . import telemachus
-from . import utils
-from . import verbs
+from basagc import config
+from basagc import dsky
+from basagc import nouns
+from basagc import programs
+from basagc import routines
+from basagc import telemachus
+from basagc import utils
+from basagc import verbs
 
 
 class Computer:
@@ -49,15 +49,33 @@ class Computer:
         """
         utils.log(message="\n\n" + config.SHORT_LICENCE + "\n", log_level="INFO")
         self.ui = ui
-        # this has to go here, so we can init the widgets first
-
+        
         self.dsky = dsky.DSKY(self, self.ui)
-
+        self.keyboard_state = {
+            "input_data_buffer": "",
+            "register_index": 0,
+            "is_verb_being_loaded": False,
+            "is_noun_being_loaded": False,
+            "is_data_being_loaded": False,
+            "verb_position": 0,
+            "noun_position": 0,
+            "requested_verb": 0,
+            "requested_noun": 0,
+            "current_verb": 0,
+            "current_noun": 0,
+            "current_program": 0,
+            "display_lock": None,
+            "backgrounded_update": None,
+            "is_expecting_data": False,
+            "is_expecting_proceed": False,
+            "object_requesting_data": None,
+            "display_location_to_load": None,
+            "set_keyboard_state_function": self.set_keyboard_state,
+        }
         self.main_loop_timer = QTimer()
         self.main_loop_timer.timeout.connect(self.main_loop)
         self.is_powered_on = False
         self.main_loop_table = []
-        # self.gui.Bind(wx.EVT_CLOSE, self.quit)
         self.alarm_codes = [0, 0, 0]
         self.running_programs = []
         self.noun_data = {
@@ -70,17 +88,6 @@ class Computer:
         self.is_direction_autopilot_engaged = False
         self.is_thrust_autopilot_engaged = False
         self.moi_burn_delta_v = 0.0  # a bit of a hack, need to rethink this
-
-        routines.gc = self
-        telemachus.gc = self
-        verbs.gc = self
-        verbs.dsky = self.dsky
-        verbs.frame = self
-        nouns.gc = self
-        nouns.dsky = self.dsky
-        nouns.frame = self
-        programs.gc = self
-        programs.dsky = self.dsky
 
         self.nouns = nouns.nouns
         self.verbs = verbs.verbs
@@ -96,7 +103,16 @@ class Computer:
         }
 
         self.on()
-
+    
+    def charin(self, keypress):
+        routines.charin(keypress, self.keyboard_state, self.dsky, self)
+    
+    def register_charin(self):
+        self.ui.register_key_handler = self.charin
+        
+    def set_keyboard_state(self, state_name, new_value):
+        self.keyboard_state[state_name] = new_value
+    
     def add_burn_to_queue(self, burn_object, execute=True):
 
         """ Adds a Burn object to the computer burn queue. If no burn is assigned to next_burn, load new burn to
@@ -175,6 +191,10 @@ class Computer:
             self.dsky.annunciators["no_att"].on()
         else:
             utils.log("Retrieved telemetry listing", log_level="INFO")
+        
+        # register key handler with qt ui
+        self.register_charin()
+        
         self.main_loop_timer.start(config.LOOP_TIMER_INTERVAL)
         self.is_powered_on = True
         # self.ui.set_verb_noun_flash("on")

@@ -6,8 +6,6 @@ from . import config
 from .computer import Computer
 from .config import BLANK
 
-gui_instance = None
-
 
 class ControlRegister:
     def __init__(self, central_widget, name, *digits):
@@ -132,6 +130,7 @@ class DataRegister:
 
 class Key(QtWidgets.QPushButton):
     def __init__(self, central_widget, name, image, geometry):
+        
         super().__init__(central_widget)
         
         self.setGeometry(geometry)
@@ -142,10 +141,13 @@ class Key(QtWidgets.QPushButton):
         self.setIconSize(QtCore.QSize(65, 65))
         self.clicked.connect(self.charin)
         self.setText("")
+        self.key_handler_function = None  # will hold the function to run for keypress events
     
     def charin(self):
-        CHARIN(self.objectName())
-
+        key_handler_function(self.objectName())
+    
+    def register_key_handler(self, key_handler_function):
+        self.key_handler_function = key_handler_function
 
 class Annunciator(QtWidgets.QLabel):
     def __init__(self, central_widget, name, image_on, image_off, geometry):
@@ -819,6 +821,5 @@ if __name__ == "__main__":
     main_window = QtWidgets.QMainWindow()
     ui = GUI(main_window)
     computer = Computer(ui)
-    CHARIN = computer.dsky.charin
     main_window.show()
     sys.exit(app.exec_())
