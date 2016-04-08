@@ -24,7 +24,7 @@ interface between the computer and the gui toolkit.
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>import wx
 
-from basagc import utils, routines
+from basagc import utils
 
 
 class DSKY:
@@ -44,12 +44,10 @@ class DSKY:
         DSKY.dsky_instance = self
         self.computer = computer
         output_widgets = ui.get_output_widgets()
-        print(output_widgets)
         self.annunciators = output_widgets[0]
         self._control_registers = output_widgets[1]
         self._data_registers = output_widgets[2]
         # self.keyboard = Keyboard(ui)
-        
         
         self.registers = {
             "program": self._control_registers["program"],
@@ -77,7 +75,7 @@ class DSKY:
         :param register: the name of the register to blink
         :return: None
         """
-        
+        pass
     
     def set_register(self, value, register, digit=None):
         
@@ -210,10 +208,8 @@ class DSKY:
 
     def reset_annunciators(self):
         
-        [annunciator.off() for annunciator in self.annunciators]
-        
-        # for annunciator in self.annunciators:
-        #     annunciator.off()
+        for annunciator in self.annunciators:
+            self.annunciators[annunciator].off()
 
 class Digit:
     

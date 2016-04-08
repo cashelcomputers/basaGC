@@ -939,15 +939,15 @@ class Verb35(Verb):
 
     """Lamp test"""
 
-    def __init__(self, noun=None):
+    def __init__(self, computer):
 
         """ Class constructor
         :return: None
         """
 
         super(Verb35, self).__init__(name="Test lights", verb_number="35", noun=None)
-        #self.flash_timer = QtCore.QTimer()
-        self.loop_counter = 0
+        self.flash_timer = QTimer()
+        self.computer = computer
 
     def execute(self):
 
@@ -964,35 +964,15 @@ class Verb35(Verb):
             # commands the control registers
         for register in ["verb", "noun", "program"]:
             self.dsky.set_register(value="88", register=register)
-        # register.start_verb_35_blink()
-            
-        # self.flash_timer.singleShot(5000, self.terminate)
-
-
+        self.flash_timer.singleShot(5000, self.terminate)
+        
     def terminate(self):
-
-        """ Terminates the verb.
-        :return: None
-        """
         
         for annunciator in self.dsky.annunciators.values():
             annunciator.off()
-        for name, register in self.dsky.registers.items():
-            if name == "program":
-                register.display(["b", "b"])
-            else:
-                register.display("88")
-                
-    def stop_timer_event(self, event):
-
-        """ Event handler for when the timer stops
-        :param event: wxPython event object (not used)
-        :return:
-        """
-
-        utils.log("Stopping V35 timer")
-        self.terminate()
-
+        self.dsky.set_register(value="bb", register="program")
+        self.computer.remove_job(self)
+        
 
 class Verb36(Verb):
 

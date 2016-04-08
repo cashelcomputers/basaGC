@@ -93,6 +93,7 @@ class Computer:
         self.is_direction_autopilot_engaged = False
         self.is_thrust_autopilot_engaged = False
         self.moi_burn_delta_v = 0.0  # a bit of a hack, need to rethink this
+        self.jobs = []
 
         self.nouns = nouns.nouns
         self.verbs = verbs.verbs
@@ -247,9 +248,18 @@ class Computer:
         else:
             noun = self.keyboard_state["requested_noun"]
         self.dsky.set_register(value=verb, register="verb")
-        verb_to_execute = self.verbs[verb](noun)
+        verb_to_execute = self.verbs[verb](self)
+        self.add_job(verb_to_execute)
         verb_to_execute.execute()
-
+    
+    def remove_job(self, job):
+        utils.log("Removing job from jobs list: {}".format(job))
+        self.jobs.remove(job)
+    
+    def add_job(self, job):
+        utils.log("Adding job to jobs list: {}".format(job))
+        self.jobs.append(job)
+    
     def reset_alarm_codes(self):
 
         """ Resets the alarm codes.
