@@ -18,6 +18,7 @@ class ControlRegister:
             digits[0],
             digits[1],
         ]
+        self.blink_data = {}
 
         self.display(["b", "b"])
     
@@ -81,6 +82,7 @@ class DataRegister:
             digits[4],
         
         ]
+        self.blink_data = {}
         self.display(["b", "b", "b", "b", "b", "b"])
     
     def blank(self):
@@ -96,32 +98,6 @@ class DataRegister:
     def display(self, data):
         
         """displays the data given, sending the call thru to gui"""
-        
-        # if input data is a string, need to do some further processing
-        if isinstance(data, str):
-            # if any chars are b, need to change this value to 10 cause thats what Digit class expects for blank
-            # create list without the sign digit
-            chars = []
-            # perform the substitution
-            for char in data:
-                if char == "b":
-                    chars.append(10)
-                else:
-                    chars.append(char)
-            data = [chars[0], int(chars[1]), int(chars[2]), int(chars[3]), int(chars[4]), int(chars[5])]
-        
-        # some value length checks
-        # value_length = len(value)
-        # if value_length > 6:
-        #     utils.log("Too many digits passed to display(), got {} digits".format(value_length), log_level="ERROR")
-        #     return
-        # elif value_length == 5:
-        #     utils.log("display() received only 5 digits, assuming sign is blank", log_level="WARNING")
-        #
-        # elif value_length < 5:
-        #     utils.log("display() received {} digits, padding with zeros to the left".format(value_length),
-        #               log_level="WARNING")
-        #     value.zfill(5)
         
         self.digits[0].display(data[0])
         self.digits[1].display(data[1])
@@ -218,6 +194,7 @@ class SignDigit(QtWidgets.QLabel):
         }
         self.setText("")
         self.display("b")
+        self.blink_data = {}
     
     def set_tooltip(self, tooltip):
         self.setToolTip(tooltip)
@@ -247,6 +224,14 @@ class Digit(QtWidgets.QLabel):
             "9": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-9.jpg"),
             "b": QtGui.QPixmap(config.IMAGES_DIR + "7SegOff.jpg"),  # blank
         }
+
+        self.blink_data = {
+            "blink_value": None,
+            "is_blinking": False,
+        }
+        
+        self.blink_timer = QtCore.QTimer()
+        
     
     def set_tooltip(self, tooltip):
         self.setToolTip(tooltip)
@@ -259,6 +244,8 @@ class Digit(QtWidgets.QLabel):
             number_to_display = str(number_to_display)
         image = self.digit_pixmaps[number_to_display]
         self.setPixmap(image)
+        if self.blink_data["is_blinking"] == False:  # dont want to change the blink value if we are already blinking
+            self.blink_data["blink_value"] = number_to_display  # so that we can flash the last value if needed
 
 
 class GUI:

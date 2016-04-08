@@ -50,12 +50,44 @@ class DSKY:
         # self.keyboard = Keyboard(ui)
         
         self.registers = {
-            "program": self._control_registers["program"],
-            "verb": self._control_registers["verb"],
-            "noun": self._control_registers["noun"],
-            "data_1": self._data_registers[1],
-            "data_2": self._data_registers[2],
-            "data_3": self._data_registers[3],
+            "program": {
+                "1": self._control_registers["program"].digits[0],
+                "2": self._control_registers["program"].digits[1],
+            },
+            "verb": {
+                "1": self._control_registers["verb"].digits[0],
+                "2": self._control_registers["verb"].digits[1],
+            },
+            "noun": {
+                "1": self._control_registers["noun"].digits[0],
+                "2": self._control_registers["noun"].digits[1],
+            },
+            "data": {
+                "1": {
+                    "sign": self._data_registers[1].digits[0],
+                    "1": self._data_registers[1].digits[1],
+                    "2": self._data_registers[1].digits[2],
+                    "3": self._data_registers[1].digits[3],
+                    "4": self._data_registers[1].digits[4],
+                    "5": self._data_registers[1].digits[5],
+                },
+                "2": {
+                    "sign": self._data_registers[1].digits[0],
+                    "1": self._data_registers[2].digits[1],
+                    "2": self._data_registers[2].digits[2],
+                    "3": self._data_registers[2].digits[3],
+                    "4": self._data_registers[2].digits[4],
+                    "5": self._data_registers[2].digits[5],
+                },
+                "3": {
+                    "sign": self._data_registers[1].digits[0],
+                    "1": self._data_registers[3].digits[1],
+                    "2": self._data_registers[3].digits[2],
+                    "3": self._data_registers[3].digits[3],
+                    "4": self._data_registers[3].digits[4],
+                    "5": self._data_registers[3].digits[5],
+                },
+            },
         }
     
     def blank_register(self, register):
@@ -65,7 +97,8 @@ class DSKY:
         if register not in self.registers:
             utils.log("No such register: {}".format(register))
             return
-        for digit in self.registers[register].digits:
+        for digit in self.registers[register].values():
+            print(digit)
             digit.display("b")
     
     def blink_register(self, register):
@@ -75,19 +108,58 @@ class DSKY:
         :param register: the name of the register to blink
         :return: None
         """
-        pass
+        
+        # check if we are to blink a control register
+        for digit in self.registers[register].digits:
+            digit.blink_data[is_blinking_lit] = False
+            digit.blink_data[is_blinking] = True
+            digit.display("b")
+            
+            # bind andstart the timer
+            digit.blink_timer.timeout.connect(self._blink_event)
+            digit.blink_timer.start(500)
     
+    def _blink_event(self):
+        """alternates the digit between a value and blank ie to flash the digit."""
+    
+        # digit displaying the number, switch to blank
+        if self.is_blinking_lit:
+            self.display(10)
+            self.is_blinking_lit = False
+        else:
+            # digit displaying blank, change to number
+            self.display(self.last_value)
+            self.is_blinking_lit = True
+
     def set_register(self, value, register, digit=None):
         
         # registers are verb, noun, program, data_1, data_2, data_3
-        if not digit:
-            for index in range(len(value)):
-                self.registers[register].digits[index].display(value[index])
-        else:
-            self.registers[register].digits[digit].display(value)
-                
-        
-    
+        if register in ["verb", "noun", "program"]:
+            if digit:
+                self.registers[register][str(digit)].display(value)
+                return
+            for index in len(self.registers[register].values()):
+                print(index, digit)
+                digit.display(value[index - 1])
+        elif register == "data_1":
+            if digit:
+                self.registers[register]["1"][str(digit)].display(value)
+                return
+            for index, digit in enumerate(self.registers["data"]["1"].values(), start=1):
+                digit.display(value[index - 1])
+        elif register == "data_2":
+            if digit:
+                self.registers[register]["2"][str(digit)].display(value)
+                return
+            for index, digit in enumerate(self.registers["data"]["2"].values(), start=1):
+                digit.display(value[index - 1])
+        elif register == "data_3":
+            if digit:
+                self.registers[register]["3"][str(digit)].display(value)
+                return
+            for index, digit in enumerate(self.registers["data"]["3"].values(), start=1):
+                digit.display(value[index - 1])
+
     def set_annunciator(self, name, set_to=True):
         
         try:
@@ -160,8 +232,8 @@ class DSKY:
         :return: None
         """
 
-        self.control_registers["verb"].start_blink()
-        self.control_registers["noun"].start_blink()
+        self.registers["verb"].start_blink()
+        self.registers["noun"].start_blink()
 
     def verb_noun_flash_off(self):
 
@@ -257,11 +329,7 @@ class Digit:
             self.is_blinking_lit = True
     
     def display(self, number_to_display):
-        
-        """displays a given digit"""
-        
-        # first cast number_to_display to int
-        number_to_display = int(number_to_display)
+
         
         # if we are flashing, only need to change stored digit
         if self.is_blinking:

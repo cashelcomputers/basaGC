@@ -51,6 +51,7 @@ class Computer:
         """
         
         Computer.computer_instance = self
+        verbs.Verb.computer = self
         
         utils.log(message="\n\n" + config.SHORT_LICENCE + "\n", log_level="INFO")
         self.ui = ui
@@ -248,7 +249,7 @@ class Computer:
         else:
             noun = self.keyboard_state["requested_noun"]
         self.dsky.set_register(value=verb, register="verb")
-        verb_to_execute = self.verbs[verb](self)
+        verb_to_execute = self.verbs[verb](noun)
         self.add_job(verb_to_execute)
         verb_to_execute.execute()
     

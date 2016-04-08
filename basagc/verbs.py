@@ -73,7 +73,9 @@ class Verb:
 
     """ Base class for verbs
     """
-
+    
+    computer = None
+    
     def __init__(self, name, verb_number, noun):
 
         """ Class constructor.
@@ -83,6 +85,7 @@ class Verb:
         :type verb_number: str
         """
         
+        self.computer = Verb.computer
         self.dsky = dsky.DSKY.dsky_instance
         self.name = name
         self.number = verb_number
@@ -124,10 +127,10 @@ class Verb:
         :return:
         """
 
-        if gc.dsky.requested_noun in self.illegal_nouns:
+        if self.noun in self.illegal_nouns:
             raise NounNotAcceptableError
         utils.log("Executing Verb {}: {}".format(self.number, self.name))
-        gc.dsky.current_verb = self
+        self.dsky.current_verb = self
 
     # def _activity(self, event):
     #
@@ -939,7 +942,7 @@ class Verb35(Verb):
 
     """Lamp test"""
 
-    def __init__(self, computer):
+    def __init__(self):
 
         """ Class constructor
         :return: None
@@ -947,7 +950,6 @@ class Verb35(Verb):
 
         super(Verb35, self).__init__(name="Test lights", verb_number="35", noun=None)
         self.flash_timer = QTimer()
-        self.computer = computer
 
     def execute(self):
 
@@ -1008,7 +1010,6 @@ class Verb37(Verb):
         """
 
         super(Verb37, self).__init__(name="Change program (Major Mode)", verb_number="37", noun=noun)
-        #self.data.append("")
 
     def execute(self):
 
@@ -1017,7 +1018,7 @@ class Verb37(Verb):
         """
 
         super(Verb37, self).execute()
-        self.dsky.request_data(requesting_object=self.receive_data, display_location=self.dsky.control_registers["noun"])
+        self.dsky.request_data(requesting_object=self.receive_data, display_location=self.dsky.registers["noun"])
 
     def receive_data(self, data):
 
