@@ -147,11 +147,11 @@ def charin(keypress, state, dsky, computer):
             dsky.operator_error("Expected a number for verb choice")
             return
         elif state["verb_position"] == 0:
-            dsky.control_registers["verb"].digits[0].display(keypress)
+            dsky.set_register(value=keypress, register="verb", digit=0)
             state["requested_verb"] = keypress
             state["verb_position"] = 1
         elif state["verb_position"] == 1:
-            dsky.control_registers["verb"].digits[1].display(keypress)
+            dsky.set_register(value=keypress, register="verb", digit=1)
             state["requested_verb"] += keypress
             state["verb_position"] = 2
 
@@ -224,7 +224,7 @@ def charin(keypress, state, dsky, computer):
         state["is_noun_being_loaded"] = False
         state["is_verb_being_loaded"] = True
         state["requested_verb"] = ""
-        dsky.control_registers["verb"].blank()
+        dsky.blank_register("verb")
 
     def handle_key_release_keypress():
     

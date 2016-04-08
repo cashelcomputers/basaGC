@@ -40,13 +40,18 @@ class Computer:
 
     """ This object models the core of the guidance computer.
     """
-
+    
+    computer_instance = None
+    
     def __init__(self, ui):
 
         """ Class constructor.
         :param gui: the wxPython frame object
         :return: None
         """
+        
+        Computer.computer_instance = self
+        
         utils.log(message="\n\n" + config.SHORT_LICENCE + "\n", log_level="INFO")
         self.ui = ui
         
@@ -103,6 +108,14 @@ class Computer:
         }
 
         self.on()
+    
+    def get_verbs(self):
+        
+        verbs_dict = OrderedDict()
+        clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+        for class_tuple in clsmembers:
+            if class_tuple[0][-1].isdigit():
+                verbs_dict[class_tuple[0][-2:]] = class_tuple[1]
     
     def charin(self, keypress):
         routines.charin(keypress, self.keyboard_state, self.dsky, self)
@@ -197,7 +210,6 @@ class Computer:
         
         self.main_loop_timer.start(config.LOOP_TIMER_INTERVAL)
         self.is_powered_on = True
-        # self.ui.set_verb_noun_flash("on")
 
     def main_loop(self):
 
@@ -224,23 +236,19 @@ class Computer:
         poo = self.programs["00"]()
         poo.execute()
 
-    def execute_verb(self, verb, noun=None, **kwargs):
+    def execute_verb(self):
 
-        """ Executes the specified verb, optionally with the specified noun.
-        :param verb: The verb to execute
-        :param noun: The noun to supply to the verb
+        """ Executes the verb as stored in self.keyboard_state
         :return: None
         """
-        if noun is not None:
-            self.dsky.set_noun(noun)
-        verb = str(verb)
-        noun = str(noun)
-        self.dsky.control_registers["verb"].display(verb)
-        if int(verb) < 40:
-            verb_to_execute = self.verbs[verb](noun)
+        verb = self.keyboard_state["requested_verb"]
+        if self.keyboard_state["requested_noun"] == 0:
+            noun = None
         else:
-            verb_to_execute = self.verbs[verb]()
-        verb_to_execute.execute(**kwargs)
+            noun = self.keyboard_state["requested_noun"]
+        self.dsky.set_register(value=verb, register="verb")
+        verb_to_execute = self.verbs[verb](noun)
+        verb_to_execute.execute()
 
     def reset_alarm_codes(self):
 

@@ -24,13 +24,15 @@ interface between the computer and the gui toolkit.
 #  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
 #  by Ronald S. Burkey <info@sandroid.org>import wx
 
-from basagc import utils, verbs, routines
+from basagc import utils, routines
 
 
 class DSKY:
     """ This class models the DSKY.
     """
-
+    
+    dsky_instance = None
+    
     def __init__(self, computer, ui):
     
         """ Class constructor.
@@ -38,21 +40,53 @@ class DSKY:
         :param computer: the instance of the guidance computer
         :return: None
         """
-
+        
+        DSKY.dsky_instance = self
         self.computer = computer
         output_widgets = ui.get_output_widgets()
         print(output_widgets)
         self.annunciators = output_widgets[0]
-        self.control_registers = output_widgets[1]
-        self.data_registers = output_widgets[2]
+        self._control_registers = output_widgets[1]
+        self._data_registers = output_widgets[2]
         # self.keyboard = Keyboard(ui)
+        
+        
+        self.registers = {
+            "program": self._control_registers["program"],
+            "verb": self._control_registers["verb"],
+            "noun": self._control_registers["noun"],
+            "data_1": self._data_registers[1],
+            "data_2": self._data_registers[2],
+            "data_3": self._data_registers[3],
+        }
+    
+    def blank_register(self, register):
+        
+        """blanks the register"""
+        
+        if register not in self.registers:
+            utils.log("No such register: {}".format(register))
+            return
+        for digit in self.registers[register].digits:
+            digit.display("b")
+    
+    def blink_register(self, register):
+        
+        """
+        Blinks the named register.
+        :param register: the name of the register to blink
+        :return: None
+        """
+        
     
     def set_register(self, value, register, digit=None):
         
         # registers are verb, noun, program, data_1, data_2, data_3
-        if register in ["verb", "noun", "program"]:
-            if 0 < len(value) < 2 and not digit:
-                # need to have 2 digits
+        if not digit:
+            for index in range(len(value)):
+                self.registers[register].digits[index].display(value[index])
+        else:
+            self.registers[register].digits[digit].display(value)
                 
         
     
@@ -183,8 +217,9 @@ class DSKY:
 
 class Digit:
     
-    def __init__(self):
+    def __init__(self, widget):
         
+        self.widget = widget
         self.is_blinking_lit = True
         self.current_display = None
         self.value_to_blink = None

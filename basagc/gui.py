@@ -5,6 +5,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from . import config
 from .computer import Computer
 from .config import BLANK
+from basagc import utils
 
 
 class ControlRegister:
@@ -17,35 +18,37 @@ class ControlRegister:
             digits[0],
             digits[1],
         ]
+
+        self.display(["b", "b"])
     
     def set_tooltip(self, tooltip):
         
         for digit in self.digits:
             digit.set_tooltip(tooltip)
     
-    def start_verb_35_blink(self):
-        
-        if self.name != "program":
-            self.digits[0].start_blink()
-            self.digits[1].start_blink()
-        else:
-            self.display("88")
-        
-        self.verb_35_timer.singleShot(5000, self.stop_verb_35_blink)
-    
-    def stop_verb_35_blink(self):
-        self.digits[0].stop_blink()
-        self.digits[1].stop_blink()
-        if self.name == "program":
-            self.display(BLANK)
-        else:
-            self.display("88")
-        for annunciator in gui_instance.annunciators.values():
-            annunciator.off()
-    
-    def stop_blink(self):
-        self.digits[0].stop_blink()
-        self.digits[1].stop_blink()
+    # def start_verb_35_blink(self):
+    #     
+    #     if self.name != "program":
+    #         self.digits[0].start_blink()
+    #         self.digits[1].start_blink()
+    #     else:
+    #         self.display("88")
+    #     
+    #     self.verb_35_timer.singleShot(5000, self.stop_verb_35_blink)
+    # 
+    # def stop_verb_35_blink(self):
+    #     self.digits[0].stop_blink()
+    #     self.digits[1].stop_blink()
+    #     if self.name == "program":
+    #         self.display(BLANK)
+    #     else:
+    #         self.display("88")
+    #     for annunciator in gui_instance.annunciators.values():
+    #         annunciator.off()
+    # 
+    # def stop_blink(self):
+    #     self.digits[0].stop_blink()
+    #     self.digits[1].stop_blink()
     
     def display(self, data):
         
@@ -53,16 +56,16 @@ class ControlRegister:
         if len(data) > 1:
             self.digits[1].display(data[1])
     
-    def blank(self):
-        """ Blanks the whole control register.
-        :return: None
-        """
-        
-        self.display(BLANK)
+    # def blank(self):
+    #     """ Blanks the whole control register.
+    #     :return: None
+    #     """
+    #     
+    #     self.display(BLANK)
     
-    def start_blink(self):
-        self.digits[0].start_blink()
-        self.digits[1].start_blink()
+    # def start_blink(self):
+    #     self.digits[0].start_blink()
+    #     self.digits[1].start_blink()
 
 
 class DataRegister:
@@ -78,7 +81,7 @@ class DataRegister:
             digits[4],
         
         ]
-        self.display(["b", 10, 10, 10, 10, 10])
+        self.display(["b", "b", "b", "b", "b", "b"])
     
     def blank(self):
         
@@ -212,7 +215,6 @@ class SignDigit(QtWidgets.QLabel):
             "+": QtGui.QPixmap(config.IMAGES_DIR + "PlusOn.jpg"),
             "-": QtGui.QPixmap(config.IMAGES_DIR + "MinusOn.jpg"),
             "b": QtGui.QPixmap(config.IMAGES_DIR + "PlusMinusOff.jpg"),
-            10: QtGui.QPixmap(config.IMAGES_DIR + "PlusMinusOff.jpg"),  # for compatibility with digits
         }
         self.setText("")
         self.display("b")
@@ -232,61 +234,29 @@ class Digit(QtWidgets.QLabel):
         super().__init__(central_widget)
         self.setGeometry(geometry)
         self.setObjectName(name)
-        self.digit_pixmaps = [
-            QtGui.QPixmap(config.IMAGES_DIR + "7Seg-0.jpg"),
-            QtGui.QPixmap(config.IMAGES_DIR + "7Seg-1.jpg"),
-            QtGui.QPixmap(config.IMAGES_DIR + "7Seg-2.jpg"),
-            QtGui.QPixmap(config.IMAGES_DIR + "7Seg-3.jpg"),
-            QtGui.QPixmap(config.IMAGES_DIR + "7Seg-4.jpg"),
-            QtGui.QPixmap(config.IMAGES_DIR + "7Seg-5.jpg"),
-            QtGui.QPixmap(config.IMAGES_DIR + "7Seg-6.jpg"),
-            QtGui.QPixmap(config.IMAGES_DIR + "7Seg-7.jpg"),
-            QtGui.QPixmap(config.IMAGES_DIR + "7Seg-8.jpg"),
-            QtGui.QPixmap(config.IMAGES_DIR + "7Seg-9.jpg"),
-            QtGui.QPixmap(config.IMAGES_DIR + "7SegOff.jpg"),  # 10 means blank
-        ]
-        self.is_blinking_lit = True
-        self.current_display = None
-        self.value_to_blink = None
-        self.blink_timer = QtCore.QTimer()
-        self.blink_timer.timeout.connect(self.flip)
-        self.setText("")
-        self.display(10)
-        self.last_value = None
-        self.is_blinking = False
+        self.digit_pixmaps = {
+            "0": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-0.jpg"),
+            "1": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-1.jpg"),
+            "2": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-2.jpg"),
+            "3": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-3.jpg"),
+            "4": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-4.jpg"),
+            "5": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-5.jpg"),
+            "6": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-6.jpg"),
+            "7": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-7.jpg"),
+            "8": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-8.jpg"),
+            "9": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-9.jpg"),
+            "b": QtGui.QPixmap(config.IMAGES_DIR + "7SegOff.jpg"),  # blank
+        }
     
     def set_tooltip(self, tooltip):
         self.setToolTip(tooltip)
     
-    def start_blink(self):
-        
-        """ Starts the digit blinking.
-        :return: None
-        """
-        self.is_blinking_lit = False
-        self.is_blinking = True
-        self.display(10)
-        self.blink_timer.start(500)
-    
-    def stop_blink(self):
-        self.is_blinking = False
-        self.blink_timer.stop()
-    
-    def flip(self):
-        
-        """alternates the digit between a value and blank ie to flash the digit."""
-        
-        # digit displaying the number, switch to blank
-        if self.is_blinking_lit:
-            self.display(10)
-            self.is_blinking_lit = False
-        else:
-            # digit displaying blank, change to number
-            self.display(self.last_value)
-            self.is_blinking_lit = True
-    
     def display(self, number_to_display):
         
+        # cast to string (but should be a string already, so log it
+        if not isinstance(number_to_display, str):
+            utils.log("You should pass a string to be displayed bu GUI!")
+            number_to_display = str(number_to_display)
         image = self.digit_pixmaps[number_to_display]
         self.setPixmap(image)
 

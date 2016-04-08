@@ -30,15 +30,8 @@ from collections import OrderedDict
 
 from PyQt5.QtCore import QTimer
 
-from . import config
-from . import nouns
-from . import programs
-from . import utils
-from .telemachus import KSPNotConnected, TelemetryNotAvailable
-
-gc = None
-dsky = None
-frame = None
+from basagc import config, nouns, programs, utils, dsky
+from basagc.telemachus import KSPNotConnected, TelemetryNotAvailable
 
 log = logging.getLogger("Verbs")
 
@@ -89,7 +82,8 @@ class Verb:
         :param verb_number: the number of the verb. Valid ranges are 01 to 99 with some verb numbers not used
         :type verb_number: str
         """
-
+        
+        self.dsky = dsky.DSKY.dsky_instance
         self.name = name
         self.number = verb_number
         self.illegal_nouns = []
@@ -945,13 +939,13 @@ class Verb35(Verb):
 
     """Lamp test"""
 
-    def __init__(self, noun):
+    def __init__(self, noun=None):
 
         """ Class constructor
         :return: None
         """
 
-        super(Verb35, self).__init__(name="Test lights", verb_number="35", noun=noun)
+        super(Verb35, self).__init__(name="Test lights", verb_number="35", noun=None)
         #self.flash_timer = QtCore.QTimer()
         self.loop_counter = 0
 
@@ -962,22 +956,17 @@ class Verb35(Verb):
         """
 
         # commands the annunciators
-        for annunciator in dsky.annunciators.values():
+        for annunciator in self.dsky.annunciators.values():
             annunciator.on()
-        #commands the data registers
-        for register in dsky.data_registers.values():
-            register.display("+88888")
-            # register.sign.plus()
-            # for digit in register.digits:
-            #     digit.display("8")
-
-        #commands the control registers
-        for register in dsky.control_registers.values():
-            register.display([10,10])
-            register.display("88")
-            register.start_verb_35_blink()
+        # commands the data registers
+        for register in ["1", "2", "3"]:
+            self.dsky.set_register(value="+88888", register="data_{}".format(register))
+            # commands the control registers
+        for register in ["verb", "noun", "program"]:
+            self.dsky.set_register(value="88", register=register)
+        # register.start_verb_35_blink()
             
-        #self.flash_timer.singleShot(5000, self.terminate)
+        # self.flash_timer.singleShot(5000, self.terminate)
 
 
     def terminate(self):
@@ -986,11 +975,11 @@ class Verb35(Verb):
         :return: None
         """
         
-        for annunciator in dsky.annunciators.values():
+        for annunciator in self.dsky.annunciators.values():
             annunciator.off()
-        for name, register in dsky.control_registers.items():
+        for name, register in self.dsky.registers.items():
             if name == "program":
-                register.display([10, 10])
+                register.display(["b", "b"])
             else:
                 register.display("88")
                 
@@ -1048,7 +1037,7 @@ class Verb37(Verb):
         """
 
         super(Verb37, self).execute()
-        dsky.request_data(requesting_object=self.receive_data, display_location=dsky.control_registers["noun"])
+        self.dsky.request_data(requesting_object=self.receive_data, display_location=self.dsky.control_registers["noun"])
 
     def receive_data(self, data):
 
@@ -1057,14 +1046,14 @@ class Verb37(Verb):
         :return: None
         """
         if len(data) != 2:
-            dsky.operator_error("Expected exactly two digits, received {} digits".format(len(data)))
+            self.dsky.operator_error("Expected exactly two digits, received {} digits".format(len(data)))
             self.terminate()
             return
 
         try:
             program = gc.programs[data]()
         except KeyError:
-            dsky.operator_error()
+            self.dsky.operator_error()
             return
         program.execute()
 
@@ -1363,21 +1352,21 @@ class Verb99(ExtendedVerb):
         """
 
         # stop any display updates
-        if gc.dsky.current_verb:
-            gc.dsky.current_verb.terminate()
+        if self.dsky.current_verb:
+            self.dsky.current_verb.terminate()
         super(Verb99, self).execute()
 
 
 
         # blank the DSKY
-        for register in list(gc.dsky.control_registers.values()):
+        for register in list(self.dsky.control_registers.values()):
             register.blank()
-        for register in list(gc.dsky.data_registers.values()):
+        for register in list(self.dsky.data_registers.values()):
             register.blank()
 
         # re-display the verb number since the register has been blanked
-        gc.dsky.control_registers["verb"].display("99")
-        gc.dsky.request_data(requesting_object=object_requesting_proceed, display_location=None,
+        self.dsky.control_registers["verb"].display("99")
+        self.dsky.request_data(requesting_object=object_requesting_proceed, display_location=None,
                              is_proceed_available=True)
 
 
