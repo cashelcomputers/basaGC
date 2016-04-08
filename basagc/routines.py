@@ -201,11 +201,8 @@ def charin(keypress, state, dsky, computer):
         :return: None
         """
     
-        state["computer.reset_alarm_codes()
-        for annunciator in state["annunciators.values():
-            if annunciator.blink_timer.isActive():
-                annunciator.stop_blink()
-            annunciator.off()
+        computer.reset_alarm_codes()
+        dsky.reset_annunciators()
 
     def handle_noun_keypress():
     
@@ -218,7 +215,7 @@ def charin(keypress, state, dsky, computer):
         state["requested_noun"] = ""
         state["control_registers"]["noun"].blank()
 
-    def _handle_verb_keypress():
+    def handle_verb_keypress():
     
         """ Handles VERB keypress
         :return: None
@@ -227,7 +224,7 @@ def charin(keypress, state, dsky, computer):
         state["is_noun_being_loaded"] = False
         state["is_verb_being_loaded"] = True
         state["requested_verb"] = ""
-        state["control_registers"]["verb"].blank()
+        dsky.control_registers["verb"].blank()
 
     def handle_key_release_keypress():
     
@@ -238,29 +235,29 @@ def charin(keypress, state, dsky, computer):
             if state["display_lock"]:
                 state["display_lock"].terminate()
             dsky.annunciators["key_rel"].stop_blink()
-            state["backgrounded_update.resume()
-            state["backgrounded_update = None
-            state["is_verb_being_loaded = False
-            state["is_noun_being_loaded = False
-            state["is_data_being_loaded = False
-            state["verb_position = 0
-            state["noun_position = 0
-            state["requested_verb = 0
-            state["requested_noun = 0
+            state["backgrounded_update"].resume()
+            state["backgrounded_update"] = None
+            state["is_verb_being_loaded"] = False
+            state["is_noun_being_loaded"] = False
+            state["is_data_being_loaded"] = False
+            state["verb_position"] = 0
+            state["noun_position"] = 0
+            state["requested_verb"] = 0
+            state["requested_noun"] = 0
             return
     
         # if the computer is off, we only want to accept the PRO key input,
         # all other keys are ignored
-        if state["computer.is_powered_on is False:
+        if computer.is_powered_on is False:
             if keypress == "P":
-                state["computer.on()
+                computer.on()
             else:
                 utils.log("Key {} ignored because gc is off".format(keypress))
 
-    print(handle_control_register_load())
+
     
     if state["is_expecting_data"]:
-        state["_handle_expected_data(keypress)
+        handle_expected_data()
         return
     
     if keypress == "R":
@@ -292,5 +289,3 @@ def charin(keypress, state, dsky, computer):
     if keypress == "C":
         pass  # TODO
 
-
-charin("K", {"is_expecting_data": False,})

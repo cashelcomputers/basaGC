@@ -2,7 +2,6 @@ import math
 
 from basagc import config, telemachus, utils
 from basagc.config import TELEMACHUS_BODY_IDS
-from basagc.routines import gc
 from basagc.telemachus import get_telemetry
 
 

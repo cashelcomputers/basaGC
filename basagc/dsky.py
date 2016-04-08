@@ -41,11 +41,31 @@ class DSKY:
 
         self.computer = computer
         output_widgets = ui.get_output_widgets()
+        print(output_widgets)
         self.annunciators = output_widgets[0]
         self.control_registers = output_widgets[1]
         self.data_registers = output_widgets[2]
-        self.keyboard = Keyboard(ui)
-
+        # self.keyboard = Keyboard(ui)
+    
+    def set_register(self, value, register, digit=None):
+        
+        # registers are verb, noun, program, data_1, data_2, data_3
+        if register in ["verb", "noun", "program"]:
+            if 0 < len(value) < 2 and not digit:
+                # need to have 2 digits
+                
+        
+    
+    def set_annunciator(self, name, set_to=True):
+        
+        try:
+            if set_to:
+                self.annunciators[name].on()
+            else:
+                self.annunciators[name].off()
+        except KeyError:
+            utils.log("You tried to change a annunciator that doesnt exist :(", "WARNING")
+            
     def operator_error(self, message=None):
 
         """ Called when the astronaut has entered invalid keyboard input.
@@ -153,3 +173,75 @@ class DSKY:
         
         self.requested_noun = noun
         self.control_registers["noun"].display(noun)
+
+    def reset_annunciators(self):
+        
+        [annunciator.off() for annunciator in self.annunciators]
+        
+        # for annunciator in self.annunciators:
+        #     annunciator.off()
+
+class Digit:
+    
+    def __init__(self):
+        
+        self.is_blinking_lit = True
+        self.current_display = None
+        self.value_to_blink = None
+        self.blink_timer = QtCore.QTimer()
+        self.blink_timer.timeout.connect(self.flip)
+        self.setText("")
+        self.display(10)
+        self.last_value = None
+        self.is_blinking = False
+    
+    def set_tooltip(self, tooltip):
+        self.setToolTip(tooltip)
+    
+    def start_blink(self):
+        
+        """ Starts the digit blinking.
+        :return: None
+        """
+        self.is_blinking_lit = False
+        self.is_blinking = True
+        self.display(10)
+        self.blink_timer.start(500)
+    
+    def stop_blink(self):
+        self.is_blinking = False
+        self.blink_timer.stop()
+    
+    def flip(self):
+        
+        """alternates the digit between a value and blank ie to flash the digit."""
+        
+        # digit displaying the number, switch to blank
+        if self.is_blinking_lit:
+            self.display(10)
+            self.is_blinking_lit = False
+        else:
+            # digit displaying blank, change to number
+            self.display(self.last_value)
+            self.is_blinking_lit = True
+    
+    def display(self, number_to_display):
+        
+        """displays a given digit"""
+        
+        # first cast number_to_display to int
+        number_to_display = int(number_to_display)
+        
+        # if we are flashing, only need to change stored digit
+        if self.is_blinking:
+            if self.is_blinking_lit:
+                self.last_value = number_to_display
+        else:
+            # stores the last value displayed, in case we need to flash
+            self.last_value = self.current_display
+            
+            # store the value we shall be displaying
+            self.current_display = number_to_display
+        
+        
+

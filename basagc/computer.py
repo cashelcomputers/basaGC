@@ -70,7 +70,7 @@ class Computer:
             "is_expecting_proceed": False,
             "object_requesting_data": None,
             "display_location_to_load": None,
-            "set_keyboard_state_function": self.set_keyboard_state,
+            "set_keyboard_state_setter": self.set_keyboard_state,
         }
         self.main_loop_timer = QTimer()
         self.main_loop_timer.timeout.connect(self.main_loop)
@@ -108,7 +108,7 @@ class Computer:
         routines.charin(keypress, self.keyboard_state, self.dsky, self)
     
     def register_charin(self):
-        self.ui.register_key_handler = self.charin
+        self.ui.register_key_event_handler(self.charin)
         
     def set_keyboard_state(self, state_name, new_value):
         self.keyboard_state[state_name] = new_value

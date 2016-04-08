@@ -133,21 +133,23 @@ class Key(QtWidgets.QPushButton):
         
         super().__init__(central_widget)
         
+        self.name = name
         self.setGeometry(geometry)
         self.setObjectName(name)
         self.icon = QtGui.QIcon()
         self.icon.addPixmap(QtGui.QPixmap(config.IMAGES_DIR + image), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.setIcon(self.icon)
         self.setIconSize(QtCore.QSize(65, 65))
-        self.clicked.connect(self.charin)
         self.setText("")
-        self.key_handler_function = None  # will hold the function to run for keypress events
+        self.key_event_handler = None
+        self.clicked.connect(self.send_keypress)
     
-    def charin(self):
-        key_handler_function(self.objectName())
+    def set_key_event_handler(self, handler_func):
+        self.key_event_handler = handler_func
     
-    def register_key_handler(self, key_handler_function):
-        self.key_handler_function = key_handler_function
+    def send_keypress(self):
+        self.key_event_handler(self.name)
+
 
 class Annunciator(QtWidgets.QLabel):
     def __init__(self, central_widget, name, image_on, image_off, geometry):
@@ -285,25 +287,8 @@ class Digit(QtWidgets.QLabel):
     
     def display(self, number_to_display):
         
-        """displays a given digit"""
-        
-        # first cast number_to_display to int
-        number_to_display = int(number_to_display)
-        
-        # if we are flashing, only need to change stored digit
-        if self.is_blinking:
-            if self.is_blinking_lit:
-                self.last_value = number_to_display
-        else:
-            # stores the last value displayed, in case we need to flash
-            self.last_value = self.current_display
-            
-            # store the value we shall be displaying
-            self.current_display = number_to_display
-            # now get image filename and display it
-            image = self.digit_pixmaps[number_to_display]
-            self.setPixmap(image)
-
+        image = self.digit_pixmaps[number_to_display]
+        self.setPixmap(image)
 
 
 class GUI:
@@ -314,6 +299,7 @@ class GUI:
         """Class constructor."""
         
         self.input_source = None  # will be set later by register_input()
+        self.key_event_output = None  # will be set later by register
         self.main_window = main_window
         self.main_window.setObjectName("main_window")
         self.main_window.resize(572, 658)
@@ -551,12 +537,6 @@ class GUI:
                                   geometry=QtCore.QRect(484, 321, 32, 45)))
         }
         
-        def get_output_widgets(self):
-            
-            """returns the objects that are output objects"""
-            
-            return self.annunciators, self.control_registers, self.data_registers
-        
         self.keyboard = {
             "verb":   Key(self.centralwidget,
                           name="V",
@@ -638,9 +618,19 @@ class GUI:
         
         self.setup_ui(self.main_window)
 
-    def register_input(output_function):
+    def get_output_widgets(self):
+    
+        """returns the objects that are output objects"""
+    
+        return self.annunciators, self.control_registers, self.data_registers
+    
+    def register_input(self, output_function):
         """ regesters the given function as the output, qtpy will then use this as input to display"""
         self.input_source = output_function
+    
+    def register_key_event_handler(self, handler_func):
+        for key in self.keyboard:
+            self.keyboard[key].set_key_event_handler(handler_func)
     
     def set_verb_noun_flash(self, state_to_set):
         if state_to_set == "on":
