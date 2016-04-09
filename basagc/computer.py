@@ -1,28 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: UTF-8 -*-
 """This file contains the guts of the guidance computer"""
-
-#  This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
-#  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#  MA 02110-1301, USA.
-#
-#
-#  Includes code and images from the Virtual AGC Project
-#  (http://www.ibiblio.org/apollo/index.html) by Ronald S. Burkey
-#  <info@sandroid.org>
 
 from PyQt5.QtCore import QTimer
 
@@ -40,22 +17,22 @@ class Computer:
 
     """ This object models the core of the guidance computer.
     """
-    
+
     computer_instance = None
-    
+
     def __init__(self, ui):
 
         """ Class constructor.
         :param gui: the wxPython frame object
         :return: None
         """
-        
+
         Computer.computer_instance = self
         verbs.Verb.computer = self
-        
+
         utils.log(message="\n\n" + config.SHORT_LICENCE + "\n", log_level="INFO")
         self.ui = ui
-        
+
         self.dsky = dsky.DSKY(self, self.ui)
         self.keyboard_state = {
             "input_data_buffer": "",
@@ -99,7 +76,7 @@ class Computer:
         self.nouns = nouns.nouns
         self.verbs = verbs.verbs
         self.programs = programs.programs
-        
+
         self.option_codes = {
             "00001": "",
             "00002": "",
@@ -110,28 +87,28 @@ class Computer:
         }
 
         self.on()
-    
+
     def get_verbs(self):
-        
+
         verbs_dict = OrderedDict()
         clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
         for class_tuple in clsmembers:
             if class_tuple[0][-1].isdigit():
                 verbs_dict[class_tuple[0][-2:]] = class_tuple[1]
-    
+
     def charin(self, keypress):
         routines.charin(keypress, self.keyboard_state, self.dsky, self)
-    
+
     def register_charin(self):
         self.ui.register_key_event_handler(self.charin)
-        
+
     def set_keyboard_state(self, state_name, new_value):
         self.keyboard_state[state_name] = new_value
-    
+
     def add_burn_to_queue(self, burn_object, execute=True):
 
-        """ Adds a Burn object to the computer burn queue. If no burn is assigned to next_burn, load new burn to
-        next_burn
+        """ Adds a Burn object to the computer burn queue. If no burn is
+        assigned to next_burn, load new burn to next_burn
         :param burn_object: a Burn object that contains parameters for the burn
         :param execute: if true, execute the added burn
         :return: None
@@ -206,10 +183,10 @@ class Computer:
             self.dsky.annunciators["no_att"].on()
         else:
             utils.log("Retrieved telemetry listing", log_level="INFO")
-        
+
         # register key handler with qt ui
         self.register_charin()
-        
+
         self.main_loop_timer.start(config.LOOP_TIMER_INTERVAL)
         self.is_powered_on = True
 
@@ -218,7 +195,7 @@ class Computer:
         """ The guidance computer main loop.
         :return: None
         """
-        
+
         # Check if we have a connection to KSP
         self.check_ksp_connection()
 
@@ -252,15 +229,15 @@ class Computer:
         verb_to_execute = self.verbs[verb](noun)
         self.add_job(verb_to_execute)
         verb_to_execute.execute()
-    
+
     def remove_job(self, job):
         utils.log("Removing job from jobs list: {}".format(job))
         self.jobs.remove(job)
-    
+
     def add_job(self, job):
         utils.log("Adding job to jobs list: {}".format(job))
         self.jobs.append(job)
-    
+
     def reset_alarm_codes(self):
 
         """ Resets the alarm codes.

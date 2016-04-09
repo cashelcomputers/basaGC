@@ -3,44 +3,31 @@
 This module contains code for the DSKY (the guidance computer/user interface). It should be considered to be the
 interface between the computer and the gui toolkit.
 """
-# This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
-#  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#  MA 02110-1301, USA.
-#
-#
-#  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
-#  by Ronald S. Burkey <info@sandroid.org>import wx
 
+'''
+Created on <date>
+
+.. moduleauthor:: Firstname Lastname <firstname@example.com>
+
+:synopsis:
+'''
 from basagc import utils
 
 
 class DSKY:
     """ This class models the DSKY.
     """
-    
+
     dsky_instance = None
-    
+
     def __init__(self, computer, ui):
-    
+
         """ Class constructor.
         :type ui: object
         :param computer: the instance of the guidance computer
         :return: None
         """
-        
+
         DSKY.dsky_instance = self
         self.computer = computer
         output_widgets = ui.get_output_widgets()
@@ -48,7 +35,7 @@ class DSKY:
         self._control_registers = output_widgets[1]
         self._data_registers = output_widgets[2]
         # self.keyboard = Keyboard(ui)
-        
+
         self.registers = {
             "program": {
                 "1": self._control_registers["program"].digits[0],
@@ -89,39 +76,39 @@ class DSKY:
                 },
             },
         }
-    
+
     def blank_register(self, register):
-        
+
         """blanks the register"""
-        
+
         if register not in self.registers:
             utils.log("No such register: {}".format(register))
             return
         for digit in self.registers[register].values():
             print(digit)
             digit.display("b")
-    
+
     def blink_register(self, register):
-        
+
         """
         Blinks the named register.
         :param register: the name of the register to blink
         :return: None
         """
-        
+
         # check if we are to blink a control register
         for digit in self.registers[register].digits:
             digit.blink_data[is_blinking_lit] = False
             digit.blink_data[is_blinking] = True
             digit.display("b")
-            
+
             # bind andstart the timer
             digit.blink_timer.timeout.connect(self._blink_event)
             digit.blink_timer.start(500)
-    
+
     def _blink_event(self):
         """alternates the digit between a value and blank ie to flash the digit."""
-    
+
         # digit displaying the number, switch to blank
         if self.is_blinking_lit:
             self.display(10)
@@ -132,27 +119,39 @@ class DSKY:
             self.is_blinking_lit = True
 
     def set_register(self, value, register, digit=None):
-        
+        '''
+        Displays some data on a register.
+        :param value: the value to display
+        :type value: str
+        :param register: the register to display it on
+        :type register: str
+        :param digit: if set, indicates that just one digit is to be set
+        :type digit: str
+        :returns: None
+        '''
         # registers are verb, noun, program, data_1, data_2, data_3
         if register in ["verb", "noun", "program"]:
+            this_register = self.registers[register]
             if digit:
-                self.registers[register][str(digit)].display(value)
-                return
-            for index in len(self.registers[register].values()):
-                print(index, digit)
-                digit.display(value[index - 1])
+                this_register[str(digit)].display(value)
+            else:
+                for index in range(len(value)):
+                    this_register[index].display(value[index])
+
         elif register == "data_1":
             if digit:
                 self.registers[register]["1"][str(digit)].display(value)
                 return
             for index, digit in enumerate(self.registers["data"]["1"].values(), start=1):
                 digit.display(value[index - 1])
+
         elif register == "data_2":
             if digit:
                 self.registers[register]["2"][str(digit)].display(value)
                 return
             for index, digit in enumerate(self.registers["data"]["2"].values(), start=1):
                 digit.display(value[index - 1])
+
         elif register == "data_3":
             if digit:
                 self.registers[register]["3"][str(digit)].display(value)
@@ -161,7 +160,7 @@ class DSKY:
                 digit.display(value[index - 1])
 
     def set_annunciator(self, name, set_to=True):
-        
+
         try:
             if set_to:
                 self.annunciators[name].on()
@@ -169,7 +168,7 @@ class DSKY:
                 self.annunciators[name].off()
         except KeyError:
             utils.log("You tried to change a annunciator that doesnt exist :(", "WARNING")
-            
+
     def operator_error(self, message=None):
 
         """ Called when the astronaut has entered invalid keyboard input.
@@ -269,24 +268,24 @@ class DSKY:
         # self.comp_acty_timer.Start(config.COMP_ACTY_FLASH_DURATION, oneShot=True)
 
     def set_noun(self, noun):
-        
+
         """ Sets the required noun.
         :param noun: Noun to set
         :return:
         """
-        
+
         self.requested_noun = noun
         self.control_registers["noun"].display(noun)
 
     def reset_annunciators(self):
-        
+
         for annunciator in self.annunciators:
             self.annunciators[annunciator].off()
 
 class Digit:
-    
+
     def __init__(self, widget):
-        
+
         self.widget = widget
         self.is_blinking_lit = True
         self.current_display = None
@@ -297,12 +296,18 @@ class Digit:
         self.display(10)
         self.last_value = None
         self.is_blinking = False
-    
+
     def set_tooltip(self, tooltip):
+        '''
+        Sets the tooltip on the widget.
+        :param tooltip: tooltip text
+        :type tooltip: str
+        :returns: None
+        '''
         self.setToolTip(tooltip)
-    
+
     def start_blink(self):
-        
+
         """ Starts the digit blinking.
         :return: None
         """
@@ -310,15 +315,20 @@ class Digit:
         self.is_blinking = True
         self.display(10)
         self.blink_timer.start(500)
-    
+
     def stop_blink(self):
+        '''
+        Stops the register blinking.
+        :returns: None
+        '''
+
         self.is_blinking = False
         self.blink_timer.stop()
-    
+
     def flip(self):
-        
+
         """alternates the digit between a value and blank ie to flash the digit."""
-        
+
         # digit displaying the number, switch to blank
         if self.is_blinking_lit:
             self.display(10)
@@ -327,10 +337,10 @@ class Digit:
             # digit displaying blank, change to number
             self.display(self.last_value)
             self.is_blinking_lit = True
-    
+
     def display(self, number_to_display):
 
-        
+
         # if we are flashing, only need to change stored digit
         if self.is_blinking:
             if self.is_blinking_lit:
@@ -338,9 +348,9 @@ class Digit:
         else:
             # stores the last value displayed, in case we need to flash
             self.last_value = self.current_display
-            
+
             # store the value we shall be displaying
             self.current_display = number_to_display
-        
-        
+
+
 
