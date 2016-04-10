@@ -32,7 +32,6 @@ class Computer:
         Computer.computer_instance = self
         verbs.Verb.computer = self
 
-        utils.log(message="\n\n" + config.SHORT_LICENCE + "\n", log_level="INFO")
         self.ui = ui
 
         self.dsky = dsky.DSKY(self, self.ui)

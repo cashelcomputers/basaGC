@@ -66,4 +66,4 @@ def log(message, log_level="DEBUG"):
         gc_log.critical(message)
     
     # since there is no logging window yet, print message to stdout
-    print(message)
+    print("{:20}{:10}{}".format(now, log_level, message))
