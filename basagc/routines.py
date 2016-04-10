@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """This module contains internal routines used by the guidance computer."""
 
+from pudb import set_trace
+
+from basagc import utils
+
 def charin(keypress, state, dsky, computer):
     '''
     This function is called whenever a keypress is sent from the UI. 
@@ -25,12 +29,15 @@ def charin(keypress, state, dsky, computer):
             dsky.operator_error("Expecting numeric input")
             return
         # otherwise, add the input to buffer
-        display_register = dsky.get_register(state["display_location_to_load"])
+        #set_trace()
+        display_register = state["display_location_to_load"]
         if state["register_index"] == 0:
-            display_register["1"].display(keypress)
+            dsky.set_register(keypress, display_register, "1")
+            #display_register["1"].display(keypress)
             state["register_index"] += 1
         else:
-            display_register["2"].display(keypress)
+            dsky.set_register(keypress, display_register, "2")
+            #display_register["2"].display(keypress)
             state["register_index"] = 0
             state["input_data_buffer"] += keypress
     
@@ -61,6 +68,7 @@ def charin(keypress, state, dsky, computer):
         """ Handles expected data entry.
         :return: None
         """
+
         if keypress == "P":
             dsky.stop_blink()
             utils.log("Proceeding without input, calling {}(proceed)".format(state["object_requesting_data"]))
@@ -113,8 +121,10 @@ def charin(keypress, state, dsky, computer):
         if keypress == "C":  # user has pushed CLEAR
             state["verb_position"] = 0
             state["requested_verb"] = ""
-            dsky.control_registers["verb"].digits[1].display("blank")
-            dsky.control_registers["verb"].digits[2].display("blank")
+            dsky.blank_register("verb")
+            dsky.blank_register("noun")
+            #dsky.control_registers["verb"].digits[1].display("blank")
+            #dsky.control_registers["verb"].digits[2].display("blank")
             return
     
         if keypress == "N":  # user has finished entering verb

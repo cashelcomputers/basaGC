@@ -2,9 +2,9 @@ import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from . import config
-from .computer import Computer
-from .config import BLANK
+from basagc import config
+from pudb import set_trace
+#from basagc.computer import Computer
 from basagc import utils
 
 
@@ -270,7 +270,7 @@ class Digit(QtWidgets.QLabel):
         """ Starts the digit blinking.
         :return: None
         """
-
+        set_trace()
         self.blink_data["is_blinking_lit"] = False
         self.blink_data["is_blinking"] = True
         self.display("b")
