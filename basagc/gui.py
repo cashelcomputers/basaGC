@@ -260,20 +260,23 @@ class Digit(QtWidgets.QLabel):
         if not isinstance(number_to_display, str):
             utils.log("You should pass a string to be displayed bu GUI!")
             number_to_display = str(number_to_display)
-        image = self.digit_pixmaps[number_to_display]
-        self.setPixmap(image)
-        if self.blink_data["is_blinking"] == False:  # dont want to change the blink value if we are already blinking
-            self.blink_data["blink_value"] = number_to_display  # so that we can flash the last value if needed
+
+        # only change image if we arn't flashing, it will be changed next flash
+        if self.blink_data["is_blinking"] == False:
+            image = self.digit_pixmaps[number_to_display]
+            self.setPixmap(image)
+        self.blink_data["blink_value"] = number_to_display
 
     def start_blink(self):
 
         """ Starts the digit blinking.
         :return: None
         """
-        set_trace()
+        #set_trace()
         self.blink_data["is_blinking_lit"] = False
         self.blink_data["is_blinking"] = True
-        self.display("b")
+        image = self.digit_pixmaps[self.blink_data["blink_value"]]
+        self.setPixmap(image)
         self.blink_timer.start(500)
 
     def flip(self):
@@ -282,11 +285,15 @@ class Digit(QtWidgets.QLabel):
 
         # digit displaying the number, switch to blank
         if self.blink_data["is_blinking_lit"]:
-            self.display("b")
+            image = self.digit_pixmaps["b"]
+            self.setPixmap(image)
+            # self.display("b")
             self.blink_data["is_blinking_lit"] = False
         else:
             # digit displaying blank, change to number
-            self.display(self.blink_data["blink_value"])
+            image = self.digit_pixmaps[self.blink_data["blink_value"]]
+            self.setPixmap(image)
+            #self.display(self.blink_data["blink_value"])
             self.blink_data["is_blinking_lit"] = True
 
     def stop_blink(self):

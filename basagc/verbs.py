@@ -216,7 +216,7 @@ class MonitorVerb(DisplayVerb):
         try:
             data = noun_function.return_data()
         except nouns.NounNotImplementedError:
-            dsky.operator_error("Noun {} not implemented yet. Sorry about that...".format(dsky.requested_noun))
+            self.computer.operator_error("Noun {} not implemented yet. Sorry about that...".format(dsky.requested_noun))
             self.terminate()
             return
         except KSPNotConnected:
@@ -1002,14 +1002,14 @@ class Verb37(Verb):
         :return: None
         """
         if len(data) != 2:
-            self.dsky.operator_error("Expected exactly two digits, received {} digits".format(len(data)))
+            self.computer.operator_error("Expected exactly two digits, received {} digits".format(len(data)))
             self.terminate()
             return
 
         try:
             program = Verb.computer.programs[data]()
         except KeyError:
-            self.dsky.operator_error()
+            self.computer.operator_error()
             return
         program.execute()
 

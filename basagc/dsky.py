@@ -231,16 +231,7 @@ class DSKY:
         except KeyError:
             utils.log("You tried to change a annunciator that doesnt exist :(", "WARNING")
 
-    def operator_error(self, message=None):
-
-        """ Called when the astronaut has entered invalid keyboard input.
-        :param message: Optional message to send to log
-        :return: None
-        """
-
-        if message:
-            utils.log("OPERATOR ERROR: " + message)
-        self.annunciators["opr_err"].blink_timer.start(500)
+    
 
     def stop_comp_acty_flash(self, event):
 
@@ -273,7 +264,7 @@ class DSKY:
         :param is_proceed_available: True if the user can key in PROCEED instead of data
         :return: None
         """
-
+        self.blank_register(display_location)
         utils.log("{} requesting data".format(requesting_object))
         self.verb_noun_flash_on()
         self.computer.keyboard_state["object_requesting_data"] = requesting_object
@@ -285,7 +276,7 @@ class DSKY:
         #         for register in list(self.data_registers.values()):
         #             register.blank()
         #     else:
-        self.blank_register(display_location)
+        
 
     def verb_noun_flash_on(self):
 

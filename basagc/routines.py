@@ -26,7 +26,7 @@ def charin(keypress, state, dsky, computer):
         """
         # we are expecting a numeric digit as input
         if keypress.isalpha():
-            dsky.operator_error("Expecting numeric input")
+            computer.operator_error("Expecting numeric input")
             return
         # otherwise, add the input to buffer
         #set_trace()
@@ -101,7 +101,7 @@ def charin(keypress, state, dsky, computer):
             # INSERT EXCEPT HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             # if a verb is running, recycle it
             # computer.get_state("running_verb").terminate()
-            dsky.operator_error("Expecting numeric input")
+            computer.operator_error("Expecting numeric input")
             return
         #else:
             #print(state["input_data_buffer"])
@@ -135,7 +135,7 @@ def charin(keypress, state, dsky, computer):
             state["is_verb_being_loaded"] = False
             state["verb_position"] = 0
         elif keypress.isalpha():
-            dsky.operator_error("Expected a number for verb choice")
+            computer.operator_error("Expected a number for verb choice")
             return
         elif state["verb_position"] == 0:
             dsky.set_register(value=keypress, register="verb", digit="1")
@@ -167,7 +167,7 @@ def charin(keypress, state, dsky, computer):
             state["is_noun_being_loaded"] = False
             state["noun_position"] = 0
         elif keypress.isalpha():
-            dsky.operator_error("Expected a number for noun choice")
+            computer.operator_error("Expected a number for noun choice")
             return
         elif state["noun_position"] == 0:
             dsky.control_registers["noun"].digits[0].display(keypress)
