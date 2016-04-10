@@ -51,9 +51,7 @@ def log(message, log_level="DEBUG"):
         gc_log.error("Log level does not exist!")
         return
     now = time.strftime("%d/%m/%Y %H:%M:%S")
-    log_level_number = config.LOG_LEVELS.index(log_level)
-    #if log_level_number >= config.LOG_LEVELS.index(config.current_log_level):
-    #   LOG_VIEWER.viewer.AppendText(now + ": " + log_level + ": " + message + "\n")
+
     if log_level == "DEBUG":
         gc_log.debug(message)
     elif log_level == "INFO":

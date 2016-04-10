@@ -1006,7 +1006,7 @@ class Verb37(Verb):
             return
 
         try:
-            program = self.computer.programs[data]()
+            program = Verb.computer.programs[data]()
         except KeyError:
             self.dsky.operator_error()
             return

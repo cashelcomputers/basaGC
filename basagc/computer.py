@@ -58,6 +58,11 @@ class Computer:
         }
         self.main_loop_timer = QTimer()
         self.main_loop_timer.timeout.connect(self.main_loop)
+
+        # init slow loop (for less important tasks that can be ran approx every second)
+        self.slow_loop_timer = QTimer()
+        self.slow_loop_timer.timeout.connect(self.slow_loop)
+        
         self.is_powered_on = False
         self.main_loop_table = []
         self.alarm_codes = [0, 0, 0]
@@ -67,7 +72,7 @@ class Computer:
         }
         self.next_burn = None
         self._burn_queue = []
-        self.is_ksp_connected = None
+        self.is_ksp_connected = False
         self.ksp_paused_state = None
         self.is_direction_autopilot_engaged = False
         self.is_thrust_autopilot_engaged = False
@@ -88,14 +93,6 @@ class Computer:
         }
 
         self.on()
-
-    def get_verbs(self):
-
-        verbs_dict = OrderedDict()
-        clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
-        for class_tuple in clsmembers:
-            if class_tuple[0][-1].isdigit():
-                verbs_dict[class_tuple[0][-2:]] = class_tuple[1]
 
     def charin(self, keypress):
         routines.charin(keypress, self.keyboard_state, self.dsky, self)
@@ -190,6 +187,7 @@ class Computer:
         self.register_charin()
 
         self.main_loop_timer.start(config.LOOP_TIMER_INTERVAL)
+        self.slow_loop_timer.start(config.SLOW_LOOP_TIMER_INTERVAL)
         self.is_powered_on = True
 
     def main_loop(self):
@@ -198,15 +196,21 @@ class Computer:
         :return: None
         """
 
-        # Check if we have a connection to KSP
-        self.check_ksp_connection()
-
         # check KSP paused state
         self.check_paused_state()
 
         # run each item in process queue
         for item in self.main_loop_table:
             item()
+
+    def slow_loop(self):
+        '''
+        A slower loop to handle tasks that are less frequently run
+        :returns: 
+        '''
+        if not telemachus.check_connection():
+            self.dsky.annunciators["no_att"].on()
+        
 
     def go_to_poo(self):
 
@@ -328,7 +332,7 @@ class Computer:
         """ checks if we have a connection to Telemachus / KSP
         :return: None
         """
-
+        # set_trace()
         if not telemachus.check_connection():
             if self.is_ksp_connected:
                 # we have just lost the connection, illuminate NO ATT annunciator and log it
