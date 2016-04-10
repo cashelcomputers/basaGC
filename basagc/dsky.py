@@ -275,8 +275,10 @@ class DSKY:
         :return: None
         """
 
-        self.registers["verb"].start_blink()
-        self.registers["noun"].start_blink()
+        self.registers["verb"]["1"].start_blink()
+        self.registers["verb"]["2"].start_blink()
+        self.registers["noun"]["1"].start_blink()
+        self.registers["noun"]["2"].start_blink()
 
     def verb_noun_flash_off(self):
 
@@ -284,10 +286,10 @@ class DSKY:
         :return: None
         """
 
-        for digit in list(self.control_registers["verb"].digits.values()):
-            digit.stop_blink()
-        for digit in list(self.control_registers["noun"].digits.values()):
-            digit.stop_blink()
+        self.registers["verb"]["1"].stop_blink()
+        self.registers["verb"]["2"].stop_blink()
+        self.registers["noun"]["1"].stop_blink()
+        self.registers["noun"]["2"].stop_blink()
 
     def stop_blink(self):
 

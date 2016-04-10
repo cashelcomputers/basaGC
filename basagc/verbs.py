@@ -937,12 +937,15 @@ class Verb35(Verb):
         # commands the control registers
         for register in ["verb", "noun", "program"]:
             self.dsky.set_register(value="88", register=register)
+        # blinks the verb/noun registers
+        self.dsky.verb_noun_flash_on()
         self.flash_timer.singleShot(5000, self.terminate)
         
     def terminate(self):
         
         for annunciator in self.dsky.annunciators.values():
             annunciator.off()
+        self.dsky.verb_noun_flash_off()
         self.dsky.set_register(value="bb", register="program")
         self.computer.remove_job(self)
         

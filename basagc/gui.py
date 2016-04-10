@@ -183,7 +183,22 @@ class Annunciator(QtWidgets.QLabel):
 
 
 class SignDigit(QtWidgets.QLabel):
+    '''
+    This class is a sign (+ or -) digit of the DSKY.
+    '''
+    
     def __init__(self, central_widget, name, geometry):
+        '''
+        Initialiser
+        :param central_widget: the PyQt6 central widget to use
+        :type central_widget: 
+        :param name: the name of the widget
+        :type name: str
+        :param geometry: position where widget is located 
+        :type geometry: QRect object
+        :returns: None
+        '''
+        
         super().__init__(central_widget)
         self.setGeometry(geometry)
         self.setObjectName(name)
@@ -200,10 +215,9 @@ class SignDigit(QtWidgets.QLabel):
         self.setToolTip(tooltip)
     
     def display(self, digit_to_display):
-        print(digit_to_display, type(digit_to_display))
+
         # get pixmap
         image = self.digit_pixmaps[digit_to_display]
-        print(id(self))
         # change picture
         self.setPixmap(image)
 
@@ -230,9 +244,11 @@ class Digit(QtWidgets.QLabel):
         self.blink_data = {
             "blink_value": None,
             "is_blinking": False,
+            "is_blinking_lit": False,
         }
         
         self.blink_timer = QtCore.QTimer()
+        self.blink_timer.timeout.connect(self.flip)
         
     
     def set_tooltip(self, tooltip):
@@ -249,6 +265,31 @@ class Digit(QtWidgets.QLabel):
         if self.blink_data["is_blinking"] == False:  # dont want to change the blink value if we are already blinking
             self.blink_data["blink_value"] = number_to_display  # so that we can flash the last value if needed
 
+    def start_blink(self):
+
+        """ Starts the digit blinking.
+        :return: None
+        """
+        self.blink_data["is_blinking_lit"] = False
+        self.blink_data["is_blinking"] = True
+        self.display("b")
+        self.blink_timer.start(500)
+
+    def flip(self):
+
+        """alternates the digit between a value and blank ie to flash the digit."""
+
+        # digit displaying the number, switch to blank
+        if self.blink_data["is_blinking_lit"]:
+            self.display("b")
+            self.blink_data["is_blinking_lit"] = False
+        else:
+            # digit displaying blank, change to number
+            self.display(self.blink_data["blink_value"])
+            self.blink_data["is_blinking_lit"] = True
+
+    def stop_blink(self):
+        self.blink_timer.stop()
 
 class GUI:
     """This class represents the GUI. It contains the DSKY and its elements."""
