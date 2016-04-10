@@ -228,17 +228,32 @@ class Computer:
         """
         verb = self.keyboard_state["requested_verb"]
         self.dsky.set_register(value=verb, register="verb")
-        
-        # if there is a noun entered by user, pass it to verb and reset noun
-        if self.keyboard_state["requested_noun"] == 0:
-            verb_to_execute = self.verbs[verb]()
-        else:
-            verb_to_execute = self.verbs[verb](self.keyboard_state["requested_noun"])
-            self.keyboard_state["requested_noun"] = 0
-            
+
+        # if verb doesn't exist, smack operator over head
+        try:
+            # if there is a noun entered by user, pass it to verb
+            if self.keyboard_state["requested_noun"] == 0:
+                verb_to_execute = self.verbs[verb]()
+            else:
+                verb_to_execute = self.verbs[verb](self.keyboard_state["requested_noun"])
+        except KeyError:
+            self.operator_error("Verb {} does not exist :(".format(verb))
+            return
+        self.keyboard_state["requested_noun"] = 0  # reset noun state for next time    
         self.add_job(verb_to_execute)
         verb_to_execute.execute()
 
+    def operator_error(self, message=None):
+
+        """ Called when the astronaut has entered invalid keyboard input.
+        :param message: Optional message to send to log
+        :return: None
+        """
+
+        if message:
+            utils.log("OPERATOR ERROR: " + message, log_level="ERROR")
+        self.dsky.annunciators["opr_err"].blink_timer.start(500)
+        
     def remove_job(self, job):
         utils.log("Removing job from jobs list: {}".format(job))
         self.jobs.remove(job)
