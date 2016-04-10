@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """ This module contains classes of all of the verbs used by basaGC."""
+from pudb import set_trace
 
 import inspect
 import logging
@@ -118,7 +119,7 @@ class Verb:
         """ Terminates the verb
         """
 
-        gc.dsky.current_verb = None
+        Verb.computer.dsky.current_verb = None
 
     def receive_data(self, data):
 
@@ -208,10 +209,10 @@ class MonitorVerb(DisplayVerb):
             self.timer.start(config.DISPLAY_UPDATE_INTERVAL)
 
         if self.noun is None:
-            self.noun = gc.dsky.requested_noun
+            self.noun = Verb.computer.dsky.requested_noun
         if self.noun in self.illegal_nouns:
             raise NounNotAcceptableError
-        noun_function = gc.nouns[self.noun]()
+        noun_function = Verb.computer.nouns[self.noun]()
         try:
             data = noun_function.return_data()
         except nouns.NounNotImplementedError:
@@ -221,13 +222,13 @@ class MonitorVerb(DisplayVerb):
         except KSPNotConnected:
             utils.log("KSP not connected, terminating V{}".format(self.number),
                       log_level="ERROR")
-            gc.program_alarm(110)
+            Verb.computer.program_alarm(110)
             self.terminate()
             raise
         except TelemetryNotAvailable:
             utils.log("Telemetry not available, terminating V{}".format(self.number),
                       log_level="ERROR")
-            gc.program_alarm(111)
+            Verb.computer.program_alarm(111)
             self.terminate()
             raise
         if not data:
@@ -239,14 +240,14 @@ class MonitorVerb(DisplayVerb):
         
         # set tooltips
         if not self.is_tooltips_set:
-            gc.dsky.data_registers[1].set_tooltip(data["tooltips"][0])
-            gc.dsky.data_registers[2].set_tooltip(data["tooltips"][1])
-            gc.dsky.data_registers[3].set_tooltip(data["tooltips"][2])
+            Verb.computer.dsky.data_registers[1].set_tooltip(data["tooltips"][0])
+            Verb.computer.dsky.data_registers[2].set_tooltip(data["tooltips"][1])
+            Verb.computer.dsky.data_registers[3].set_tooltip(data["tooltips"][2])
             self.is_tooltips_set = True
 
         # display data on DSKY registers
         for index, display_line in enumerate(output, start=1):
-            gc.dsky.data_registers[index].display(display_line)
+            Verb.computer.dsky.data_registers[index].display(display_line)
 
         dsky.flash_comp_acty()
 
@@ -292,9 +293,9 @@ class MonitorVerb(DisplayVerb):
         self.noun = None
         # self.activity_timer.Stop()
         # reset tooltips to ""
-        gc.dsky.data_registers[1].set_tooltip("")
-        gc.dsky.data_registers[2].set_tooltip("")
-        gc.dsky.data_registers[3].set_tooltip("")
+        Verb.computer.dsky.data_registers[1].set_tooltip("")
+        Verb.computer.dsky.data_registers[2].set_tooltip("")
+        Verb.computer.dsky.data_registers[3].set_tooltip("")
 
     def background(self):
 
@@ -341,7 +342,7 @@ class LoadVerb(DataVerb):
         :param data: the data
         :return: None
         """
-        gc.noun_data[self.noun].append(data)
+        Verb.computer.noun_data[self.noun].append(data)
 
         utils.log(data)
 
@@ -366,13 +367,13 @@ class Verb01(DisplayVerb):
     def execute(self):
 
         super(Verb01, self).execute()
-        noun_function = gc.nouns[gc.dsky.requested_noun]()
+        noun_function = Verb.computer.nouns[Verb.computer.dsky.requested_noun]()
         noun_data = noun_function.return_data()
         if noun_data is False:
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
             return
         output = self._format_output_data(noun_data)
-        gc.dsky.data_registers[1].display(output[0])
+        Verb.computer.dsky.data_registers[1].display(output[0])
 
 
 class Verb02(DisplayVerb):
@@ -449,11 +450,11 @@ class Verb04(DisplayVerb):
         """
 
         super(Verb04, self).execute()
-        noun_function = gc.nouns[gc.dsky.state["requested_noun"]]
+        noun_function = Verb.computer.nouns[Verb.computer.dsky.state["requested_noun"]]
         noun_data = noun_function(calling_verb=self)
         output = self._format_output_data(noun_data)
-        gc.dsky.data_registers[1].display(output[0])
-        gc.dsky.data_registers[2].display(output[1])
+        Verb.computer.dsky.data_registers[1].display(output[0])
+        Verb.computer.dsky.data_registers[2].display(output[1])
 
 
 class Verb05(DisplayVerb):
@@ -477,15 +478,15 @@ class Verb05(DisplayVerb):
         """
 
         super(Verb05, self).execute()
-        noun_function = gc.nouns[gc.dsky.requested_noun]()
+        noun_function = Verb.computer.nouns[Verb.computer.dsky.requested_noun]()
         noun_data = noun_function.return_data()
         if not noun_data:
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
             return
         output = self._format_output_data(noun_data)
-        gc.dsky.data_registers[1].display(output[0])
-        gc.dsky.data_registers[2].display(output[1])
-        gc.dsky.data_registers[3].display(output[2])
+        Verb.computer.dsky.data_registers[1].display(output[0])
+        Verb.computer.dsky.data_registers[2].display(output[1])
+        Verb.computer.dsky.data_registers[3].display(output[2])
 
 
 class Verb06(DisplayVerb):
@@ -509,20 +510,20 @@ class Verb06(DisplayVerb):
         """
 
         super(Verb06, self).execute()
-        noun_function = gc.nouns[gc.dsky.requested_noun]()
+        noun_function = Verb.computer.nouns[Verb.computer.dsky.requested_noun]()
         noun_data = noun_function.return_data()
         if not noun_data:
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
             return
         output = self._format_output_data(noun_data)
 
-        gc.dsky.data_registers[1].set_tooltip(noun_data["tooltips"][0])
-        gc.dsky.data_registers[2].set_tooltip(noun_data["tooltips"][1])
-        gc.dsky.data_registers[3].set_tooltip(noun_data["tooltips"][2])
+        Verb.computer.dsky.data_registers[1].set_tooltip(noun_data["tooltips"][0])
+        Verb.computer.dsky.data_registers[2].set_tooltip(noun_data["tooltips"][1])
+        Verb.computer.dsky.data_registers[3].set_tooltip(noun_data["tooltips"][2])
         
-        gc.dsky.data_registers[1].display(output[0])
-        gc.dsky.data_registers[2].display(output[1])
-        gc.dsky.data_registers[3].display(output[2])
+        Verb.computer.dsky.data_registers[1].display(output[0])
+        Verb.computer.dsky.data_registers[2].display(output[1])
+        Verb.computer.dsky.data_registers[3].display(output[2])
 
         # if self.data is None:
         #     noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
@@ -700,7 +701,7 @@ class Verb21(LoadVerb):
     #     :param data: the data
     #     :return: None
     #     """
-    #     gc.noun_data[self.noun].append(data)
+    #     Verb.computer.noun_data[self.noun].append(data)
     #
     #     utils.log(data)
 
@@ -746,7 +747,7 @@ class Verb23(LoadVerb):
         :return: None
         """
 
-        gc.dsky.request_data(requesting_object=self.accept_input, display_location=dsky.data_registers[3])
+        Verb.computer.dsky.request_data(requesting_object=self.accept_input, display_location=dsky.data_registers[3])
 
     def accept_input(self, data):
 
@@ -755,11 +756,11 @@ class Verb23(LoadVerb):
         :return: None
         """
 
-        gc.loaded_data["verb"] = self.number
-        gc.loaded_data["noun"] = dsky.current_noun
-        gc.loaded_data[3] = data
-        if gc.object_requesting_data:
-            gc.object_requesting_data()
+        Verb.computer.loaded_data["verb"] = self.number
+        Verb.computer.loaded_data["noun"] = dsky.current_noun
+        Verb.computer.loaded_data[3] = data
+        if Verb.computer.object_requesting_data:
+            Verb.computer.object_requesting_data()
 
 
 class Verb24(LoadVerb):
@@ -898,11 +899,11 @@ class Verb34(Verb):
             dsky.backgrounded_update.terminate()
             if dsky.annunciators["key_rel"].blink_timer.active():
                 dsky.annunciators["key_rel"].stop_blink()
-        if gc.running_program:
-            utils.log("Terminating active program {}".format(gc.running_program.number))
+        if Verb.computer.running_program:
+            utils.log("Terminating active program {}".format(Verb.computer.running_program.number))
             # have to use try block to catch and ignore expected ProgramTerminated exception
             try:
-                gc.running_program.terminate()
+                Verb.computer.running_program.terminate()
             except programs.ProgramTerminated:
                 pass
         else:
@@ -969,7 +970,7 @@ class Verb36(Verb):
         :return: None
         """
 
-        gc.fresh_start()
+        Verb.computerfresh_start()
 
 
 class Verb37(Verb):
@@ -1178,7 +1179,7 @@ class Verb75(ExtendedVerb):
         """ Executes the verb.
         :return: None
         """
-        program = gc.programs["11"]()
+        program = Verb.computer.programs["11"]()
         program.execute()
 
 #no verb 76
@@ -1220,7 +1221,7 @@ class Verb82(ExtendedVerb):
 
         #super(Verb82, self).execute()
         #computer.routines[30]()
-        gc.execute_verb(verb="16", noun="44")
+        Verb.computer.execute_verb(verb="16", noun="44")
 
 
 # class Verb83(Verb):
@@ -1267,7 +1268,7 @@ class Verb93(ExtendedVerb):
         super(Verb93, self).__init__(name="Disable Autopilot", verb_number="93")
 
     def execute(self):
-        gc.disable_direction_autopilot()
+        Verb.computer.disable_direction_autopilot()
 #
 # class Verb94(Verb):
 #     def __init__(self):
