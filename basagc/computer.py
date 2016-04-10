@@ -226,10 +226,8 @@ class Computer:
         else:
             noun = self.keyboard_state["requested_noun"]
         self.dsky.set_register(value=verb, register="verb")
-        verb_to_execute = self.verbs[verb]
-        print(verb_to_execute)
+        verb_to_execute = self.verbs[verb]()
         self.add_job(verb_to_execute)
-        print(dir(verb_to_execute))
         verb_to_execute.execute()
 
     def remove_job(self, job):

@@ -928,6 +928,7 @@ class Verb35(Verb):
         :return: None
         """
         # commands the annunciators
+        print(id(self))
         for annunciator in self.dsky.annunciators.values():
             annunciator.on()
         # commands the data registers
