@@ -336,6 +336,19 @@ class DSKY:
         for annunciator in self.annunciators:
             self.annunciators[annunciator].off()
 
+    def set_tooltip(self, register, tooltip):
+        '''
+        Sets the tooltop on the given register
+        :param register: the name of the register to set the tooltip on
+        :type register: str
+        :param tooltip: the tooltip to display
+        :type tooltip: str
+        :returns: 
+        '''
+        this_register = self.get_register(register)
+        for digit in this_register.values():
+            digit.set_tooltip(tooltip)
+
 #class Digit:
 
     #def __init__(self, widget):

@@ -40,20 +40,6 @@ DIRECTIONS = [
     "radialminus",
 ]
 
-KEY_IDS = {
-    "10": "V",
-    "11": "N",
-    "12": "+",
-    "13": "-",
-    "14": "C",
-    "15": "P",
-    "16": "K",
-    "17": "E",
-    "18": "R",
-}
-
-BLANK = [10, 10]
-
 TELEMACHUS_BODY_IDS = {
     "Kerbol": "0",
     "Kerbin": "1",
@@ -94,6 +80,7 @@ for key, value in TELEMACHUS_BODY_IDS.items():
     value = oct(int(value))
     value = value[2:]
     OCTAL_BODY_IDS[value] = key
+
 
 # OCTAL_BODY_IDS = {key: str(int(oct(int(value)))) for key, value in TELEMACHUS_BODY_IDS.items()}  # FIXME: abomination
 OCTAL_BODY_NAMES = {value: key for key, value in OCTAL_BODY_IDS.items()}

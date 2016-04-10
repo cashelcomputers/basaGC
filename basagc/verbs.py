@@ -157,6 +157,7 @@ class DataVerb(Verb):
         """
 
         super(DataVerb, self).__init__(name, verb_number, noun)
+        self.noun = noun
 
 
 class DisplayVerb(DataVerb):
@@ -363,17 +364,18 @@ class Verb01(DisplayVerb):
         """
 
         super(Verb01, self).__init__(name="Display Octal component 1 in R1", verb_number="01", noun=noun)
-
+        
     def execute(self):
 
         super(Verb01, self).execute()
-        noun_function = Verb.computer.nouns[Verb.computer.dsky.requested_noun]()
+        noun_function = Verb.computer.nouns[self.noun]()
         noun_data = noun_function.return_data()
         if noun_data is False:
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
             return
         output = self._format_output_data(noun_data)
-        Verb.computer.dsky.data_registers[1].display(output[0])
+        Verb.computer.dsky.set_register(output[0], "data_1")
+        #Verb.computer.dsky.data_registers[1].display(output[0])
 
 
 class Verb02(DisplayVerb):
@@ -510,20 +512,20 @@ class Verb06(DisplayVerb):
         """
 
         super(Verb06, self).execute()
-        noun_function = Verb.computer.nouns[Verb.computer.dsky.requested_noun]()
+        noun_function = Verb.computer.nouns[self.noun]()
         noun_data = noun_function.return_data()
         if not noun_data:
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
             return
         output = self._format_output_data(noun_data)
+        print(noun_data["tooltips"][0])
+        Verb.computer.dsky.set_tooltip("data_1", noun_data["tooltips"][0])
+        Verb.computer.dsky.set_tooltip("data_2", noun_data["tooltips"][1])
+        Verb.computer.dsky.set_tooltip("data_3", noun_data["tooltips"][2])
 
-        Verb.computer.dsky.data_registers[1].set_tooltip(noun_data["tooltips"][0])
-        Verb.computer.dsky.data_registers[2].set_tooltip(noun_data["tooltips"][1])
-        Verb.computer.dsky.data_registers[3].set_tooltip(noun_data["tooltips"][2])
-        
-        Verb.computer.dsky.data_registers[1].display(output[0])
-        Verb.computer.dsky.data_registers[2].display(output[1])
-        Verb.computer.dsky.data_registers[3].display(output[2])
+        Verb.computer.dsky.set_register(output[0], "data_1")
+        Verb.computer.dsky.set_register(output[1], "data_2")
+        Verb.computer.dsky.set_register(output[2], "data_3")
 
         # if self.data is None:
         #     noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
@@ -940,6 +942,8 @@ class Verb35(Verb):
             self.dsky.set_register(value="88", register=register)
         # blinks the verb/noun registers
         self.dsky.verb_noun_flash_on()
+        self.dsky.annunciators["opr_err"].start_blink()
+        self.dsky.annunciators["key_rel"].start_blink()
         self.flash_timer.singleShot(5000, self.terminate)
         self.computer.flash_comp_acty(500)
         
@@ -948,6 +952,10 @@ class Verb35(Verb):
         for annunciator in self.dsky.annunciators.values():
             annunciator.off()
         self.dsky.verb_noun_flash_off()
+        self.dsky.set_register("88", "verb")
+        self.dsky.set_register("88", "noun")
+        self.dsky.annunciators["opr_err"].stop_blink()
+        self.dsky.annunciators["key_rel"].stop_blink()
         self.dsky.set_register(value="bb", register="program")
         self.computer.remove_job(self)
         
@@ -1006,13 +1014,7 @@ class Verb37(Verb):
             self.computer.operator_error("Expected exactly two digits, received {} digits".format(len(data)))
             self.terminate()
             return
-
-        try:
-            program = Verb.computer.programs[data]()
-        except KeyError:
-            self.computer.operator_error()
-            return
-        program.execute()
+        Verb.computer.execute_program(data)
 
 #-------------------------------BEGIN EXTENDED VERBS----------------------------
 

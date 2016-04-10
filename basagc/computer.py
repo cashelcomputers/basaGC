@@ -31,6 +31,8 @@ class Computer:
 
         Computer.computer_instance = self
         verbs.Verb.computer = self
+        programs.Program.computer = self
+        nouns.computer = self
 
         self.ui = ui
 
@@ -227,28 +229,46 @@ class Computer:
         poo = self.programs["00"]()
         poo.execute()
 
-    def execute_verb(self):
+    def execute_verb(self, verb=None, noun=None):
 
         """ Executes the verb as stored in self.keyboard_state
         :return: None
         """
-        verb = self.keyboard_state["requested_verb"]
+        if not verb:
+            verb = self.keyboard_state["requested_verb"]
         self.dsky.set_register(value=verb, register="verb")
 
+        if not noun:
         # if verb doesn't exist, smack operator over head
-        try:
-            # if there is a noun entered by user, pass it to verb
-            if self.keyboard_state["requested_noun"] == 0:
-                verb_to_execute = self.verbs[verb]()
-            else:
-                verb_to_execute = self.verbs[verb](self.keyboard_state["requested_noun"])
-        except KeyError:
-            self.operator_error("Verb {} does not exist :(".format(verb))
-            return
+            try:
+                # if there is a noun entered by user, pass it to verb
+                if self.keyboard_state["requested_noun"] == 0:
+                    verb_to_execute = self.verbs[verb]()
+                else:
+                    verb_to_execute = self.verbs[verb](self.keyboard_state["requested_noun"])
+            except KeyError:
+                self.operator_error("Verb {} does not exist :(".format(verb))
+                return
+        else:
+            verb_to_execute = self.verbs[verb](noun)
         self.keyboard_state["requested_noun"] = 0  # reset noun state for next time    
         self.add_job(verb_to_execute)
+        self.flash_comp_acty(200)
         verb_to_execute.execute()
 
+    def execute_program(self, program_number):
+        '''
+        Executes the given program.
+        :param program_number: the program number to execute
+        :type program_number: str
+        :returns: 
+        '''
+        utils.log("Executing P{}".format(program_number))
+        print(self.programs)
+        program = self.programs[program_number]()
+        program.execute()
+        
+    
     def flash_comp_acty(self, duration=config.COMP_ACTY_FLASH_DURATION):
         '''
         Flashes the Computer Activity annunciator.
@@ -305,7 +325,7 @@ class Computer:
         self.alarm_codes[2] = self.alarm_codes[0]
         self.dsky.annunciators["prog"].on()
 
-    def poodoo_abort(self, alarm_code):
+    def poodoo_abort(self, alarm_code, message=None):
 
         """ Terminates the faulty program, and executes Program 00 (P00)
         :param alarm_code: a 3 digit octal int of the alarm code to raise
@@ -323,7 +343,9 @@ class Computer:
             self.running_program.terminate()
         except programs.ProgramTerminated:
             # this should happen if the program terminated successfully
-            utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), alarm_message), log_level="ERROR")
+            utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), message), log_level="ERROR")
+        if message:
+            utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), message), log_level="ERROR")
         poo = self.programs["00"]()
         poo.execute()
 

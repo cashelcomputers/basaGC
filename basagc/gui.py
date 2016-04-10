@@ -273,10 +273,10 @@ class Digit(QtWidgets.QLabel):
         :return: None
         """
         #set_trace()
-        self.blink_data["is_blinking_lit"] = False
+        self.blink_data["is_blinking_lit"] = True
         self.blink_data["is_blinking"] = True
-        image = self.digit_pixmaps[self.blink_data["blink_value"]]
-        self.setPixmap(image)
+        #image = self.digit_pixmaps[self.blink_data["blink_value"]]
+        #self.setPixmap(image)
         self.blink_timer.start(500)
 
     def flip(self):
@@ -298,6 +298,7 @@ class Digit(QtWidgets.QLabel):
 
     def stop_blink(self):
         self.blink_timer.stop()
+        self.blink_data["is_blinking"] = False
 
 class GUI:
     """This class represents the GUI. It contains the DSKY and its elements."""
@@ -430,25 +431,25 @@ class GUI:
                 self.centralwidget,
                 name="blank_1",
                 image_off="BlankOff.jpg",
-                image_on="BlankOn.jpg",
+                image_on="BlankOff.jpg",
                 geometry=QtCore.QRect(58, 272, 84, 40)),
             "blank2": Annunciator(
                 self.centralwidget,
                 name="blank_2",
                 image_off="BlankOff.jpg",
-                image_on="BlankOn.jpg",
+                image_on="BlankOff.jpg",
                 geometry=QtCore.QRect(150, 272, 84, 40)),
             "blank3": Annunciator(
                 self.centralwidget,
                 name="blank_3",
                 image_off="BlankOff.jpg",
-                image_on="BlankOn.jpg",
+                image_on="BlankOff.jpg",
                 geometry=QtCore.QRect(58, 321, 84, 40)),
             "blank4": Annunciator(
                 self.centralwidget,
                 name="blank_4",
                 image_off="BlankOff.jpg",
-                image_on="BlankOn.jpg",
+                image_on="BlankOff.jpg",
                 geometry=QtCore.QRect(150, 321, 84, 40)),
             "comp_acty": Annunciator(
                 self.centralwidget,
