@@ -941,6 +941,7 @@ class Verb35(Verb):
         # blinks the verb/noun registers
         self.dsky.verb_noun_flash_on()
         self.flash_timer.singleShot(5000, self.terminate)
+        self.computer.flash_comp_acty(500)
         
     def terminate(self):
         

@@ -309,8 +309,7 @@ class DSKY:
         self.computer.keyboard_state["is_expecting_data"] = False
         for d in self.control_registers.values():
             d.stop_blink()
-        # for d in self.control_registers["noun"]:
-        #     d.stop_blink()
+
 
     def flash_comp_acty(self):
 

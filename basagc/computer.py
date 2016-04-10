@@ -62,6 +62,9 @@ class Computer:
         # init slow loop (for less important tasks that can be ran approx every second)
         self.slow_loop_timer = QTimer()
         self.slow_loop_timer.timeout.connect(self.slow_loop)
+
+        self.comp_acty_timer = QTimer()
+        self.comp_acty_timer.timeout.connect(self._comp_acty_off)
         
         self.is_powered_on = False
         self.main_loop_table = []
@@ -203,6 +206,7 @@ class Computer:
         for item in self.main_loop_table:
             item()
 
+
     def slow_loop(self):
         '''
         A slower loop to handle tasks that are less frequently run
@@ -210,6 +214,8 @@ class Computer:
         '''
         if not telemachus.check_connection():
             self.dsky.annunciators["no_att"].on()
+        if config.ENABLE_COMP_ACTY_FLASH:
+            self.flash_comp_acty()
         
 
     def go_to_poo(self):
@@ -243,6 +249,19 @@ class Computer:
         self.add_job(verb_to_execute)
         verb_to_execute.execute()
 
+    def flash_comp_acty(self, duration=config.COMP_ACTY_FLASH_DURATION):
+        '''
+        Flashes the Computer Activity annunciator.
+        
+        :returns: 
+        '''
+        self.dsky.annunciators["comp_acty"].on()
+        self.comp_acty_timer.start(duration)
+
+    def _comp_acty_off(self):
+        self.dsky.annunciators["comp_acty"].off()
+        self.comp_acty_timer.stop()
+    
     def operator_error(self, message=None):
 
         """ Called when the astronaut has entered invalid keyboard input.
