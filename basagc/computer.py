@@ -3,6 +3,8 @@
 
 from PyQt5.QtCore import QTimer
 
+from pudb import set_trace
+
 from basagc import config
 from basagc import dsky
 from basagc import nouns
@@ -176,6 +178,7 @@ class Computer:
         utils.log("Computer booting...", log_level="INFO")
 
         # attempt to load telemetry listing
+        # set_trace()
         try:
             telemachus.get_api_listing()
         except telemachus.KSPNotConnected:
@@ -222,7 +225,14 @@ class Computer:
         """
         verb = self.keyboard_state["requested_verb"]
         self.dsky.set_register(value=verb, register="verb")
-        verb_to_execute = self.verbs[verb]()
+        
+        # if there is a noun entered by user, pass it to verb and reset noun
+        if self.keyboard_state["requested_noun"] == 0:
+            verb_to_execute = self.verbs[verb]()
+        else:
+            verb_to_execute = self.verbs[verb](self.keyboard_state["requested_noun"])
+            self.keyboard_state["requested_noun"] = 0
+            
         self.add_job(verb_to_execute)
         verb_to_execute.execute()
 

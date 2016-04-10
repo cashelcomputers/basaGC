@@ -20,17 +20,17 @@ def charin(keypress, state, dsky, computer):
         """ Handles control register loading
         :returns: None
         """
-
         # we are expecting a numeric digit as input
         if keypress.isalpha():
             dsky.operator_error("Expecting numeric input")
             return
         # otherwise, add the input to buffer
-        elif state["register_index"] == 0:
-            state["display_location_to_load"].digits[1].display(keypress)
+        display_register = dsky.get_register(state["display_location_to_load"])
+        if state["register_index"] == 0:
+            display_register["1"].display(keypress)
             state["register_index"] += 1
-        elif state["register_index"] == 1:
-            state["display_location_to_load"].digits[2].display(keypress)
+        else:
+            display_register["2"].display(keypress)
             state["register_index"] = 0
             state["input_data_buffer"] += keypress
     
@@ -39,17 +39,17 @@ def charin(keypress, state, dsky, computer):
         """ Handles data register loading
         :return: None
         """
-    
+        display_register = dsky.get_register(state["display_location_to_load"])
         if state["register_index"] == 0:
             if keypress == "+":
-                state["display_location_to_load"].sign.plus()
+                display_register["sign"].display("+")
             elif keypress == "-":
-                state["display_location_to_load"].sign.minus()
+                display_register["sign"].display("-")
             else:
-                state["display_location_to_load"].digits[0].display(keypress)
+                display_register["sign"].display("b")
                 state["register_index"] += 1
-        elif state["register_index"] >= 1 <= 5:
-            state["display_location_to_load"].digits[state["register_index"]].display(keypress)
+        elif 1 <= state["register_index"] <= 5:
+            display_register.digits[state["register_index"]].display(keypress)
             if state["register_index"] >= 4:
                 state["register_index"] = 0
             else:
@@ -61,7 +61,6 @@ def charin(keypress, state, dsky, computer):
         """ Handles expected data entry.
         :return: None
         """
-    
         if keypress == "P":
             dsky.stop_blink()
             utils.log("Proceeding without input, calling {}(proceed)".format(state["object_requesting_data"]))
@@ -80,19 +79,14 @@ def charin(keypress, state, dsky, computer):
             state["object_requesting_data"](state["input_data_buffer)"])
             state["input_data_buffer"] = ""
             return
-    
-        if state["display_location_to_load"] in dsky.data_registers.items():
-            handle_data_register_load()
-    
-        # if isinstance(state["display_location_to_load, DataRegister):
-        #     state["handle_data_register_load(keypress)
-    
-        elif state["display_location_to_load"] in dsky.control_registers.items():
+        if state["display_location_to_load"] in ["verb", "noun", "program"]:
             handle_control_register_load()
+        else:
+            handle_data_register_load()
     
         # if the user as entered anything other than a numeric d,
         # trigger a OPR ERR and recycle program
-        elif keypress.isalpha():
+        if keypress.isalpha():
             # if a program is running, recycle it
             # INSERT TRY HERE!!!
             # computer.get_state("running_program").terminate()
@@ -101,15 +95,14 @@ def charin(keypress, state, dsky, computer):
             # computer.get_state("running_verb").terminate()
             dsky.operator_error("Expecting numeric input")
             return
-        else:
-            state["input_data_buffer"] += keypress
-        
-            if state["display_location_to_load"] in dsky.data_registers.items():
-                state["display_location_to_load"].display(sign="", value=state["input_data_buffer"])
-            else:
-                state["display_location_to_load"].display(state["input_data_buffer"])
-            # state["is_noun_being_loaded = True
-            return
+        #else:
+            #print(state["input_data_buffer"])
+            #state["input_data_buffer"] += keypress
+            #print(state["input_data_buffer"])
+            #register = state["display_location_to_load"]
+            #dsky.set_register(state["input_data_buffer"], register)
+
+
 
     def handle_verb_entry():
     
@@ -276,4 +269,3 @@ def charin(keypress, state, dsky, computer):
     
     if keypress == "C":
         pass  # TODO
-

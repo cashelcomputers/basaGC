@@ -4,13 +4,6 @@ This module contains code for the DSKY (the guidance computer/user interface). I
 interface between the computer and the gui toolkit.
 """
 
-'''
-Created on <date>
-
-.. moduleauthor:: Firstname Lastname <firstname@example.com>
-
-:synopsis:
-'''
 from basagc import utils
 
 
@@ -77,15 +70,6 @@ class DSKY:
             },
         }
 
-    def blank_register(self, register):
-
-        """blanks the register"""
-
-        if register not in self.registers:
-            utils.log("No such register: {}".format(register))
-            return
-        for digit in self.registers[register].values():
-            digit.display("b")
 
     def blink_register(self, register):
 
@@ -97,8 +81,8 @@ class DSKY:
 
         # check if we are to blink a control register
         for digit in self.registers[register].digits:
-            digit.blink_data[is_blinking_lit] = False
-            digit.blink_data[is_blinking] = True
+            digit.blink_data["is_blinking_lit"] = False
+            digit.blink_data["is_blinking"] = True
             digit.display("b")
 
             # bind andstart the timer
@@ -116,6 +100,40 @@ class DSKY:
             # digit displaying blank, change to number
             self.display(self.last_value)
             self.is_blinking_lit = True
+
+    def blank_register(self, register):
+        '''
+        Blanks the given register.
+        :param register: The register to blank.
+        :type register: register object or string name of register
+        :returns: None
+        '''
+
+
+        # if we are passed a string name of a register, get the register
+        if isinstance(register, str):
+            register = self.get_register(register)
+        
+        for digit in register.values():
+                digit.display("b")
+
+
+    def get_register(self, register):
+        '''
+        maps the given register name to a actual register.
+        :param register: the name of the register
+        :type register: str
+        :returns: the register object
+        '''
+        registers = {
+            "verb": self.registers["verb"],
+            "noun": self.registers["noun"],
+            "program": self.registers["program"],
+            "data_1": self.registers["data"]["1"],
+            "data_2": self.registers["data"]["2"],
+            "data_3": self.registers["data"]["3"],
+            }
+        return registers[register]
 
     def set_register(self, value, register, digit=None):
         '''
@@ -154,12 +172,12 @@ class DSKY:
         
         # setting control register
         if register in ["verb", "noun", "program"]:
-            this_register = self.registers[register]  # get the register we want to change
+            this_register = self.get_register(register)  # get the register we want to change
             if digit is not None:
                 this_register[digit].display(value)
             else:
-                this_register["1"].display(value[0])
-                this_register["2"].display(value[1])
+                for index in range(len(value)):
+                    this_register[str(index + 1)].display(value[index])
             return True
 
         # setting data register
@@ -245,7 +263,7 @@ class DSKY:
     #     utils.log("{} requesting PROCEED or data".format(requesting_object))
     #     self.verb_noun_flash_on()
     #     self.object_requesting_data = requesting_object
-    #     self.is_expecting_data = True
+    #     self.computer.keyboard_state["is_expecting_data"] = True
 
     def request_data(self, requesting_object, display_location, is_proceed_available=False):
 
@@ -258,16 +276,16 @@ class DSKY:
 
         utils.log("{} requesting data".format(requesting_object))
         self.verb_noun_flash_on()
-        self.object_requesting_data = requesting_object
-        self.is_expecting_data = True
-        self.display_location_to_load = display_location
+        self.computer.keyboard_state["object_requesting_data"] = requesting_object
+        self.computer.keyboard_state["is_expecting_data"] = True
+        self.computer.keyboard_state["display_location_to_load"] = display_location
         # if PROCEED is a valid option, don't blank the data register (user needs to be able to see value :)
         # if not is_proceed_available:
         #     if isinstance(display_location, DataRegister):
         #         for register in list(self.data_registers.values()):
         #             register.blank()
         #     else:
-        display_location.blank()
+        self.blank_register(display_location)
 
     def verb_noun_flash_on(self):
 
@@ -297,7 +315,7 @@ class DSKY:
         :return: None
         """
 
-        self.is_expecting_data = False
+        self.computer.keyboard_state["is_expecting_data"] = False
         for d in self.control_registers.values():
             d.stop_blink()
         # for d in self.control_registers["noun"]:
@@ -313,90 +331,91 @@ class DSKY:
         # self.annunciators["comp_acty"].on()
         # self.comp_acty_timer.Start(config.COMP_ACTY_FLASH_DURATION, oneShot=True)
 
-    def set_noun(self, noun):
+    #def set_noun(self, noun):
 
-        """ Sets the required noun.
-        :param noun: Noun to set
-        :return:
-        """
+        #""" Sets the required noun.
+        #:param noun: Noun to set
+        #:return:
+        #"""
 
-        self.requested_noun = noun
-        self.control_registers["noun"].display(noun)
+        #self.requested_noun = noun
+        #self.control_registers["noun"].display(noun)
 
     def reset_annunciators(self):
 
         for annunciator in self.annunciators:
             self.annunciators[annunciator].off()
 
-class Digit:
+#class Digit:
 
-    def __init__(self, widget):
+    #def __init__(self, widget):
 
-        self.widget = widget
-        self.is_blinking_lit = True
-        self.current_display = None
-        self.value_to_blink = None
-        self.blink_timer = QtCore.QTimer()
-        self.blink_timer.timeout.connect(self.flip)
-        self.setText("")
-        self.display(10)
-        self.last_value = None
-        self.is_blinking = False
+        #self.widget = widget
+        #self.is_blinking_lit = True
+        #self.current_display = None
+        #self.value_to_blink = None
+        #self.blink_timer = QtCore.QTimer()
+        #self.blink_timer.timeout.connect(self.flip)
+        #self.setText("")
+        #self.display(10)
+        #self.last_value = None
+        #self.is_blinking = False
 
-    def set_tooltip(self, tooltip):
-        '''
-        Sets the tooltip on the widget.
-        :param tooltip: tooltip text
-        :type tooltip: str
-        :returns: None
-        '''
-        self.setToolTip(tooltip)
+    #def set_tooltip(self, tooltip):
+        #'''
+        #Sets the tooltip on the widget.
+        #:param tooltip: tooltip text
+        #:type tooltip: str
+        #:returns: None
+        #'''
+        #self.setToolTip(tooltip)
 
-    def start_blink(self):
+    #def start_blink(self):
 
-        """ Starts the digit blinking.
-        :return: None
-        """
-        self.is_blinking_lit = False
-        self.is_blinking = True
-        self.display(10)
-        self.blink_timer.start(500)
+        #""" Starts the digit blinking.
+        #:return: None
+        #"""
+        #self.is_blinking_lit = False
+        #self.is_blinking = True
+        #self.display(10)
+        #self.blink_timer.start(500)
 
-    def stop_blink(self):
-        '''
-        Stops the register blinking.
-        :returns: None
-        '''
+    #def stop_blink(self):
+        #'''
+        #Stops the register blinking.
+        #:returns: None
+        #'''
 
-        self.is_blinking = False
-        self.blink_timer.stop()
+        #self.is_blinking = False
+        #self.blink_timer.stop()
 
-    def flip(self):
+    #def flip(self):
 
-        """alternates the digit between a value and blank ie to flash the digit."""
+        #"""alternates the digit between a value and blank ie to flash the digit."""
 
-        # digit displaying the number, switch to blank
-        if self.is_blinking_lit:
-            self.display(10)
-            self.is_blinking_lit = False
-        else:
-            # digit displaying blank, change to number
-            self.display(self.last_value)
-            self.is_blinking_lit = True
+        ## digit displaying the number, switch to blank
+        #if self.is_blinking_lit:
+            #self.display(10)
+            #self.is_blinking_lit = False
+        #else:
+            ## digit displaying blank, change to number
+            #self.display(self.last_value)
+            #self.is_blinking_lit = True
 
-    def display(self, number_to_display):
-
-
-        # if we are flashing, only need to change stored digit
-        if self.is_blinking:
-            if self.is_blinking_lit:
-                self.last_value = number_to_display
-        else:
-            # stores the last value displayed, in case we need to flash
-            self.last_value = self.current_display
-
-            # store the value we shall be displaying
-            self.current_display = number_to_display
+    #def display(self, number_to_display):
 
 
+        ## if we are flashing, only need to change stored digit
+        #if self.is_blinking:
+            #if self.is_blinking_lit:
+                #self.last_value = number_to_display
+        #else:
+            ## stores the last value displayed, in case we need to flash
+            #self.last_value = self.current_display
 
+            ## store the value we shall be displaying
+            #self.current_display = number_to_display
+
+
+
+#

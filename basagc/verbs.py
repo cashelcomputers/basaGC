@@ -49,7 +49,7 @@ class Verb:
     
     computer = None
     
-    def __init__(self, name, verb_number, noun):
+    def __init__(self, name, verb_number, noun=None):
 
         """ Class constructor.
         :param name: the name (or description) of the verb
@@ -919,7 +919,7 @@ class Verb35(Verb):
         :return: None
         """
 
-        super(Verb35, self).__init__(name="Test lights", verb_number="35", noun=None)
+        super(Verb35, self).__init__(name="Test lights", verb_number="35")
         self.flash_timer = QTimer()
 
     def execute(self):
@@ -977,13 +977,13 @@ class Verb37(Verb):
     """ Change program (Major Mode)
     """
 
-    def __init__(self, noun):
+    def __init__(self):
 
         """ Class constructor
         :return: None
         """
 
-        super(Verb37, self).__init__(name="Change program (Major Mode)", verb_number="37", noun=noun)
+        super(Verb37, self).__init__(name="Change program (Major Mode)", verb_number="37")
 
     def execute(self):
 
@@ -992,7 +992,7 @@ class Verb37(Verb):
         """
 
         super(Verb37, self).execute()
-        self.dsky.request_data(requesting_object=self.receive_data, display_location=self.dsky.registers["noun"])
+        self.dsky.request_data(requesting_object=self.receive_data, display_location="noun")
 
     def receive_data(self, data):
 
@@ -1006,7 +1006,7 @@ class Verb37(Verb):
             return
 
         try:
-            program = gc.programs[data]()
+            program = self.computer.programs[data]()
         except KeyError:
             self.dsky.operator_error()
             return

@@ -270,6 +270,7 @@ class Digit(QtWidgets.QLabel):
         """ Starts the digit blinking.
         :return: None
         """
+
         self.blink_data["is_blinking_lit"] = False
         self.blink_data["is_blinking"] = True
         self.display("b")
