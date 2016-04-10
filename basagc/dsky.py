@@ -59,7 +59,7 @@ class DSKY:
                     "5": self._data_registers[1].digits[5],
                 },
                 "2": {
-                    "sign": self._data_registers[1].digits[0],
+                    "sign": self._data_registers[2].digits[0],
                     "1": self._data_registers[2].digits[1],
                     "2": self._data_registers[2].digits[2],
                     "3": self._data_registers[2].digits[3],
@@ -67,7 +67,7 @@ class DSKY:
                     "5": self._data_registers[2].digits[5],
                 },
                 "3": {
-                    "sign": self._data_registers[1].digits[0],
+                    "sign": self._data_registers[3].digits[0],
                     "1": self._data_registers[3].digits[1],
                     "2": self._data_registers[3].digits[2],
                     "3": self._data_registers[3].digits[3],

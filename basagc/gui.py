@@ -200,8 +200,10 @@ class SignDigit(QtWidgets.QLabel):
         self.setToolTip(tooltip)
     
     def display(self, digit_to_display):
+        print(digit_to_display, type(digit_to_display))
         # get pixmap
         image = self.digit_pixmaps[digit_to_display]
+        print(id(self))
         # change picture
         self.setPixmap(image)
 

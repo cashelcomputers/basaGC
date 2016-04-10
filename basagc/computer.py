@@ -221,10 +221,6 @@ class Computer:
         :return: None
         """
         verb = self.keyboard_state["requested_verb"]
-        if self.keyboard_state["requested_noun"] == 0:
-            noun = None
-        else:
-            noun = self.keyboard_state["requested_noun"]
         self.dsky.set_register(value=verb, register="verb")
         verb_to_execute = self.verbs[verb]()
         self.add_job(verb_to_execute)

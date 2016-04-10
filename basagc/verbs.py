@@ -928,16 +928,15 @@ class Verb35(Verb):
         :return: None
         """
         # commands the annunciators
-        print(id(self))
+
         for annunciator in self.dsky.annunciators.values():
             annunciator.on()
         # commands the data registers
         for register in ["1", "2", "3"]:
             self.dsky.set_register(value="+88888", register="data_{}".format(register))
-            # commands the control registers
+        # commands the control registers
         for register in ["verb", "noun", "program"]:
             self.dsky.set_register(value="88", register=register)
-        print(self)
         self.flash_timer.singleShot(5000, self.terminate)
         
     def terminate(self):
