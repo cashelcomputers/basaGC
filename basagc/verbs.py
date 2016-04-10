@@ -63,8 +63,6 @@ class Verb:
         self.name = name
         self.number = verb_number
         self.illegal_nouns = []
-        # self.activity_timer = wx.Timer(frame)  # TODO: convert to utils.Timer object
-        # frame.Bind(wx.EVT_TIMER, self._activity, self.activity_timer)
         self.data = []
         self.noun = noun
 
@@ -929,7 +927,6 @@ class Verb35(Verb):
         """ Executes the verb.
         :return: None
         """
-
         # commands the annunciators
         for annunciator in self.dsky.annunciators.values():
             annunciator.on()
@@ -939,6 +936,7 @@ class Verb35(Verb):
             # commands the control registers
         for register in ["verb", "noun", "program"]:
             self.dsky.set_register(value="88", register=register)
+        print(self)
         self.flash_timer.singleShot(5000, self.terminate)
         
     def terminate(self):

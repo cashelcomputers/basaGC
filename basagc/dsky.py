@@ -85,7 +85,6 @@ class DSKY:
             utils.log("No such register: {}".format(register))
             return
         for digit in self.registers[register].values():
-            print(digit)
             digit.display("b")
 
     def blink_register(self, register):
@@ -127,37 +126,82 @@ class DSKY:
         :type register: str
         :param digit: if set, indicates that just one digit is to be set
         :type digit: str
-        :returns: None
+        :returns: False if value checks fail, True if display set sucessfully
         '''
-        # registers are verb, noun, program, data_1, data_2, data_3
-        if register in ["verb", "noun", "program"]:
-            this_register = self.registers[register]
-            if digit:
-                this_register[str(digit)].display(value)
+
+        # some sanity checks. If checks fail, return False
+        # if digit is set, only should be one digit supplied
+        if digit:
+            if len(value) != 1:
+                utils.log("You are trying to display a single digit, but got {} digits instead!".format(len(value)))
+                return False
+        # if register is a control register, should have either 1 or 2 values to display
+        else:
+            if register in ["verb", "noun", "program"]:
+                if not 1 <= len(value) <= 2:
+                    utils.log("You are trying to display a value in the {} register, expecting 1 or 2 digits, " \
+                              "got {}".format(register, len(value)))
+                    return False
             else:
-                for index in range(len(value)):
-                    this_register[index].display(value[index])
+                # otherwise, check for value being length 1 to 6
+                if not 1 <= len(value) <= 6:
+                    utils.log("Must have between 1 and 6 values to display in data register, got {}".format(len(value)))
+                    return False
+                # also check that the first digit is either a "+", "-" or "b" (for blank)
+                if value[0] not in ["+", "-", "b"]:
+                    utils.log("First digit to display should be either +, -, or b, got {}".format(value[0]))
+                    return False
+        
+        # setting control register
+        if register in ["verb", "noun", "program"]:
+            this_register = self.registers[register]  # get the register we want to change
+            if digit is not None:
+                this_register[digit].display(value)
+            else:
+                this_register["1"].display(value[0])
+                this_register["2"].display(value[1])
+            return True
 
-        elif register == "data_1":
-            if digit:
-                self.registers[register]["1"][str(digit)].display(value)
-                return
-            for index, digit in enumerate(self.registers["data"]["1"].values(), start=1):
-                digit.display(value[index - 1])
-
-        elif register == "data_2":
-            if digit:
-                self.registers[register]["2"][str(digit)].display(value)
-                return
-            for index, digit in enumerate(self.registers["data"]["2"].values(), start=1):
-                digit.display(value[index - 1])
-
-        elif register == "data_3":
-            if digit:
-                self.registers[register]["3"][str(digit)].display(value)
-                return
-            for index, digit in enumerate(self.registers["data"]["3"].values(), start=1):
-                digit.display(value[index - 1])
+        # setting data register
+        else:
+            display_map = {
+                0: "sign",
+                1: "1",
+                2: "2",
+                3: "3",
+                4: "4",
+                5: "5",
+                }
+            # data register 1
+            if register == "data_1":
+                this_register = self.registers["data"]["1"]  # get the register we want to change
+                if digit:
+                    this_register[str(digit)].display(value)
+                else:
+                    for index in range(len(value)):
+                        digit_to_set = display_map[index]
+                        value_to_set = value[index]
+                        this_register[digit_to_set].display(value_to_set)
+                        
+            elif register == "data_2":
+                this_register = self.registers["data"]["2"]  # get the register we want to change
+                if digit:
+                    this_register[str(digit)].display(value)
+                else:
+                    for index in range(len(value)):
+                        digit_to_set = display_map[index]
+                        value_to_set = value[index]
+                        this_register[digit_to_set].display(value_to_set)
+    
+            elif register == "data_3":
+                this_register = self.registers["data"]["3"]  # get the register we want to change
+                if digit:
+                    this_register[str(digit)].display(value)
+                else:
+                    for index in range(len(value)):
+                        digit_to_set = display_map[index]
+                        value_to_set = value[index]
+                        this_register[digit_to_set].display(value_to_set)
 
     def set_annunciator(self, name, set_to=True):
 

@@ -135,11 +135,11 @@ def charin(keypress, state, dsky, computer):
             dsky.operator_error("Expected a number for verb choice")
             return
         elif state["verb_position"] == 0:
-            dsky.set_register(value=keypress, register="verb", digit=0)
+            dsky.set_register(value=keypress, register="verb", digit="1")
             state["requested_verb"] = keypress
             state["verb_position"] = 1
         elif state["verb_position"] == 1:
-            dsky.set_register(value=keypress, register="verb", digit=1)
+            dsky.set_register(value=keypress, register="verb", digit="2")
             state["requested_verb"] += keypress
             state["verb_position"] = 2
 
