@@ -5,6 +5,7 @@ interface between the computer and the gui toolkit.
 """
 
 from basagc import utils
+from pudb import set_trace
 
 
 class DSKY:
@@ -163,6 +164,7 @@ class DSKY:
             else:
                 # otherwise, check for value being length 1 to 6
                 if not 1 <= len(value) <= 6:
+                    set_trace()
                     utils.log("Must have between 1 and 6 values to display in data register, got {}".format(len(value)))
                     return False
                 # also check that the first digit is either a "+", "-" or "b" (for blank)

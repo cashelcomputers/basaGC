@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 """ This module contains classes of all of the verbs used by basaGC."""
-from pudb import set_trace
 
 import inspect
 import logging
 import sys
 from collections import OrderedDict
 
+from pudb import set_trace
 from PyQt5.QtCore import QTimer
-
 from basagc import config, nouns, programs, utils, dsky
 from basagc.telemachus import KSPNotConnected, TelemetryNotAvailable
 
@@ -248,11 +247,12 @@ class MonitorVerb(DisplayVerb):
             self.is_tooltips_set = True
 
         # display data on DSKY registers
-        Verb.computer.dsky.set_register(data["tooltips"][0], "data_1")
-        Verb.computer.dsky.set_register(data["tooltips"][1], "data_2")
-        Verb.computer.dsky.set_register(data["tooltips"][2], "data_3")
+        set_trace()
+        Verb.computer.dsky.set_register(output[0], "data_1")
+        Verb.computer.dsky.set_register(output[1], "data_2")
+        Verb.computer.dsky.set_register(output[2], "data_3")
 
-        dsky.flash_comp_acty()
+        Verb.computer.dsky.flash_comp_acty()
 
     def start_monitor(self):
 
@@ -458,8 +458,8 @@ class Verb04(DisplayVerb):
         noun_function = Verb.computer.nouns[Verb.computer.dsky.state["requested_noun"]]
         noun_data = noun_function(calling_verb=self)
         output = self._format_output_data(noun_data)
-        Verb.computer.dsky.set_register(output[0], "data_1"]
-        Verb.computer.dsky.set_register(output[1], "data_2"]
+        Verb.computer.dsky.set_register(output[0], "data_1")
+        Verb.computer.dsky.set_register(output[1], "data_2")
 
 
 class Verb05(DisplayVerb):
@@ -489,9 +489,9 @@ class Verb05(DisplayVerb):
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
             return
         output = self._format_output_data(noun_data)
-        Verb.computer.dsky.set_register(output[0], "data_1"]
-        Verb.computer.dsky.set_register(output[1], "data_2"]
-        Verb.computer.dsky.set_register(output[2], "data_3"]
+        Verb.computer.dsky.set_register(output[0], "data_1")
+        Verb.computer.dsky.set_register(output[1], "data_2")
+        Verb.computer.dsky.set_register(output[2], "data_3")
 
 
 class Verb06(DisplayVerb):
@@ -1328,7 +1328,7 @@ class Verb99(ExtendedVerb):
             register.blank()
 
         # re-display the verb number since the register has been blanked
-        Verb.computer.dsky.set_register("99", "verb"]
+        Verb.computer.dsky.set_register("99", "verb")
         self.dsky.control_registers["verb"].display("99")
         self.dsky.request_data(requesting_object=object_requesting_proceed, display_location=None,
                              is_proceed_available=True)

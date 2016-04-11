@@ -258,7 +258,7 @@ class Computer:
 
     def execute_program(self, program_number):
         '''
-        Executes the given program.
+        Executes the given program.Must have between 1 and 6 values to disp
         :param program_number: the program number to execute
         :type program_number: str
         :returns: 
