@@ -7,5 +7,5 @@ the burn parameters *during* the burn, based perhaps on:
 - Orbital period
 - Orbital Velocity
 Currently, P15 will *probably* get you in the neighborhood of a mun encounter on a free-return trajectory. I still 
-need to implement a burn at Mun periapsis to circularize. Have <incomplete>
+need to implement a burn at Mun periapsis to circularize.
 

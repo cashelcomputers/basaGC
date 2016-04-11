@@ -1,88 +1,88 @@
-#!/usr/bin/env python2
-# -*- coding: UTF-8 -*-
+#!/usr/bin/env python3
 """This file contains the guts of the guidance computer"""
 
-#  This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
-#  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#  MA 02110-1301, USA.
-#
-#
-#  Includes code and images from the Virtual AGC Project
-#  (http://www.ibiblio.org/apollo/index.html) by Ronald S. Burkey
-#  <info@sandroid.org>
+from PyQt5.QtCore import QTimer
+
+from pudb import set_trace
+
+from basagc import config
+from basagc import dsky
+from basagc import nouns
+from basagc import programs
+from basagc import routines
+from basagc import telemachus
+from basagc import utils
+from basagc import verbs
 
 
-import wx
-import burn
-
-import config
-import utils
-import dsky
-import verbs
-import nouns
-import programs
-from telemachus import check_connection, get_telemetry
-import telemachus
-
-
-
-
-class Computer(object):
+class Computer:
 
     """ This object models the core of the guidance computer.
     """
 
-    def __init__(self, gui):
+    computer_instance = None
+
+    def __init__(self, ui):
 
         """ Class constructor.
         :param gui: the wxPython frame object
         :return: None
         """
 
-        utils.log(message="\n\n" + config.SHORT_LICENCE + "\n", log_level="INFO")
-        self.gui = gui
-        self.dsky = dsky.DSKY(self.gui, self)
-        self.loop_timer = wx.Timer(gui)
-        gui.Bind(wx.EVT_TIMER, self.main_loop, self.loop_timer)
+        Computer.computer_instance = self
+        verbs.Verb.computer = self
+        programs.Program.computer = self
+        nouns.computer = self
+
+        self.ui = ui
+
+        self.dsky = dsky.DSKY(self, self.ui)
+        self.keyboard_state = {
+            "input_data_buffer": "",
+            "register_index": 0,
+            "is_verb_being_loaded": False,
+            "is_noun_being_loaded": False,
+            "is_data_being_loaded": False,
+            "verb_position": 0,
+            "noun_position": 0,
+            "requested_verb": 0,
+            "requested_noun": 0,
+            "current_verb": 0,
+            "current_noun": 0,
+            "current_program": 0,
+            "display_lock": None,
+            "backgrounded_update": None,
+            "is_expecting_data": False,
+            "is_expecting_proceed": False,
+            "object_requesting_data": None,
+            "display_location_to_load": None,
+            "set_keyboard_state_setter": self.set_keyboard_state,
+        }
+        self.main_loop_timer = QTimer()
+        self.main_loop_timer.timeout.connect(self.main_loop)
+
+        # init slow loop (for less important tasks that can be ran approx every second)
+        self.slow_loop_timer = QTimer()
+        self.slow_loop_timer.timeout.connect(self.slow_loop)
+
+        self.comp_acty_timer = QTimer()
+        self.comp_acty_timer.timeout.connect(self._comp_acty_off)
+        
         self.is_powered_on = False
         self.main_loop_table = []
-        self.gui.Bind(wx.EVT_CLOSE, self.quit)
         self.alarm_codes = [0, 0, 0]
-        self.running_program = None
+        self.running_programs = []
         self.noun_data = {
             "30": [],
         }
         self.next_burn = None
         self._burn_queue = []
-        self.is_ksp_connected = None
+        self.is_ksp_connected = False
         self.ksp_paused_state = None
         self.is_direction_autopilot_engaged = False
         self.is_thrust_autopilot_engaged = False
         self.moi_burn_delta_v = 0.0  # a bit of a hack, need to rethink this
-
-        burn.gc = self
-        telemachus.gc = self
-        verbs.gc = self
-        verbs.dsky = self.dsky
-        verbs.frame = self.gui
-        nouns.gc = self
-        nouns.dsky = self.dsky
-        nouns.frame = self.gui
-        programs.gc = self
-        programs.dsky = self.dsky
+        self.jobs = []
 
         self.nouns = nouns.nouns
         self.verbs = verbs.verbs
@@ -96,12 +96,22 @@ class Computer(object):
             "00007": "",
             "00024": "",
         }
+
         self.on()
+
+    def charin(self, keypress):
+        routines.charin(keypress, self.keyboard_state, self.dsky, self)
+
+    def register_charin(self):
+        self.ui.register_key_event_handler(self.charin)
+
+    def set_keyboard_state(self, state_name, new_value):
+        self.keyboard_state[state_name] = new_value
 
     def add_burn_to_queue(self, burn_object, execute=True):
 
-        """ Adds a Burn object to the computer burn queue. If no burn is assigned to next_burn, load new burn to
-        next_burn
+        """ Adds a Burn object to the computer burn queue. If no burn is
+        assigned to next_burn, load new burn to next_burn
         :param burn_object: a Burn object that contains parameters for the burn
         :param execute: if true, execute the added burn
         :return: None
@@ -130,14 +140,11 @@ class Computer(object):
         """ Removes a completed burn and loads next queued burn if available.
         :return: None
         """
-        
         utils.log("Removing {} from burn queue".format(self.next_burn))
         self.next_burn = None
         if self._burn_queue:
             utils.log("Adding {} as next burn".format(self._burn_queue[0]))
             self.next_burn = self._burn_queue.pop()
-
-            
 
     def disable_direction_autopilot(self):
 
@@ -149,10 +156,9 @@ class Computer(object):
         self.is_direction_autopilot_engaged = False
         utils.log("Autopilot disabled", log_level="INFO")
 
-    def quit(self, event=None):
+    def quit(self):
 
         """ Quits basaGC.
-        :param event: wxPython event (not used)
         :return: None
         """
 
@@ -173,34 +179,46 @@ class Computer(object):
         utils.log("Computer booting...", log_level="INFO")
 
         # attempt to load telemetry listing
+        # set_trace()
         try:
-            telemachus.telemetry = telemachus.get_api_listing()
+            telemachus.get_api_listing()
         except telemachus.KSPNotConnected:
             utils.log("Cannot retrieve telemetry listing - no connection to KSP", log_level="WARNING")
             self.dsky.annunciators["no_att"].on()
         else:
             utils.log("Retrieved telemetry listing", log_level="INFO")
-        self.loop_timer.Start(config.LOOP_TIMER_INTERVAL)
-        self.is_powered_on = True
-        for display_item in self.dsky.static_display:
-            display_item.on()
 
-    def main_loop(self, event):
+        # register key handler with qt ui
+        self.register_charin()
+
+        self.main_loop_timer.start(config.LOOP_TIMER_INTERVAL)
+        self.slow_loop_timer.start(config.SLOW_LOOP_TIMER_INTERVAL)
+        self.is_powered_on = True
+
+    def main_loop(self):
 
         """ The guidance computer main loop.
         :return: None
         """
 
-        # Check if we have a connection to KSP
-        self.check_ksp_connection()
-
         # check KSP paused state
         self.check_paused_state()
 
-        # if self.run_average_g_routine:
-        #     routines.average_g()
+        # run each item in process queue
         for item in self.main_loop_table:
             item()
+
+
+    def slow_loop(self):
+        '''
+        A slower loop to handle tasks that are less frequently run
+        :returns: 
+        '''
+        if not telemachus.check_connection():
+            self.dsky.annunciators["no_att"].on()
+        if config.ENABLE_COMP_ACTY_FLASH:
+            self.flash_comp_acty()
+        
 
     def go_to_poo(self):
 
@@ -211,23 +229,77 @@ class Computer(object):
         poo = self.programs["00"]()
         poo.execute()
 
-    def execute_verb(self, verb, noun=None, **kwargs):
+    def execute_verb(self, verb=None, noun=None):
 
-        """ Executes the specified verb, optionally with the specified noun.
-        :param verb: The verb to execute
-        :param noun: The noun to supply to the verb
+        """ Executes the verb as stored in self.keyboard_state
         :return: None
         """
-        if noun is not None:
-            self.dsky.set_noun(noun)
-        verb = str(verb)
-        noun = str(noun)
-        self.dsky.control_registers["verb"].display(verb)
-        if int(verb) < 40:
-            verb_to_execute = self.verbs[verb](noun)
+        if not verb:
+            verb = self.keyboard_state["requested_verb"]
+        self.dsky.set_register(value=verb, register="verb")
+
+        if not noun:
+        # if verb doesn't exist, smack operator over head
+            try:
+                # if there is a noun entered by user, pass it to verb
+                if self.keyboard_state["requested_noun"] == 0:
+                    verb_to_execute = self.verbs[verb]()
+                else:
+                    verb_to_execute = self.verbs[verb](self.keyboard_state["requested_noun"])
+            except KeyError:
+                self.operator_error("Verb {} does not exist :(".format(verb))
+                return
         else:
-            verb_to_execute = self.verbs[verb]()
-        verb_to_execute.execute(**kwargs)
+            verb_to_execute = self.verbs[verb](noun)
+        self.keyboard_state["requested_noun"] = 0  # reset noun state for next time    
+        self.add_job(verb_to_execute)
+        self.flash_comp_acty(200)
+        verb_to_execute.execute()
+
+    def execute_program(self, program_number):
+        '''
+        Executes the given program.Must have between 1 and 6 values to disp
+        :param program_number: the program number to execute
+        :type program_number: str
+        :returns: 
+        '''
+        utils.log("Executing P{}".format(program_number))
+        print(self.programs)
+        program = self.programs[program_number]()
+        program.execute()
+        
+    
+    def flash_comp_acty(self, duration=config.COMP_ACTY_FLASH_DURATION):
+        '''
+        Flashes the Computer Activity annunciator.
+        
+        :returns: 
+        '''
+        self.dsky.annunciators["comp_acty"].on()
+        self.comp_acty_timer.start(duration)
+
+    def _comp_acty_off(self):
+        self.dsky.annunciators["comp_acty"].off()
+        self.comp_acty_timer.stop()
+    
+    def operator_error(self, message=None):
+
+        """ Called when the astronaut has entered invalid keyboard input.
+        :param message: Optional message to send to log
+        :return: None
+        """
+
+        if message:
+            utils.log("OPERATOR ERROR: " + message, log_level="ERROR")
+        self.dsky.annunciators["opr_err"].blink_timer.start(500)
+        
+    def remove_job(self, job):
+        utils.log("Removing job from jobs list: {}".format(job))
+        self.jobs.remove(job)
+
+    def add_job(self, job):
+        utils.log("Adding job to jobs list: {}".format(job))
+        self.jobs.append(job)
 
     def reset_alarm_codes(self):
 
@@ -253,7 +325,7 @@ class Computer(object):
         self.alarm_codes[2] = self.alarm_codes[0]
         self.dsky.annunciators["prog"].on()
 
-    def poodoo_abort(self, alarm_code):
+    def poodoo_abort(self, alarm_code, message=None):
 
         """ Terminates the faulty program, and executes Program 00 (P00)
         :param alarm_code: a 3 digit octal int of the alarm code to raise
@@ -268,10 +340,12 @@ class Computer(object):
         self.alarm_codes[2] = self.alarm_codes[0]
         self.dsky.annunciators["prog"].on()
         try:
-            self.running_program[-1].terminate()
+            self.running_program.terminate()
         except programs.ProgramTerminated:
             # this should happen if the program terminated successfully
-            utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), alarm_message), log_level="ERROR")
+            utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), message), log_level="ERROR")
+        if message:
+            utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), message), log_level="ERROR")
         poo = self.programs["00"]()
         poo.execute()
 
@@ -314,8 +388,8 @@ class Computer(object):
         """ checks if we have a connection to Telemachus / KSP
         :return: None
         """
-
-        if not check_connection():
+        # set_trace()
+        if not telemachus.check_connection():
             if self.is_ksp_connected:
                 # we have just lost the connection, illuminate NO ATT annunciator and log it
                 self.dsky.annunciators["no_att"].on()
@@ -337,7 +411,7 @@ class Computer(object):
         """
 
         if self.is_ksp_connected:
-            paused_state = get_telemetry("paused")
+            paused_state = telemachus.get_telemetry("paused")
             # if the paused state hasn't changed, skip any annunciator changes
             if paused_state != self.ksp_paused_state:
                 if paused_state == 0:
@@ -356,3 +430,4 @@ class Computer(object):
                     self.dsky.annunciators["stby"].on()
                     utils.log("No Telemachus antenna found", log_level="WARNING")
                 self.ksp_paused_state = paused_state
+

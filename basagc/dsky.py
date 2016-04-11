@@ -1,639 +1,239 @@
-#!/usr/bin/env python2
-# -*- coding: UTF-8 -*-
-""" This module contains code for the DSKY (the guidance computer/user interface)
+#!/usr/bin/env python3
 """
-# This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
-#  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#  MA 02110-1301, USA.
-#
-#
-#  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
-#  by Ronald S. Burkey <info@sandroid.org>import wx
+This module contains code for the DSKY (the guidance computer/user interface). It should be considered to be the
+interface between the computer and the gui toolkit.
+"""
 
-import wx
+from basagc import utils
+from pudb import set_trace
 
-import config
-import verbs
-import utils
 
-
-class Digit(object):
-    """ Digit base class.
-    """
-
-    def __init__(self, dsky):
-        """ Class constructor.
-        :param dsky: the DSKY instance
-        :return: None
-        """
-
-        self.dsky = dsky
-        self.state = None
-
-        # def blank(self):
-        # self.widget.SetBitmap(self.blank)
-        # pass
-
-
-class Separator(object):
-    """ Display separator.
-    """
-
-    def __init__(self, panel):
-        """ Class constructor.
-        :param panel: the wxPython panel that the separator lives in.
-        :return: None
-        """
-
-        self.image_on = wx.Image(config.IMAGES_DIR + "SeparatorOn.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self.image_off = wx.Image(config.IMAGES_DIR + "Separator.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self.widget = wx.StaticBitmap(panel, wx.ID_ANY, self.image_off)
-
-    def on(self):
-        """ Illuminates the separator.
-        :return: None
-        """
-
-        self.widget.SetBitmap(self.image_on)
-
-    def off(self):
-        """ Deluminates the separator.
-        :return: None
-        """
-
-        self.widget.SetBitmap(self.image_off)
-
-
-class NumericDigit(Digit):
-    """ A numeric digit.
-    """
-
-    def __init__(self, dsky, panel=None):
-
-        """ Class constructor.
-        :param dsky: the DSKY instance
-        :param panel: the wxPython panel the digit lives in.
-        :return: None
-        """
-
-        self.dsky = dsky
-        super(NumericDigit, self).__init__(self.dsky)
-        self._digit_0 = wx.Image(config.IMAGES_DIR + "7Seg-0.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self._digit_1 = wx.Image(config.IMAGES_DIR + "7Seg-1.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self._digit_2 = wx.Image(config.IMAGES_DIR + "7Seg-2.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self._digit_3 = wx.Image(config.IMAGES_DIR + "7Seg-3.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self._digit_4 = wx.Image(config.IMAGES_DIR + "7Seg-4.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self._digit_5 = wx.Image(config.IMAGES_DIR + "7Seg-5.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self._digit_6 = wx.Image(config.IMAGES_DIR + "7Seg-6.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self._digit_7 = wx.Image(config.IMAGES_DIR + "7Seg-7.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self._digit_8 = wx.Image(config.IMAGES_DIR + "7Seg-8.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self._digit_9 = wx.Image(config.IMAGES_DIR + "7Seg-9.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self._digit_blank = wx.Image(config.IMAGES_DIR + "7SegOff.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self.current_value = None
-        self.is_blinking = False
-        self.is_blinking_lit = True
-        self.blink_value = None
-        self.last_value = None
-
-        # setup blink timers
-        self.blink_timer = wx.Timer(frame)
-        frame.Bind(wx.EVT_TIMER, self._blink, self.blink_timer)
-
-        if panel:
-            self.widget = wx.StaticBitmap(panel, wx.ID_ANY, self._digit_blank)
-        else:
-            self.widget = wx.StaticBitmap(frame, wx.ID_ANY, self._digit_blank)
-        self.current_value = "blank"
-
-    def set_tooltip(self, tooltip):
-
-        """ Sets the wxPython tooltip to the provided value.
-        :param tooltip: The tooltip to display.
-        :return: None
-        """
-
-        self.widget.SetToolTipString(tooltip)
-
-    def start_blink(self, value=None):
-
-        """ Starts the digit blinking.
-        :param value: Value to blink with
-        :return: None
-        """
-
-        if value:
-            self.blink_value = value
-        else:
-            self.blink_value = self.current_value
-        self.is_blinking = True
-
-        self.blink_timer.Start(500)
-
-    def _blink(self, event):
-
-        if self.is_blinking_lit:
-            self.display("blank")
-            self.is_blinking_lit = False
-        else:
-            self.display(self.blink_value)
-            self.is_blinking_lit = True
-
-    def stop_blink(self):
-
-        """ Stops the digit blinking.
-        :return: None
-        """
-
-        self.blink_timer.Stop()
-        self.display(self.blink_value)
-        self.blink_value = None
-
-    def blank(self):
-
-        """ Blanks the digit.
-        :return: None
-        """
-
-        self.last_value = self.current_value
-        self.display("blank")
-
-    def display(self, new_value):
-
-        """ Displays the required number on the digit.
-        :param new_value: the value to display (string)
-        :return: None
-        """
-
-        if new_value == "0":
-            self.widget.SetBitmap(self._digit_0)
-        elif new_value == "1":
-            self.widget.SetBitmap(self._digit_1)
-        elif new_value == "2":
-            self.widget.SetBitmap(self._digit_2)
-        elif new_value == "3":
-            self.widget.SetBitmap(self._digit_3)
-        elif new_value == "4":
-            self.widget.SetBitmap(self._digit_4)
-        elif new_value == "5":
-            self.widget.SetBitmap(self._digit_5)
-        elif new_value == "6":
-            self.widget.SetBitmap(self._digit_6)
-        elif new_value == "7":
-            self.widget.SetBitmap(self._digit_7)
-        elif new_value == "8":
-            self.widget.SetBitmap(self._digit_8)
-        elif new_value == "9":
-            self.widget.SetBitmap(self._digit_9)
-        elif new_value == "blank":
-            self.widget.SetBitmap(self._digit_blank)
-        elif new_value == "b":
-            self.widget.SetBitmap(self._digit_blank)
-        self.current_value = new_value
-        if self.is_blinking:
-            if new_value != "blank":
-                self.blink_value = new_value
-
-
-class SignDigit(Digit):
-    """ A class for a plus or minus digit.
-    """
-
-    def __init__(self, dsky, panel=None):
-
-        """ Class constructor.
-        :param dsky: the DSKY instance to use
-        :param panel: wxPython panel to display on
-        :return: None
-        """
-
-        super(SignDigit, self).__init__(dsky)
-        self.dsky = dsky
-        self._image_plus = wx.Image(config.IMAGES_DIR + "PlusOn.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self._image_minus = wx.Image(config.IMAGES_DIR + "MinusOn.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self._blank = wx.Image(config.IMAGES_DIR + "PlusMinusOff.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        if panel:
-            self.widget = wx.StaticBitmap(panel, wx.ID_ANY, self._blank)
-        else:
-            self.widget = wx.StaticBitmap(frame, wx.ID_ANY, self._blank)
-
-    def set_tooltip(self, tooltip):
-
-        """ Sets the wxPython tooltip to the provided value.
-        :param tooltip: The tooltip to display.
-        :return: None
-        """
-
-        self.widget.SetToolTipString(tooltip)
-
-    def plus(self):
-
-        """ Sets the digit to "+"
-        :return: None
-        """
-
-        self.widget.SetBitmap(self._image_plus)
-
-    def minus(self):
-
-        """ Sets the digit to "-"
-        :return: None
-        """
-
-        self.widget.SetBitmap(self._image_minus)
-
-    def blank(self):
-
-        """ Blanks the digit.
-        :return: None
-        """
-
-        self.widget.SetBitmap(self._blank)
-
-
-class Annunciator(object):
-    """ A class for annunciators.
-    """
-
-    def __init__(self, dsky, image_on, image_off, image_orange=None, panel=None, name=None):
-
-        """ Class constructor.
-        :param dsky: the DSKY instance to use
-        :param image_on: filename of the "on" image
-        :param image_off: filename of the "off" image
-        :param image_orange: filename of the "orange on" image
-        :param panel: wxPython panel to display on
-        :param name: Name of the annunciator
-        :return: None
-        """
-
-        self.dsky = dsky
-        self.name = name
-        self._image_on = wx.Image(config.IMAGES_DIR + image_on, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self._image_off = wx.Image(config.IMAGES_DIR + image_off, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        if image_orange:
-            self._image_orange = wx.Image(config.IMAGES_DIR + image_orange, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self.is_lit = False
-        self.requested_state = False
-
-        # setup blink timer
-        self.blink_timer = wx.Timer(frame)
-        frame.Bind(wx.EVT_TIMER, self._blink, self.blink_timer)
-
-        if panel:
-            self.widget = wx.StaticBitmap(panel, wx.ID_ANY, self._image_off)
-        else:
-            self.widget = wx.StaticBitmap(frame, wx.ID_ANY, self._image_off)
-
-    def start_blink(self, interval=500):
-
-        """ Starts the annunciator blinking.
-        :param interval: the blink interval
-        :return: None
-        """
-
-        self.blink_timer.Start(interval)
-
-    def stop_blink(self):
-
-        """ Stops the annunciator blinking.
-        :return: None
-        """
-
-        self.blink_timer.Stop()
-        self.off()
-
-    def _blink(self, event):
-        """ Blinks indicator """
-
-        if self.is_lit:
-            self.off()
-        else:
-            self.on()
-
-    def on(self):
-
-        """ Illuminates the annunciator.
-        :return: None
-        """
-
-        self.widget.SetBitmap(self._image_on)
-        self.is_lit = True
-
-    def off(self):
-
-        """ Deluminates the annunciator.
-        :return: None
-        """
-
-        self.widget.SetBitmap(self._image_off)
-        self.is_lit = False
-
-
-class DataRegister(object):
-    """ A class for the data registers
-    """
-
-    def __init__(self, dsky):
-
-        """ Class constructor.
-        :param dsky: the DSKY instance to use
-        :return: None
-        """
-
-        self.dsky = dsky
-        self.sign = SignDigit(dsky, panel=frame.panel_1)
-        self.digits = [
-            NumericDigit(dsky, panel=frame.panel_1),
-            NumericDigit(dsky, panel=frame.panel_1),
-            NumericDigit(dsky, panel=frame.panel_1),
-            NumericDigit(dsky, panel=frame.panel_1),
-            NumericDigit(dsky, panel=frame.panel_1),
-        ]
-
-    def display(self, value):
-
-        """ Displays a given value on the whole data register (including sign).
-        :param value: The value to display
-        :param sign: The sign to display
-        :return: None
-        """
-
-        # some value length checks
-        value_length = len(value)
-        if value_length > 6:
-            utils.log("Too many digits passed to display(), got {} digits".format(value_length), log_level="ERROR")
-            return
-        elif value_length == 5:
-            utils.log("display() received only 5 digits, assuming sign is blank", log_level="WARNING")
-
-        elif value_length < 5:
-            utils.log("display() received {} digits, padding with zeros to the left".format(value_length),
-                      log_level="WARNING")
-            value.zfill(5)
-
-        if value[0] == "-":
-            self.sign.minus()
-            value = value[1:]
-        elif value[0] == "+":
-            self.sign.plus()
-            value = value[1:]
-        elif value[0] == "b":
-            self.sign.blank()
-            value = value[1:]
-        else:
-            self.sign.blank()
-
-        # display each digit
-        for index, digit in enumerate(value):
-            self.digits[index].display(digit)
-
-    def blank(self):
-
-        """ Blanks the whole data register.
-        :return: None
-        """
-
-        self.sign.blank()
-        for digit in self.digits:
-            digit.display("blank")
-
-    def set_tooltip(self, tooltip):
-
-        """ Sets the wxPython tooltip to the provided value.
-        :param tooltip: The tooltip to display.
-        :return: None
-        """
-
-        for digit in self.digits:
-            digit.widget.SetToolTipString(tooltip)
-
-    def start_blink(self):
-        for digit in self.digits:
-            digit.start_blink()
-
-    def stop_blink(self):
-        for digit in self.digits:
-            digit.stop_blink()
-
-
-class ControlRegister(object):
-    """ A class for the control registers.
-    """
-
-    def __init__(self, dsky, name, image_on, image_off):
-
-        """ Class constructor.
-        :param dsky: the DSKY instance to use
-        :param name: Name of the control register.
-        :param image_on: filename of the "on" image
-        :param image_off: filename of the "off" image
-        :return: None
-        """
-
-        self.dsky = dsky
-        self.name = name
-        self.image_on = image_on
-        self.image_off = image_off
-        self.digits = {
-            1: NumericDigit(dsky, panel=frame.panel_1),
-            2: NumericDigit(dsky, panel=frame.panel_1),
-        }
-
-    def display(self, value):
-
-        """ Displays the given value on the whole control register.
-        :param value: The value to display.
-        :return:
-        """
-
-        if len(value) == 1:
-            self.digits[1].display(value)
-        else:
-            self.digits[1].display(value[0])
-            self.digits[2].display(value[1])
-
-            #for index, digit in enumerate(self.digits, start=1):
-            #try:
-            #self.digits[index].display(int(value[index]))
-            #except IndexError:
-            #utils.log(value, index)
-            #utils.log("Too many values to display, silently ignoring further data")
-
-    def blank(self):
-
-        """ Blanks the whole control register.
-        :return: None
-        """
-
-        for digit in self.digits.itervalues():
-            digit.display("blank")
-
-    def start_blink(self):
-        for digit in self.digits.itervalues():
-            digit.start_blink()
-
-
-class KeyButton(object):
-    """ A class for the DSKY keyboard buttons.
-    """
-
-    def __init__(self, wxid, image, dsky):
-
-        """ Class constructor.
-        :param wxid: wxPython ID
-        :param image: Image file to use
-        :param dsky: instance of the DSKY
-        :return: None
-        """
-
-        self.dsky = dsky
-        self.image = wx.Bitmap(config.IMAGES_DIR + image, wx.BITMAP_TYPE_ANY)
-        self.widget = wx.BitmapButton(frame, wxid, self.image)
-
-    def press(self, event):
-
-        """Called when a keypress event has been received.
-        :param event: wxPython event
-        """
-        keypress = str(event.GetId())
-
-        # set up the correct key codes for non-numeric keys
-        if keypress in config.KEY_IDS:
-            keypress = config.KEY_IDS[keypress]
-        # call the actual handler
-        self.dsky.charin(keypress)
-        return
-
-
-class DSKY(object):
+class DSKY:
     """ This class models the DSKY.
     """
 
-    def __init__(self, gui, computer):
+    dsky_instance = None
+
+    def __init__(self, computer, ui):
 
         """ Class constructor.
-        :param gui: wxPython frame object
+        :type ui: object
         :param computer: the instance of the guidance computer
         :return: None
         """
 
+        DSKY.dsky_instance = self
         self.computer = computer
-
-        global frame
-        frame = gui
-
-        #self.display_update_timer = wx.Timer(frame)
-        #frame.Bind(wx.EVT_TIMER, self.display_update, self.display_update_timer)
-        self.comp_acty_timer = wx.Timer(frame)
-        frame.Bind(wx.EVT_TIMER, self.stop_comp_acty_flash, self.comp_acty_timer)
-        self.input_data_buffer = ""
-        self.register_index = 0
-        self.is_verb_being_loaded = False
-        self.is_noun_being_loaded = False
-        self.is_data_being_loaded = False
-        self.verb_position = 0
-        self.noun_position = 0
-        self.requested_verb = 0
-        self.requested_noun = 0
-        self.current_verb = 0
-        self.current_noun = 0
-        self.current_program = 0
-        self.display_lock = None
-        self.backgrounded_update = None
-        self.is_expecting_data = False
-        self.is_expecting_proceed = False
-        self.object_requesting_data = None
-        self.display_location_to_load = None
-
-        self.static_display = [
-            Annunciator(self, image_on="rProgOn.jpg", image_off="rProgOff.jpg", panel=frame.panel_1),
-            Annunciator(self, image_on="VerbOn.jpg", image_off="VerbOff.jpg", panel=frame.panel_1),
-            Annunciator(self, image_on="NounOn.jpg", image_off="NounOff.jpg", panel=frame.panel_1),
-            Separator(frame.panel_1),
-            Separator(frame.panel_1),
-            Separator(frame.panel_1),
-        ]
-
-        self.annunciators = {
-            "uplink_acty": Annunciator(self, name="uplink_acty", image_on="UplinkActyOn.jpg",
-                                       image_off="UplinkActyOff.jpg"),
-            "temp": Annunciator(self, name="temp", image_on="TempOn.jpg", image_off="TempOff.jpg"),
-            "no_att": Annunciator(self, name="no_att", image_on="NoAttOn.jpg", image_off="NoAttOff.jpg"),
-            "gimbal_lock": Annunciator(self, name="gimbal_lock", image_on="GimbalLockOn.jpg",
-                                       image_off="GimbalLockOff.jpg"),
-            "stby": Annunciator(self, name="stby", image_on="StbyOn.jpg", image_off="StbyOff.jpg"),
-            "prog": Annunciator(self, name="prog", image_on="ProgOn.jpg", image_off="ProgOff.jpg"),
-            "key_rel": Annunciator(self, name="key_rel", image_on="KeyRelOn.jpg", image_off="KeyRelOff.jpg"),
-            "restart": Annunciator(self, name="restart", image_on="RestartOn.jpg",
-                                   image_off="RestartOff.jpg"),
-            "opr_err": Annunciator(self, name="opr_err", image_on="OprErrOn.jpg", image_off="OprErrOff.jpg"),
-            "tracker": Annunciator(self, name="tracker", image_on="TrackerOn.jpg",
-                                   image_off="TrackerOff.jpg"),
-            "no_dap": Annunciator(self, name="no_dap", image_on="BlankOff.jpg", image_off="BlankOff.jpg"),
-            "alt": Annunciator(self, name="alt", image_on="BlankOff.jpg", image_off="BlankOff.jpg"),
-            "prio_disp": Annunciator(self, name="prio_disp", image_on="BlankOff.jpg", image_off="BlankOff.jpg"),
-            "vel": Annunciator(self, name="vel", image_on="BlankOff.jpg", image_off="BlankOff.jpg"),
-            "comp_acty": Annunciator(self, name="comp_acty", image_on="CompActyOn.jpg",
-                                     image_off="CompActyOff.jpg", panel=frame.panel_1),
-        }
+        output_widgets = ui.get_output_widgets()
+        self.annunciators = output_widgets[0]
+        self._control_registers = output_widgets[1]
+        self._data_registers = output_widgets[2]
+        # self.keyboard = Keyboard(ui)
 
         self.registers = {
-            1: DataRegister(self),
-            2: DataRegister(self),
-            3: DataRegister(self),
+            "program": {
+                "1": self._control_registers["program"].digits[0],
+                "2": self._control_registers["program"].digits[1],
+            },
+            "verb": {
+                "1": self._control_registers["verb"].digits[0],
+                "2": self._control_registers["verb"].digits[1],
+            },
+            "noun": {
+                "1": self._control_registers["noun"].digits[0],
+                "2": self._control_registers["noun"].digits[1],
+            },
+            "data": {
+                "1": {
+                    "sign": self._data_registers[1].digits[0],
+                    "1": self._data_registers[1].digits[1],
+                    "2": self._data_registers[1].digits[2],
+                    "3": self._data_registers[1].digits[3],
+                    "4": self._data_registers[1].digits[4],
+                    "5": self._data_registers[1].digits[5],
+                },
+                "2": {
+                    "sign": self._data_registers[2].digits[0],
+                    "1": self._data_registers[2].digits[1],
+                    "2": self._data_registers[2].digits[2],
+                    "3": self._data_registers[2].digits[3],
+                    "4": self._data_registers[2].digits[4],
+                    "5": self._data_registers[2].digits[5],
+                },
+                "3": {
+                    "sign": self._data_registers[3].digits[0],
+                    "1": self._data_registers[3].digits[1],
+                    "2": self._data_registers[3].digits[2],
+                    "3": self._data_registers[3].digits[3],
+                    "4": self._data_registers[3].digits[4],
+                    "5": self._data_registers[3].digits[5],
+                },
+            },
         }
 
-        self.control_registers = {
-            "program": ControlRegister(self, "program", "rProgOn.jpg", "rProgOff.jpg"),
-            "verb": ControlRegister(self, "verb", "VerbOn.jpg", "VerbOff.jpg"),
-            "noun": ControlRegister(self, "noun", "NounOn.jpg", "NounOff.jpg"),
-        }
 
-        self.keyboard = {
-            "verb": KeyButton(config.ID_VERBBUTTON, "VerbUp.jpg", self),
-            "noun": KeyButton(config.ID_NOUNBUTTON, "NounUp.jpg", self),
-            "plus": KeyButton(config.ID_PLUSBUTTON, "PlusUp.jpg", self),
-            "minus": KeyButton(config.ID_MINUSBUTTON, "MinusUp.jpg", self),
-            0: KeyButton(config.ID_ZEROBUTTON, "0Up.jpg", self),
-            1: KeyButton(config.ID_ONEBUTTON, "1Up.jpg", self),
-            2: KeyButton(config.ID_TWOBUTTON, "2Up.jpg", self),
-            3: KeyButton(config.ID_THREEBUTTON, "3Up.jpg", self),
-            4: KeyButton(config.ID_FOURBUTTON, "4Up.jpg", self),
-            5: KeyButton(config.ID_FIVEBUTTON, "5Up.jpg", self),
-            6: KeyButton(config.ID_SIXBUTTON, "6Up.jpg", self),
-            7: KeyButton(config.ID_SEVENBUTTON, "7Up.jpg", self),
-            8: KeyButton(config.ID_EIGHTBUTTON, "8Up.jpg", self),
-            9: KeyButton(config.ID_NINEBUTTON, "9Up.jpg", self),
-            "clear": KeyButton(config.ID_CLRBUTTON, "ClrUp.jpg", self),
-            "proceed": KeyButton(config.ID_PROBUTTON, "ProUp.jpg", self),
-            "key_release": KeyButton(config.ID_KEYRELBUTTON, "KeyRelUp.jpg", self),
-            "enter": KeyButton(config.ID_ENTRBUTTON, "EntrUp.jpg", self),
-            "reset": KeyButton(config.ID_RSETBUTTON, "RsetUp.jpg", self),
-        }
+    def blink_register(self, register):
 
-    def operator_error(self, message=None):
-
-        """ Called when the astronaut has entered invalid keyboard input.
-        :param message: Optional message to send to log
+        """
+        Blinks the named register.
+        :param register: the name of the register to blink
         :return: None
         """
 
-        if message:
-            utils.log("OPERATOR ERROR: " + message)
-        self.annunciators["opr_err"].blink_timer.Start(500)
+        # check if we are to blink a control register
+        for digit in self.registers[register].digits:
+            digit.blink_data["is_blinking_lit"] = False
+            digit.blink_data["is_blinking"] = True
+            digit.display("b")
+
+            # bind andstart the timer
+            digit.blink_timer.timeout.connect(self._blink_event)
+            digit.blink_timer.start(500)
+
+    def _blink_event(self):
+        """alternates the digit between a value and blank ie to flash the digit."""
+
+        # digit displaying the number, switch to blank
+        if self.is_blinking_lit:
+            self.display(10)
+            self.is_blinking_lit = False
+        else:
+            # digit displaying blank, change to number
+            self.display(self.last_value)
+            self.is_blinking_lit = True
+
+    def blank_register(self, register):
+        '''
+        Blanks the given register.
+        :param register: The register to blank.
+        :type register: register object or string name of register
+        :returns: None
+        '''
+
+
+        # if we are passed a string name of a register, get the register
+        if isinstance(register, str):
+            register = self.get_register(register)
+        
+        for digit in register.values():
+                digit.display("b")
+
+
+    def get_register(self, register):
+        '''
+        maps the given register name to a actual register.
+        :param register: the name of the register
+        :type register: str
+        :returns: the register object
+        '''
+        registers = {
+            "verb": self.registers["verb"],
+            "noun": self.registers["noun"],
+            "program": self.registers["program"],
+            "data_1": self.registers["data"]["1"],
+            "data_2": self.registers["data"]["2"],
+            "data_3": self.registers["data"]["3"],
+            }
+        return registers[register]
+
+    def set_register(self, value, register, digit=None):
+        '''
+        Displays some data on a register.
+        :param value: the value to display
+        :type value: str
+        :param register: the register to display it on
+        :type register: str
+        :param digit: if set, indicates that just one digit is to be set
+        :type digit: str
+        :returns: False if value checks fail, True if display set sucessfully
+        '''
+
+        # some sanity checks. If checks fail, return False
+        # if digit is set, only should be one digit supplied
+        if digit:
+            if len(value) != 1:
+                utils.log("You are trying to display a single digit, but got {} digits instead!".format(len(value)))
+                return False
+        # if register is a control register, should have either 1 or 2 values to display
+        else:
+            if register in ["verb", "noun", "program"]:
+                if not 1 <= len(value) <= 2:
+                    utils.log("You are trying to display a value in the {} register, expecting 1 or 2 digits, " \
+                              "got {}".format(register, len(value)))
+                    return False
+            else:
+                # otherwise, check for value being length 1 to 6
+                if not 1 <= len(value) <= 6:
+                    set_trace()
+                    utils.log("Must have between 1 and 6 values to display in data register, got {}".format(len(value)))
+                    return False
+                # also check that the first digit is either a "+", "-" or "b" (for blank)
+                if value[0] not in ["+", "-", "b"]:
+                    utils.log("First digit to display should be either +, -, or b, got {}".format(value[0]))
+                    return False
+        
+        # setting control register
+        if register in ["verb", "noun", "program"]:
+            this_register = self.get_register(register)  # get the register we want to change
+            if digit is not None:
+                this_register[digit].display(value)
+            else:
+                for index in range(len(value)):
+                    this_register[str(index + 1)].display(value[index])
+            return True
+
+        # setting data register
+        else:
+            display_map = {
+                0: "sign",
+                1: "1",
+                2: "2",
+                3: "3",
+                4: "4",
+                5: "5",
+                }
+            # data register 1
+            if register == "data_1":
+                this_register = self.registers["data"]["1"]  # get the register we want to change
+                if digit:
+                    this_register[str(digit)].display(value)
+                else:
+                    for index in range(len(value)):
+                        digit_to_set = display_map[index]
+                        value_to_set = value[index]
+                        this_register[digit_to_set].display(value_to_set)
+                        
+            elif register == "data_2":
+                this_register = self.registers["data"]["2"]  # get the register we want to change
+                if digit:
+                    this_register[str(digit)].display(value)
+                else:
+                    for index in range(len(value)):
+                        digit_to_set = display_map[index]
+                        value_to_set = value[index]
+                        this_register[digit_to_set].display(value_to_set)
+    
+            elif register == "data_3":
+                this_register = self.registers["data"]["3"]  # get the register we want to change
+                if digit:
+                    this_register[str(digit)].display(value)
+                else:
+                    for index in range(len(value)):
+                        digit_to_set = display_map[index]
+                        value_to_set = value[index]
+                        this_register[digit_to_set].display(value_to_set)
+
+    def set_annunciator(self, name, set_to=True):
+
+        try:
+            if set_to:
+                self.annunciators[name].on()
+            else:
+                self.annunciators[name].off()
+        except KeyError:
+            utils.log("You tried to change a annunciator that doesnt exist :(", "WARNING")
+
+    
 
     def stop_comp_acty_flash(self, event):
 
@@ -656,7 +256,7 @@ class DSKY(object):
     #     utils.log("{} requesting PROCEED or data".format(requesting_object))
     #     self.verb_noun_flash_on()
     #     self.object_requesting_data = requesting_object
-    #     self.is_expecting_data = True
+    #     self.computer.keyboard_state["is_expecting_data"] = True
 
     def request_data(self, requesting_object, display_location, is_proceed_available=False):
 
@@ -666,19 +266,19 @@ class DSKY(object):
         :param is_proceed_available: True if the user can key in PROCEED instead of data
         :return: None
         """
-
+        self.blank_register(display_location)
         utils.log("{} requesting data".format(requesting_object))
         self.verb_noun_flash_on()
-        self.object_requesting_data = requesting_object
-        self.is_expecting_data = True
-        self.display_location_to_load = display_location
+        self.computer.keyboard_state["object_requesting_data"] = requesting_object
+        self.computer.keyboard_state["is_expecting_data"] = True
+        self.computer.keyboard_state["display_location_to_load"] = display_location
         # if PROCEED is a valid option, don't blank the data register (user needs to be able to see value :)
-        if not is_proceed_available:
-            if isinstance(display_location, DataRegister):
-                for register in self.registers.itervalues():
-                    register.blank()
-            else:
-                display_location.blank()
+        # if not is_proceed_available:
+        #     if isinstance(display_location, DataRegister):
+        #         for register in list(self.data_registers.values()):
+        #             register.blank()
+        #     else:
+        
 
     def verb_noun_flash_on(self):
 
@@ -686,10 +286,10 @@ class DSKY(object):
         :return: None
         """
 
-        self.control_registers["verb"].digits[1].start_blink()
-        self.control_registers["verb"].digits[2].start_blink()
-        self.control_registers["noun"].digits[1].start_blink()
-        self.control_registers["noun"].digits[2].start_blink()
+        self.registers["verb"]["1"].start_blink()
+        self.registers["verb"]["2"].start_blink()
+        self.registers["noun"]["1"].start_blink()
+        self.registers["noun"]["2"].start_blink()
 
     def verb_noun_flash_off(self):
 
@@ -697,51 +297,10 @@ class DSKY(object):
         :return: None
         """
 
-        for digit in self.control_registers["verb"].digits.itervalues():
-            digit.stop_blink()
-        for digit in self.control_registers["noun"].digits.itervalues():
-            digit.stop_blink()
-
-
-    def charin(self, keypress):
-        """
-        Handles key input from DSKY keyboard.
-        :param keypress: contains the key code
-        """
-
-        if self.is_expecting_data:
-            self._handle_expected_data(keypress)
-            return
-
-        if keypress == "R":
-            self._handle_reset_keypress()
-            return
-
-        if keypress == "K":
-            self._handle_key_release_keypress(keypress)
-            return
-
-        if self.display_lock:
-            self.display_lock.background()
-
-        if self.is_verb_being_loaded:
-            self._handle_verb_entry(keypress)
-
-        elif self.is_noun_being_loaded:
-            self._handle_noun_entry(keypress)
-
-        if keypress == "E":
-            self._handle_entr_keypress(keypress)
-
-        if keypress == "V":
-            self._handle_verb_keypress()
-
-        if keypress == "N":
-            self._handle_noun_keypress()
-
-        if keypress == "C":
-            pass  # TODO
-
+        self.registers["verb"]["1"].stop_blink()
+        self.registers["verb"]["2"].stop_blink()
+        self.registers["noun"]["1"].stop_blink()
+        self.registers["noun"]["2"].stop_blink()
 
     def stop_blink(self):
 
@@ -749,263 +308,10 @@ class DSKY(object):
         :return: None
         """
 
-        self.is_expecting_data = False
-        for d in self.control_registers["verb"].digits.itervalues():
-            d.stop_blink()
-        for d in self.control_registers["noun"].digits.itervalues():
+        self.computer.keyboard_state["is_expecting_data"] = False
+        for d in self.control_registers.values():
             d.stop_blink()
 
-    def _handle_data_register_load(self, keypress):
-
-        """ Handles data register loading
-        :return: None
-        """
-
-        if self.register_index == 0:
-            if keypress == "+":
-                self.display_location_to_load.sign.plus()
-            elif keypress == "-":
-                self.display_location_to_load.sign.minus()
-            else:
-                self.display_location_to_load.digits[0].display(keypress)
-                self.register_index += 1
-        elif self.register_index >= 1 <= 5:
-            self.display_location_to_load.digits[self.register_index].display(keypress)
-            if self.register_index >= 4:
-                self.register_index = 0
-            else:
-                self.register_index += 1
-        self.input_data_buffer += keypress
-
-
-    def _handle_control_register_load(self, keypress):
-
-        """ Handles control register loading
-        :return: None
-        """
-
-        # we are expecting a numeric digit as input
-        if keypress.isalpha():
-            self.operator_error("Expecting numeric input")
-            return
-        # otherwise, add the input to buffer
-        elif self.register_index == 0:
-            self.display_location_to_load.digits[1].display(keypress)
-            self.register_index += 1
-        elif self.register_index == 1:
-            self.display_location_to_load.digits[2].display(keypress)
-            self.register_index = 0
-        self.input_data_buffer += keypress
-
-    def _handle_expected_data(self, keypress):
-
-        """ Handles expected data entry.
-        :return: None
-        """
-
-        if keypress == "P":
-            self.stop_blink()
-            utils.log("Proceeding without input, calling {}(proceed)".format(
-                self.object_requesting_data))
-            self.object_requesting_data("proceed")
-            self.input_data_buffer = ""
-            return
-
-        # if we receive ENTER, the load is complete and we will call the
-        # program or verb requesting the data load
-        elif keypress == "E":
-            self.stop_blink()
-            utils.log("Data load complete, calling {} ({})".format(
-                self.object_requesting_data,
-                self.input_data_buffer))
-            self.object_requesting_data(self.input_data_buffer)
-            self.input_data_buffer = ""
-            return
-
-        if isinstance(self.display_location_to_load, DataRegister):
-            self._handle_data_register_load(keypress)
-
-        elif isinstance(self.display_location_to_load, ControlRegister):
-            self._handle_control_register_load(keypress)
-
-        # if the user as entered anything other than a numeric d,
-        # trigger a OPR ERR and recycle program
-        elif keypress.isalpha():
-            # if a program is running, recycle it
-            # INSERT TRY HERE!!!
-            # computer.get_state("running_program").terminate()
-            # INSERT EXCEPT HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            # if a verb is running, recycle it
-            #computer.get_state("running_verb").terminate()
-            self.operator_error("Expecting numeric input")
-            return
-        else:
-            self.input_data_buffer += keypress
-
-            if isinstance(self.display_location_to_load, DataRegister):
-                self.display_location_to_load.display(sign="", value=self.input_data_buffer)
-            else:
-                self.display_location_to_load.display(value=self.input_data_buffer)
-            # self.is_noun_being_loaded = True
-            return
-
-    def _handle_verb_entry(self, keypress):
-
-        """ Handles verb entry
-        :return: None
-        """
-
-        if keypress == "C":  # user has pushed CLEAR
-            self.verb_position = 0
-            self.requested_verb = ""
-            self.control_registers["verb"].digits[1].display("blank")
-            self.control_registers["verb"].digits[2].display("blank")
-            return
-
-        if keypress == "N":  # user has finished entering verb
-            self.is_verb_being_loaded = False
-            self.is_noun_being_loaded = True
-            self.verb_position = 0
-        elif keypress == "E":
-            self.is_verb_being_loaded = False
-            self.verb_position = 0
-        elif keypress.isalpha():
-            self.operator_error("Expected a number for verb choice")
-            return
-        elif self.verb_position == 0:
-            self.control_registers["verb"].digits[1].display(keypress)
-            self.requested_verb = keypress
-            self.verb_position = 1
-        elif self.verb_position == 1:
-            self.control_registers["verb"].digits[2].display(keypress)
-            self.requested_verb += keypress
-            self.verb_position = 2
-
-
-    def _handle_noun_entry(self, keypress):
-
-        """ Handles noun entry.
-        :return: None
-        """
-
-        if keypress == "C":  # user has pushed CLEAR
-            self.noun_position = 0
-            self.requested_noun = ""
-            self.control_registers["noun"].digits[1].display("blank")
-            self.control_registers["noun"].digits[2].display("blank")
-            return
-
-        if keypress == "N":  # user has finished entering noun
-            self.is_noun_being_loaded = False
-            self.is_verb_being_loaded = True
-            self.noun_position = 0
-        elif keypress == "E":
-            self.is_noun_being_loaded = False
-            self.noun_position = 0
-        elif keypress.isalpha():
-            self.operator_error("Expected a number for noun choice")
-            return
-        elif self.noun_position == 0:
-            self.control_registers["noun"].digits[1].display(keypress)
-            self.requested_noun = keypress
-            self.noun_position = 1
-        elif self.noun_position == 1:
-            self.control_registers["noun"].digits[2].display(keypress)
-            self.requested_noun += keypress
-            self.noun_position = 2
-
-    def _handle_entr_keypress(self, keypress):
-
-        """ Handles ENTR keypress
-        :return: None
-        """
-
-        this_verb = None
-        if self.requested_verb in verbs.INVALID_VERBS:
-            self.operator_error(
-                "Verb {} does not exist, please try a different verb".format(self.requested_verb))
-            return
-        try:
-
-            if int(self.requested_verb) < 40:
-                this_verb = self.computer.verbs[self.requested_verb](self.requested_noun)
-            else:
-                this_verb = self.computer.verbs[self.requested_verb]()
-        except IndexError:
-            utils.log("Verb {} not in verb list".format(self.requested_verb), "ERROR")
-            self.operator_error()
-        try:
-            this_verb.execute()
-        except NotImplementedError:
-            self.operator_error(
-                "Verb {} is not implemented yet. Sorry about that...".format(self.requested_verb))
-        except verbs.NounNotAcceptableError:
-            self.operator_error(
-                "Noun {} can't be used with verb {}".format(self.requested_noun, self.requested_verb))
-
-        return
-
-    def _handle_reset_keypress(self):
-
-        """ Handles RSET keypress
-        :return: None
-        """
-
-        self.computer.reset_alarm_codes()
-        for annunciator in self.annunciators.itervalues():
-            if annunciator.blink_timer.IsRunning():
-                annunciator.stop_blink()
-            annunciator.off()
-
-    def _handle_noun_keypress(self):
-
-        """ Handles NOUN keypress
-        :return: None
-        """
-
-        self.is_verb_being_loaded = False
-        self.is_noun_being_loaded = True
-        self.requested_noun = ""
-        self.control_registers["noun"].blank()
-
-    def _handle_verb_keypress(self):
-
-        """ Handles VERB keypress
-        :return: None
-        """
-
-        self.is_noun_being_loaded = False
-        self.is_verb_being_loaded = True
-        self.requested_verb = ""
-        self.control_registers["verb"].blank()
-
-    def _handle_key_release_keypress(self, keypress):
-
-        """ Handles KEY REL keypress
-        :return: None
-        """
-        if self.backgrounded_update:
-            if self.display_lock:
-                self.display_lock.terminate()
-            self.annunciators["key_rel"].stop_blink()
-            self.backgrounded_update.resume()
-            self.backgrounded_update = None
-            self.is_verb_being_loaded = False
-            self.is_noun_being_loaded = False
-            self.is_data_being_loaded = False
-            self.verb_position = 0
-            self.noun_position = 0
-            self.requested_verb = 0
-            self.requested_noun = 0
-            return
-
-        # if the computer is off, we only want to accept the PRO key input,
-        # all other keys are ignored
-        if self.computer.is_powered_on is False:
-            if keypress == "P":
-                self.computer.on()
-            else:
-                utils.log("Key {} ignored because gc is off".format(keypress))
 
     def flash_comp_acty(self):
 
@@ -1017,12 +323,104 @@ class DSKY(object):
         # self.annunciators["comp_acty"].on()
         # self.comp_acty_timer.Start(config.COMP_ACTY_FLASH_DURATION, oneShot=True)
 
-    def set_noun(self, noun):
+    #def set_noun(self, noun):
 
-        """ Sets the required noun.
-        :param noun: Noun to set
-        :return:
-        """
+        #""" Sets the required noun.
+        #:param noun: Noun to set
+        #:return:
+        #"""
 
-        self.requested_noun = noun
-        self.control_registers["noun"].display(noun)
+        #self.requested_noun = noun
+        #self.control_registers["noun"].display(noun)
+
+    def reset_annunciators(self):
+
+        for annunciator in self.annunciators:
+            self.annunciators[annunciator].off()
+
+    def set_tooltip(self, register, tooltip):
+        '''
+        Sets the tooltop on the given register
+        :param register: the name of the register to set the tooltip on
+        :type register: str
+        :param tooltip: the tooltip to display
+        :type tooltip: str
+        :returns: 
+        '''
+        this_register = self.get_register(register)
+        for digit in this_register.values():
+            digit.set_tooltip(tooltip)
+
+#class Digit:
+
+    #def __init__(self, widget):
+
+        #self.widget = widget
+        #self.is_blinking_lit = True
+        #self.current_display = None
+        #self.value_to_blink = None
+        #self.blink_timer = QtCore.QTimer()
+        #self.blink_timer.timeout.connect(self.flip)
+        #self.setText("")
+        #self.display(10)
+        #self.last_value = None
+        #self.is_blinking = False
+
+    #def set_tooltip(self, tooltip):
+        #'''
+        #Sets the tooltip on the widget.
+        #:param tooltip: tooltip text
+        #:type tooltip: str
+        #:returns: None
+        #'''
+        #self.setToolTip(tooltip)
+
+    #def start_blink(self):
+
+        #""" Starts the digit blinking.
+        #:return: None
+        #"""
+        #self.is_blinking_lit = False
+        #self.is_blinking = True
+        #self.display(10)
+        #self.blink_timer.start(500)
+
+    #def stop_blink(self):
+        #'''
+        #Stops the register blinking.
+        #:returns: None
+        #'''
+
+        #self.is_blinking = False
+        #self.blink_timer.stop()
+
+    #def flip(self):
+
+        #"""alternates the digit between a value and blank ie to flash the digit."""
+
+        ## digit displaying the number, switch to blank
+        #if self.is_blinking_lit:
+            #self.display(10)
+            #self.is_blinking_lit = False
+        #else:
+            ## digit displaying blank, change to number
+            #self.display(self.last_value)
+            #self.is_blinking_lit = True
+
+    #def display(self, number_to_display):
+
+
+        ## if we are flashing, only need to change stored digit
+        #if self.is_blinking:
+            #if self.is_blinking_lit:
+                #self.last_value = number_to_display
+        #else:
+            ## stores the last value displayed, in case we need to flash
+            #self.last_value = self.current_display
+
+            ## store the value we shall be displaying
+            #self.current_display = number_to_display
+
+
+
+#

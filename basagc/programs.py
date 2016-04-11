@@ -1,48 +1,23 @@
-#!/usr/bin/env python2
-# -*- coding: UTF-8 -*-
-""" This module contains all programs (major modes) used by the guidance computer.
-"""
-#  This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
-#  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#  MA 02110-1301, USA.
-#
-#
-#  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
-#  by Ronald S. Burkey <info@sandroid.org>
+#!/usr/bin/env python3
+""" This module contains all programs (major modes) used by the guidance computer."""
 
-from collections import OrderedDict
-import sys
 import inspect
+import sys
+from collections import OrderedDict
 
-
-from basagc import hohmann_transfer
-
-import utils
-import config
-from telemachus import get_telemetry, KSPNotConnected
-from basagc.burn import Burn
-
-gc = None
-dsky = None
+import basagc.maneuver
+from . import config
+from . import routines
+from . import utils
+from basagc.maneuver import Burn
+from .telemachus import get_telemetry, KSPNotConnected, check_connection
 
 
 class Program(object):
 
     """ Major mode base class.
     """
+    computer = None
 
     def __init__(self, description, number):
 
@@ -51,7 +26,7 @@ class Program(object):
         :param number: program number
         :return: None
         """
-
+        self.computer = Program.computer
         self.description = description
         self.number = number
 
@@ -62,18 +37,19 @@ class Program(object):
         """
 
         utils.log("Executing Program {}: {}".format(self.number, self.description))
-        dsky.flash_comp_acty()
-        dsky.control_registers["program"].display(self.number)
-        # gc.running_programs.append(self)
-        gc.running_program = self
+        self.computer.flash_comp_acty(500)
+        self.computer.dsky.set_register(self.number, "program")
+        #self.computer.dsky.control_registers["program"].display(self.number)
+        # self.computer.running_programs.append(self)
+        self.computer.running_program = self
 
     def terminate(self):
 
         """Terminates the program"""
 
-        # gc.running_programs.remove(self)
-        if gc.running_program == self:
-            gc.running_program = None
+        # self.computer.running_programs.remove(self)
+        if self.computer.running_program == self:
+            self.computer.running_program = None
         raise ProgramTerminated
 
     def restart(self):
@@ -100,14 +76,13 @@ class Program00(Program):
 
         super(Program00, self).__init__(description="AGC Idling", number="00")
 
-    def execute(self):
+    #def execute(self):
 
-        """ Executes the program.
-        :return: None
-        """
+        #""" Executes the program.
+        #:return: None
+        #"""
 
-        super(Program00, self).execute()
-        dsky.control_registers["program"].display("00")
+        #super(Program00, self).execute()
 
 # class Program01(Program):
 #     def __init__(self, name, number):
@@ -116,7 +91,7 @@ class Program00(Program):
 #     def execute(self):
 #         super(Program01, self).execute()
 #         log.info("Program 01 executing")
-#         dsky.annunciators["no_att"].on()
+#         self.computer.dsky.annunciators["no_att"].on()
 
 
 class Program11(Program):
@@ -150,21 +125,21 @@ class Program11(Program):
             return
 
         # --> call average G integration with ΔV integration
-        gc.run_average_g_routine = True
+        # self.computer.run_average_g_routine = True
 
         # --> terminate gyrocompassing
-        if "02" in gc.running_programs:
-            gc.programs["02"].terminate()
+        if "02" in self.computer.running_programs:
+            self.computer.programs["02"].terminate()
 
         # --> compute initial state vector
-        # gc.routines["average_g"]()
+        # self.computer.routines["average_g"]()
 
         # --> Display on DSKY:
         # --> V06 N62 (we are going to use V16N62 though, so we can have a updated display
         # --> R1: Velocity
         # --> R2: Rate of change of vehicle altitude
         # --> R3: Vehicle altitude in km to nearest .1 km
-        gc.execute_verb(verb="16", noun="62")
+        self.computer.execute_verb(verb="16", noun="62")
 
 
 class Program15(Program):
@@ -209,6 +184,7 @@ class Program15(Program):
         self.orbital_period = 0
         self.departure_body_orbital_period = 0
         self.first_burn = None
+        self.second_burn = None
 
     def execute(self):
 
@@ -217,23 +193,30 @@ class Program15(Program):
         """
 
         super(Program15, self).execute()
+        
+        # if no connection to KSP, do P00DOO abort
+        if not check_connection():
+            self.computer.poodoo_abort(111)
+            self.terminate()
+            return
         self.departure_body = get_telemetry("body")
         self.orbiting_body = get_telemetry("body")
 
         if not self._check_orbital_parameters():
             return
         self.target_name = self._check_target()
-        gc.noun_data["30"] = config.OCTAL_BODY_IDS[self.target_name]
+        
+        self.computer.noun_data["30"] = config.OCTAL_BODY_NAMES[self.target_name]
 
-        gc.execute_verb(verb="01", noun="30")
-        gc.dsky.request_data(requesting_object=self._accept_target_input, display_location=dsky.registers[1],
+        self.computer.execute_verb(verb="01", noun="30")
+        self.computer.dsky.request_data(requesting_object=self._accept_target_input, display_location="data_1",
                              is_proceed_available=True)
 
     def terminate(self):
 
         utils.log("Removing burn data", log_level="DEBUG")
-        gc.remove_burn(self.first_burn)
-        gc.remove_burn(self.second_burn)
+        self.computer.remove_burn(self.first_burn)
+        self.computer.remove_burn(self.second_burn)
         super(Program15, self).terminate()
 
     def _accept_target_input(self, target):
@@ -246,15 +229,15 @@ class Program15(Program):
         if target == "proceed":
             self.target_name = self.target_name.lstrip("0")
         elif target[0] == ("+" or "-"):
-            dsky.operator_error("Expected octal input, decimal input provided")
+            self.computer.operator_error("Expected octal input, decimal input provided")
             self.execute()
             return
-        elif target not in config.OCTAL_BODY_IDS.values():
-            utils.log("{} {} is not a valid target".format(target, type(target)))
-            gc.poodoo_abort(223, message="Target not valid")
-            return
+        #elif target not in list(config.OCTAL_BODY_IDS.values()):
+            #utils.log("{} {} is not a valid target".format(target, type(target)))
+            #self.computer.poodoo_abort(223, message="Target not valid")
+            #return TODO: add this back in
         else:
-            self.target_name = config.OCTAL_BODY_NAMES[target.lstrip("0")]
+            self.target_name = config.OCTAL_BODY_IDS[target.lstrip("0")]
         # calculate the maneuver and add recalculation job to gc main loop
         self.calculate_maneuver()
 
@@ -283,20 +266,20 @@ class Program15(Program):
         current_phase_angle = get_telemetry("body_phaseAngle", body_number=telemachus_target_id)
 
         # calculate the first and second burn Δv parameters
-        self.delta_v_first_burn, gc.moi_burn_delta_v = hohmann_transfer.delta_v(self.departure_altitude,
-                                                                                self.destination_altitude)
-        print(gc.moi_burn_delta_v)
+        self.delta_v_first_burn, self.computer.moi_burn_delta_v = basagc.maneuver.calculate_delta_v_hohmann(self.departure_altitude,
+                                                                                                 self.destination_altitude)
+        print((self.computer.moi_burn_delta_v))
 
         # calculate the time to complete the Hohmann transfer
-        self.time_to_transfer = hohmann_transfer.time_to_transfer(self.departure_altitude, self.destination_altitude,
-                                                                  self.grav_param)
+        self.time_to_transfer = basagc.maneuver.time_to_transfer(self.departure_altitude, self.destination_altitude,
+                                                                 self.grav_param)
 
         # calculate the correct phase angle for the start of the burn
         # note that the burn impulse is calculated as a instantaneous burn, to be correct the burn should be halfway
         # complete at this calculated time
 
-        self.phase_angle_required = hohmann_transfer.phase_angle(self.departure_altitude, self.destination_altitude,
-                                                                 self.grav_param)
+        self.phase_angle_required = basagc.maneuver.phase_angle(self.departure_altitude, self.destination_altitude,
+                                                                self.grav_param)
 
         # calculate the current difference in phase angle required and current phase angle
         self.phase_angle_difference = current_phase_angle - self.phase_angle_required
@@ -321,7 +304,7 @@ class Program15(Program):
             round(self.phase_angle_required, 2),
             int(self.delta_v_first_burn),
             utils.seconds_to_time(self.time_to_transfer)))
-        utils.log("Current Phase Angle: {}, difference: {}".format(
+        utils.log("Current Phase Angle: {:.2f}, difference: {:.2f}".format(
             current_phase_angle,
             self.phase_angle_difference))
         utils.log("Time to burn: {} hours, {} minutes, {} seconds".format(
@@ -340,11 +323,11 @@ class Program15(Program):
 
 
         # load the Burn object into computer
-        gc.add_burn_to_queue(self.first_burn, execute=False)
+        self.computer.add_burn_to_queue(self.first_burn, execute=False)
 
         # display burn parameters and go to poo
-        gc.execute_verb(verb="06", noun="95")
-        gc.go_to_poo()
+        self.computer.execute_verb(verb="06", noun="95")
+        self.computer.go_to_poo()
 
     def recalculate_phase_angles(self):
     
@@ -374,14 +357,14 @@ class Program15(Program):
 
         # check if orbit is circular
         if get_telemetry("eccentricity") > 0.001:
-            gc.poodoo_abort(224)
+            self.computer.poodoo_abort(224)
             return False
 
         # check if orbit is excessively inclined
         target_inclination = float(get_telemetry("target_inclination"))
         vessel_inclination = get_telemetry("inclination")
         if (vessel_inclination > (target_inclination - 0.5)) and (vessel_inclination > (target_inclination + 0.5)):
-            gc.poodoo_abort(225)
+            self.computer.poodoo_abort(225)
             return False
         else:
             return True
@@ -394,7 +377,7 @@ class Program15(Program):
 
         """
 
-        if get_telemetry("target_name") == u"No Target Selected.":
+        if get_telemetry("target_name") == "No Target Selected.":
             utils.log("No target selected in KSP, defaulting to Mun", log_level="WARNING")
             return "Mun"
         else:
@@ -403,27 +386,27 @@ class Program15(Program):
 class Program40(Program):
     def __init__(self):
         super(Program40, self).__init__(description="SPS Burn", number="40")
-        self.burn = gc.next_burn
+        self.burn = self.computer.next_burn
 
     def execute(self):
         super(Program40, self).execute()
         # if TIG < 2 mins away, abort burn
         if utils.seconds_to_time(self.burn.time_until_ignition)["minutes"] < 2:
-            gc.remove_burn(gc.next_burn)
-            gc.poodoo_abort(226)
+            self.computer.remove_burn(self.computer.next_burn)
+            self.computer.poodoo_abort(226)
             return
         # if time to ignition if further than a hour away, display time to ignition
         if utils.seconds_to_time(self.burn.time_until_ignition)["hours"] > 0:
             utils.log("TIG > 1 hour away")
-            gc.execute_verb(verb="16", noun="33")
-            gc.main_loop_table.append(self._ten_minute_monitor)
+            self.computer.execute_verb(verb="16", noun="33")
+            self.computer.main_loop_table.append(self._ten_minute_monitor)
         else:
             utils.log("TIG < 1 hour away, enabling burn")
             self.burn.execute()
 
     def _ten_minute_monitor(self):
         if utils.seconds_to_time(self.burn.time_until_ignition)["minutes"] < 10:
-            gc.main_loop_table.remove(self._ten_minute_monitor)
+            self.computer.main_loop_table.remove(self._ten_minute_monitor)
             self.burn.execute()
 
     def terminate(self):

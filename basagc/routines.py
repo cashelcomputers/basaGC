@@ -1,111 +1,290 @@
-#!/usr/bin/env python2
-# -*- coding: UTF-8 -*-
-""" This module contains internal routines used by the guidance computer.
-"""
-#  This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
-#  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#  MA 02110-1301, USA.
-#
-#
-#  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
-#  by Ronald S. Burkey <info@sandroid.org>
+#!/usr/bin/env python3
+"""This module contains internal routines used by the guidance computer."""
 
-computer = None
+from pudb import set_trace
 
-# def average_g():
-#     """The purpose of the Powered Flight Navigation Sub-
-#     routine is to compute the vehicle state vector during periods
-#     of powered flight steering. During such periods the effects of
-#     gravity and thrusting are taken into account. In order to achieve
-#     a short computation time the integration of the effects of gravity
-#     is achieved by simple averaging of the gravity acceleration vec-
-#     tor. The effect of thrust acceleration is measured by the IMU
-#     Pulsed Integrating Pendulous Accelerometers (PIPA) in the form
-#     of velocity increments (Av) over the computation time interval
-#     (At). The computations are, therefore, in terms of discrete in-
-#     crements of velocity rather than instantaneous accelerations.
-#     The repetitive computation cycle time At is set at 2 seconds to
-#     maintain accuracy and to be compatible with the basic powered
-#     flight cycle.
-#     """
-#     Note that in KSP, position vectors are relative to your current craft (I
-#     think), so we are going to simulate a position vector using lat, long and
-#     altitude above sea level
-#     latitude = computer.memory.get_memory("latitude")
-#     longitude = computer.memory.get_memory("longitude")
-#     altitude = computer.memory.get_memory("asl")
-#
-#     velocity_x = computer.memory.get_memory("surface_velocity_x")
-#     velocity_y = computer.memory.get_memory("surface_velocity_y")
-#     velocity_z = computer.memory.get_memory("surface_velocity_z")
-#
-#     time_ = computer.memory.get_memory("ut")
-#
-#     computer.state_vector.position_vector["lat"] = latitude
-#     computer.state_vector.position_vector["long"] = longitude
-#     computer.state_vector.position_vector["alt"] = altitude
-#
-#     computer.state_vector.velocity_vector.x = velocity_x
-#     computer.state_vector.velocity_vector.y = velocity_y
-#     computer.state_vector.velocity_vector.z = velocity_z
-#
-#     computer.state_vector.time = time_
+from basagc import utils
 
-# def routine_30():
-#
-#     def receive_data(data):
-#
-#         """ control will pass to here upon data being loaded by user """
-#
-#         if data not in ("00001", "00002", "proceed"):
-#             computer.dsky.operator_error("Invalid data entered, expecting either '00001' or '00002', got {}".format(
-#                                          data))
-#         if data != "proceed":
-#             computer.option_codes["00002"] = data
-#             routine_30()
-#
-#     # --> is another extended verb active?
-#     if computer.dsky.state["current_verb"] >= 40:
-#         computer.dsky.operator_error("Cannot run two extended verbs at the same time")
-#         return
-#
-#     # --> is average g routine on?
-#     if computer.state["run_average_g_routine"]:
-#
-#         # --> compute apoapsis, periapsis and TFF
-#         # I think TFF (Time to FreeFall) means orbital period?
-#
-#         # --> is TFF computable (i.e is periapsis < 300,000ft in Earth orbit or
-#         # --> 35,000ft in Lunar orbit?
-#
-#         # --> yes:
-#         # --> set TF periapsis = 0 and compute TFF
-#
-#         # --> no:
-#         # --> set TFF = -59859 and compute TF periapsis
-#
-#         # we ignore this test and "compute" the required data anyways
-#         pass
-#     else:
-#         # --> set CMC assumed (vehicle) option to 00001
-#         if computer.option_codes["00002"] == "":
-#             computer.option_codes["00002"] = "00001"
-#         # set V04N12 and request data entry
-#         computer.dsky.set_noun(12)
-#         computer.dsky.control_registers["verb"].display("04")
-#         computer.dsky.registers[1].display(value="00002")
-#         computer.dsky.registers[2].display(value=computer.option_codes["00002"])
-#         computer.dsky.request_data(receive_data, computer.dsky.registers[3])
+def charin(keypress, state, dsky, computer):
+    '''
+    This function is called whenever a keypress is sent from the UI. 
+    :param keypress: What key was pressed
+    :type keypress: str
+    :param state: the dsky and computer state relevant to dsky operations
+    :type state: dict
+    :param dsky: the instance of the dsky
+    :type dsky: basagc.dsky.DSKY
+    :param computer: the instance of the computer
+    :type computer: basagc.computer.Computer
+    :returns: None
+    '''
+    
+    def handle_control_register_load():
+        
+        """ Handles control register loading
+        :returns: None
+        """
+        # we are expecting a numeric digit as input
+        if keypress.isalpha():
+            computer.operator_error("Expecting numeric input")
+            return
+        # otherwise, add the input to buffer
+        display_register = state["display_location_to_load"]
+        if state["register_index"] == 0:
+            dsky.set_register(keypress, display_register, "1")
+            #display_register["1"].display(keypress)
+            state["input_data_buffer"] = keypress
+            state["register_index"] += 1
+        else:
+            dsky.set_register(keypress, display_register, "2")
+            state["register_index"] = 0
+            print(state["input_data_buffer"])
+            state["input_data_buffer"] += keypress
+            print(state["input_data_buffer"])
+            
+    
+    def handle_data_register_load():
+    
+        """ Handles data register loading
+        :return: None
+        """
+        display_register = state["display_location_to_load"]
+        if state["register_index"] == 0:
+            if keypress == "+":
+                dsky.set_register("+", display_register)
+            elif keypress == "-":
+                dsky.set_register("-", display_register)
+            else:
+                dsky.set_register("b", display_register)
+            state["register_index"] += 1
+        if 1 <= state["register_index"] <= 5:
+            dsky.set_register(keypress, display_register, digit=state["register_index"])
+            if state["register_index"] >= 5:
+                state["register_index"] = 0
+            else:
+                state["register_index"] += 1
+        state["input_data_buffer"] += keypress
+
+    def handle_expected_data():
+    
+        """ Handles expected data entry.
+        :return: None
+        """
+        #set_trace()
+        if keypress == "P":
+            dsky.stop_blink()
+            utils.log("Proceeding without input, calling {}(proceed)".format(state["object_requesting_data"]))
+            state["object_requesting_data"]("proceed")
+            state["input_data_buffer"] = ""
+            return
+    
+        # if we receive ENTER, the load is complete and we will call the
+        # program or verb requesting the data load
+
+        elif keypress == "E":
+            input_data = state["input_data_buffer"]
+            state["input_data_buffer"] = ""
+            state["is_expecting_data"] = False
+            dsky.verb_noun_flash_off()
+            utils.log("Data load complete, calling {} ({})".format(
+                state["object_requesting_data"],
+                input_data
+            ))
+            state["object_requesting_data"](input_data)
+            
+            return
+        if state["display_location_to_load"] in ["verb", "noun", "program"]:
+            handle_control_register_load()
+        else:
+            handle_data_register_load()
+    
+        # if the user as entered anything other than a numeric d,
+        # trigger a OPR ERR and recycle program
+        if keypress.isalpha():
+            # if a program is running, recycle it
+            # INSERT TRY HERE!!!
+            # computer.get_state("running_program").terminate()
+            # INSERT EXCEPT HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            # if a verb is running, recycle it
+            # computer.get_state("running_verb").terminate()
+            computer.operator_error("Expecting numeric input")
+            return
+        #else:
+            #print(state["input_data_buffer"])
+            #state["input_data_buffer"] += keypress
+            #print(state["input_data_buffer"])
+            #register = state["display_location_to_load"]
+            #dsky.set_register(state["input_data_buffer"], register)
+        
+
+
+    def handle_verb_entry():
+    
+        """ Handles verb entry
+        :return: None
+        """
+    
+        if keypress == "C":  # user has pushed CLEAR
+            state["verb_position"] = 0
+            state["requested_verb"] = ""
+            dsky.blank_register("verb")
+            dsky.blank_register("noun")
+            #dsky.control_registers["verb"].digits[1].display("blank")
+            #dsky.control_registers["verb"].digits[2].display("blank")
+            return
+    
+        if keypress == "N":  # user has finished entering verb
+            state["is_verb_being_loaded"] = False
+            state["is_noun_being_loaded"] = True
+            state["verb_position"] = 0
+        elif keypress == "E":
+            state["is_verb_being_loaded"] = False
+            state["verb_position"] = 0
+        elif keypress.isalpha():
+            computer.operator_error("Expected a number for verb choice")
+            return
+        elif state["verb_position"] == 0:
+            dsky.set_register(value=keypress, register="verb", digit="1")
+            state["requested_verb"] = keypress
+            state["verb_position"] = 1
+        elif state["verb_position"] == 1:
+            dsky.set_register(value=keypress, register="verb", digit="2")
+            state["requested_verb"] += keypress
+            state["verb_position"] = 2
+
+    def handle_noun_entry():
+    
+        """ Handles noun entry.
+        :return: None
+        """
+    
+        if keypress == "C":  # user has pushed CLEAR
+            state["noun_position"] = 0
+            state["requested_noun"] = ""
+            dsky.control_registers["noun"].digits[1].display("blank")
+            dsky.control_registers["noun"].digits[2].display("blank")
+            return
+    
+        if keypress == "N":  # user has finished entering noun
+            state["is_noun_being_loaded"] = False
+            state["is_verb_being_loaded"] = True
+            state["noun_position"] = 0
+        elif keypress == "E":
+            state["is_noun_being_loaded"] = False
+            state["noun_position"] = 0
+        elif keypress.isalpha():
+            computer.operator_error("Expected a number for noun choice")
+            return
+        elif state["noun_position"] == 0:
+            dsky.control_registers["noun"].digits[0].display(keypress)
+            state["requested_noun"] = keypress
+            state["noun_position"] = 1
+        elif state["noun_position"] == 1:
+            dsky.control_registers["noun"].digits[1].display(keypress)
+            state["requested_noun"] += keypress
+            state["noun_position"] = 2
+
+    def handle_entr_keypress():
+    
+        """ Handles ENTR keypress
+        :return: None
+        """
+    
+        computer.execute_verb()
+
+    def handle_reset_keypress():
+    
+        """ Handles RSET keypress
+        :return: None
+        """
+    
+        computer.reset_alarm_codes()
+        dsky.reset_annunciators()
+        if dsky.annunciators["opr_err"].blink_timer.isActive():
+            dsky.annunciators["opr_err"].stop_blink()
+
+    def handle_noun_keypress():
+    
+        """ Handles NOUN keypress
+        :return: None
+        """
+    
+        state["is_verb_being_loaded"] = False
+        state["is_noun_being_loaded"] = True
+        state["requested_noun"] = ""
+        dsky.blank_register("noun")
+
+    def handle_verb_keypress():
+    
+        """ Handles VERB keypress
+        :return: None
+        """
+    
+        state["is_noun_being_loaded"] = False
+        state["is_verb_being_loaded"] = True
+        state["requested_verb"] = ""
+        dsky.blank_register("verb")
+
+    def handle_key_release_keypress():
+    
+        """ Handles KEY REL keypress
+        :return: None
+        """
+        if state["backgrounded_update"]:
+            if state["display_lock"]:
+                state["display_lock"].terminate()
+            dsky.annunciators["key_rel"].stop_blink()
+            state["backgrounded_update"].resume()
+            state["backgrounded_update"] = None
+            state["is_verb_being_loaded"] = False
+            state["is_noun_being_loaded"] = False
+            state["is_data_being_loaded"] = False
+            state["verb_position"] = 0
+            state["noun_position"] = 0
+            state["requested_verb"] = 0
+            state["requested_noun"] = 0
+            return
+    
+        # if the computer is off, we only want to accept the PRO key input,
+        # all other keys are ignored
+        if computer.is_powered_on is False:
+            if keypress == "P":
+                computer.on()
+            else:
+                utils.log("Key {} ignored because gc is off".format(keypress))
+
+
+    
+    if state["is_expecting_data"]:
+        handle_expected_data()
+        return
+    
+    if keypress == "R":
+        handle_reset_keypress()
+        return
+    
+    if keypress == "K":
+        handle_key_release_keypress()
+        return
+    
+    if state["display_lock"]:
+        state["display_lock"].background()
+    
+    if state["is_verb_being_loaded"]:
+        handle_verb_entry()
+    
+    elif state["is_noun_being_loaded"]:
+        handle_noun_entry()
+    
+    if keypress == "E":
+        handle_entr_keypress()
+    
+    if keypress == "V":
+        handle_verb_keypress()
+    
+    if keypress == "N":
+        handle_noun_keypress()
+    
+    if keypress == "C":
+        pass  # TODO
+

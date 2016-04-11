@@ -1,672 +1,824 @@
-#!/usr/bin/env python2
-# -*- coding: UTF-8 -*-
-""" This module contains the wxPython GUI. """
-#  This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
-#  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#  MA 02110-1301, USA.
-#
-#
-#  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
-#  by Ronald S. Burkey <info@sandroid.org>
-
 import sys
-import wx
 
-import computer
-import config
-import utils
+from PyQt5 import QtCore, QtGui, QtWidgets
 
-
-class HelpFrame(wx.Frame):
-    def __init__(self, *args, **kwds):
-        kwds["style"] = wx.DEFAULT_FRAME_STYLE
-        wx.Frame.__init__(self, *args, **kwds)
-        self.panel_2 = wx.Panel(self, wx.ID_ANY)
-        self.viewer = wx.TextCtrl(self.panel_2, wx.ID_ANY, "", style=wx.TE_MULTILINE | wx.TE_READONLY)
-        self.close_button = wx.Button(self.panel_2, wx.ID_CLOSE, "")
-
-        self.__set_properties()
-        self.__do_layout()
-
-        self.Bind(wx.EVT_BUTTON, self.on_close, self.close_button)
-        self.Bind(wx.EVT_CLOSE, self.on_close)
-        # end wxGlade
-
-    def __set_properties(self):
-        self.SetTitle("")
-        self.viewer.SetMinSize((487, 473))
-        self.close_button.SetFocus()
-
-    def __do_layout(self):
-        sizer_18 = wx.BoxSizer(wx.VERTICAL)
-        sizer_16 = wx.BoxSizer(wx.VERTICAL)
-        grid_sizer_3 = wx.FlexGridSizer(2, 1, 5, 0)
-        grid_sizer_3.Add(self.viewer, 0, wx.EXPAND | wx.ADJUST_MINSIZE, 0)
-        grid_sizer_3.Add(self.close_button, 0, wx.ADJUST_MINSIZE, 0)
-        self.panel_2.SetSizer(grid_sizer_3)
-        grid_sizer_3.AddGrowableRow(0)
-        grid_sizer_3.AddGrowableCol(0)
-        sizer_16.Add(self.panel_2, 1, wx.ALL | wx.EXPAND, 5)
-        sizer_18.Add(sizer_16, 1, wx.EXPAND, 0)
-        self.SetSizer(sizer_18)
-        sizer_18.Fit(self)
-        self.Layout()
-
-    def on_close(self, event):
-        """Event handler for close button
-            :param event: Event object as passed by wxPython
-            """
-        self.SetTitle("")
-        self.viewer.Clear()
-        self.Hide()
+from basagc import config
+from pudb import set_trace
+#from basagc.computer import Computer
+from basagc import utils
 
 
-class SettingsFrame(wx.Frame):
-    """This frame provides a settings dialog"""
+class ControlRegister:
+    def __init__(self, central_widget, name, *digits):
+        
+        self.central_widget = central_widget
+        self.name = name
+        self.verb_35_timer = QtCore.QTimer()
+        self.digits = [
+            digits[0],
+            digits[1],
+        ]
+        self.blink_data = {}
 
-    def __init__(self, *args, **kwds):
-        """Class constructor"""
-
-        kwds["style"] = wx.DEFAULT_FRAME_STYLE
-        wx.Frame.__init__(self, *args, **kwds)
-        self.panel_3 = wx.Panel(self, wx.ID_ANY)
-        self.label_ip = wx.StaticText(self.panel_3, wx.ID_ANY, "Telemachus IP address:")
-        self.ip_field = wx.TextCtrl(self.panel_3, wx.ID_ANY, config.IP)
-        self.label_1 = wx.StaticText(self.panel_3, wx.ID_ANY, "Telemachus port:")
-        self.port_field = wx.TextCtrl(self.panel_3, wx.ID_ANY, config.PORT)
-        self.label_3 = wx.StaticText(self.panel_3, wx.ID_ANY, "DSKY Update Interval:")
-        self.display_update_field = wx.TextCtrl(self.panel_3, wx.ID_ANY, str(config.DISPLAY_UPDATE_INTERVAL))
-        self.label_2 = wx.StaticText(self.panel_3, wx.ID_ANY, "Log level:")
-        self.log_level_combobox = wx.ComboBox(self.panel_3, wx.ID_ANY, choices=config.LOG_LEVELS,
-                                              style=wx.CB_DROPDOWN | wx.CB_READONLY)
-        self.ok_button = wx.Button(self.panel_3, wx.ID_OK, "")
-        self.cancel_button = wx.Button(self.panel_3, wx.ID_CANCEL, "")
-
-        self.__set_properties()
-        self.__do_layout()
-
-        self.Bind(wx.EVT_BUTTON, self.ok_button_event, self.ok_button)
-        self.Bind(wx.EVT_BUTTON, self.cancel_button_event, self.cancel_button)
-
-    def __set_properties(self):
-        """Internal wxPython method"""
-
-        self.SetTitle("basaGC settings")
-        self.ip_field.SetMinSize((120, 25))
-        self.log_level_combobox.SetMinSize((187, 25))
-
-    def __do_layout(self):
-        """Internal wxPython method"""
-
-        sizer_17 = wx.BoxSizer(wx.VERTICAL)
-        grid_sizer_1 = wx.FlexGridSizer(4, 1, 5, 0)
-        grid_sizer_4 = wx.FlexGridSizer(1, 2, 0, 5)
-        grid_sizer_2 = wx.FlexGridSizer(2, 4, 5, 5)
-        grid_sizer_2.Add(self.label_ip, 0, wx.ALIGN_CENTER_VERTICAL | wx.ADJUST_MINSIZE, 0)
-        grid_sizer_2.Add(self.ip_field, 0, wx.EXPAND | wx.ADJUST_MINSIZE, 0)
-        grid_sizer_2.Add(self.label_1, 0, wx.ALIGN_CENTER_VERTICAL | wx.ADJUST_MINSIZE, 0)
-        grid_sizer_2.Add(self.port_field, 0, wx.EXPAND | wx.ADJUST_MINSIZE, 0)
-        grid_sizer_2.Add(self.label_3, 0, wx.ALIGN_CENTER_VERTICAL | wx.ADJUST_MINSIZE, 0)
-        grid_sizer_2.Add(self.display_update_field, 0, wx.EXPAND | wx.ADJUST_MINSIZE, 0)
-        grid_sizer_2.Add(self.label_2, 0, wx.ALIGN_CENTER_VERTICAL | wx.ADJUST_MINSIZE, 0)
-        grid_sizer_2.Add(self.log_level_combobox, 0, wx.ADJUST_MINSIZE, 0)
-        grid_sizer_2.AddGrowableRow(0)
-        grid_sizer_2.AddGrowableCol(0)
-        grid_sizer_2.AddGrowableCol(1)
-        grid_sizer_1.Add(grid_sizer_2, 1, wx.EXPAND, 0)
-        grid_sizer_4.Add(self.ok_button, 0, wx.ADJUST_MINSIZE, 0)
-        grid_sizer_4.Add(self.cancel_button, 0, wx.ADJUST_MINSIZE, 0)
-        grid_sizer_1.Add(grid_sizer_4, 1, wx.ALIGN_RIGHT, 0)
-        self.panel_3.SetSizer(grid_sizer_1)
-        sizer_17.Add(self.panel_3, 1, wx.ALL | wx.EXPAND, 5)
-        self.SetSizer(sizer_17)
-        sizer_17.Fit(self)
-        self.Layout()
-
-    def ok_button_event(self, event):
-        """ Event handler for OK button.
-        :param event: wxPython event (not used)
-        :return:
-        """
-
-        ip_address = self.ip_field.GetValue()
-        port = self.port_field.GetValue()
-        log_level = self.log_level_combobox.GetValue()
-        display_update_interval = self.display_update_field.GetValue()
-        config.IP = ip_address
-        config.PORT = port
-        config.current_log_level = log_level
-        config.URL = "http://" + config.IP + ":" + config.PORT + "/telemachus/datalink?"
-        config.DISPLAY_UPDATE_INTERVAL = int(display_update_interval)
-        self.Hide()
-
-    def cancel_button_event(self, event):
-        """ Event handler for Cancel button.
-        :param event: wxPython event (not used)
-        :return:
-        """
-
-        self.Hide()
-
-
-class LogViewerFrame(wx.Frame):
-    """This frame provides a log viewer"""
-
-    def __init__(self, *args, **kwds):
-        kwds["style"] = wx.DEFAULT_FRAME_STYLE
-        wx.Frame.__init__(self, *args, **kwds)
-        self.panel_2 = wx.Panel(self, wx.ID_ANY)
-        self.viewer = wx.TextCtrl(self.panel_2, wx.ID_ANY, "", style=wx.TE_MULTILINE | wx.TE_READONLY)
-        self.close_button = wx.Button(self.panel_2, wx.ID_CLOSE, "")
-
-        self.__set_properties()
-        self.__do_layout()
-
-        self.Bind(wx.EVT_BUTTON, self.on_close, self.close_button)
-        self.Bind(wx.EVT_CLOSE, self.on_close)
-
-    def __set_properties(self):
-        self.SetTitle("Log Viewer")
-        _icon = wx.EmptyIcon()
-        _icon.CopyFromBitmap(wx.Bitmap(config.ICON, wx.BITMAP_TYPE_PNG))
-        self.SetIcon(_icon)
-        self.SetSize((720, 450))
-        self.close_button.SetFocus()
-
-    def __do_layout(self):
-        sizer_16 = wx.BoxSizer(wx.VERTICAL)
-        grid_sizer_3 = wx.FlexGridSizer(2, 1, 5, 0)
-        grid_sizer_3.Add(self.viewer, 0, wx.EXPAND | wx.ADJUST_MINSIZE, 0)
-        grid_sizer_3.Add(self.close_button, 0, wx.ADJUST_MINSIZE, 0)
-        self.panel_2.SetSizer(grid_sizer_3)
-        grid_sizer_3.AddGrowableRow(0)
-        grid_sizer_3.AddGrowableCol(0)
-        sizer_16.Add(self.panel_2, 1, wx.ALL | wx.EXPAND, 5)
-        self.SetSizer(sizer_16)
-        self.Layout()
-
-    def on_close(self, event):
-        """Event handler for close button
-        :param event: Event object as passed by wxPython
-        """
-
-        self.Hide()
-
-
-class GUI(wx.Frame):
-    """This class provides the main DSKY GUI"""
-
-    computer = None
-    dsky = None
-    keyboard = None
-    annunciators = None
-
-    def __init__(self, *args, **kwds):
-
-        kwds["style"] = wx.CAPTION | wx.CLOSE_BOX | wx.MINIMIZE_BOX | wx.SYSTEM_MENU
-        wx.Frame.__init__(self, *args, **kwds)
-        self.panel_1 = wx.Panel(self, wx.ID_ANY)
-
-        self.log_viewer = LogViewerFrame(self)
-        self.help_viewer = HelpFrame(self)
-        self.settings_dialog = SettingsFrame(self)
-
-        utils.LOG_VIEWER = self.log_viewer
-        GUI.computer = computer.Computer(self)
-        GUI.dsky = GUI.computer.dsky
-        GUI.keyboard = GUI.computer.dsky.keyboard
-        GUI.annunciators = GUI.computer.dsky.annunciators
-
-        self.VerbButton = GUI.keyboard["verb"].widget
-        self.NounButton = GUI.keyboard["noun"].widget
-        self.PlusButton = GUI.keyboard["plus"].widget
-        self.MinusButton = GUI.keyboard["minus"].widget
-        self.ZeroButton = GUI.keyboard[0].widget
-        self.SevenButton = GUI.keyboard[7].widget
-        self.FourButton = GUI.keyboard[4].widget
-        self.OneButton = GUI.keyboard[1].widget
-        self.EightButton = GUI.keyboard[8].widget
-        self.FiveButton = GUI.keyboard[5].widget
-        self.TwoButton = GUI.keyboard[2].widget
-        self.NineButton = GUI.keyboard[9].widget
-        self.SixButton = GUI.keyboard[6].widget
-        self.ThreeButton = GUI.keyboard[3].widget
-        self.ClrButton = GUI.keyboard["clear"].widget
-        self.ProButton = GUI.keyboard["proceed"].widget
-        self.KeyRelButton = GUI.keyboard["key_release"].widget
-        self.EntrButton = GUI.keyboard["enter"].widget
-        self.RsetButton = GUI.keyboard["reset"].widget
-
-        # Menu Bar
-        self.menubar = wx.MenuBar()
-        self.file_menu = wx.Menu()
-        self.settings_menuitem = wx.MenuItem(self.file_menu, wx.ID_ANY, "Settings...", "", wx.ITEM_NORMAL)
-        self.file_menu.AppendItem(self.settings_menuitem)
-        self.show_log_menuitem = wx.MenuItem(self.file_menu, wx.ID_ANY, "Show Log...", "", wx.ITEM_NORMAL)
-        self.file_menu.AppendItem(self.show_log_menuitem)
-        self.quit_menuitem = wx.MenuItem(self.file_menu, wx.ID_ANY, "Quit", "", wx.ITEM_NORMAL)
-        self.file_menu.AppendItem(self.quit_menuitem)
-        self.menubar.Append(self.file_menu, "File")
-        self.help_menu = wx.Menu()
-        self.help_verbs_menu = wx.MenuItem(self.help_menu, wx.ID_ANY, "Verbs...", "Displays available verbs",
-                                           wx.ITEM_NORMAL)
-        self.help_menu.AppendItem(self.help_verbs_menu)
-        self.help_nouns_menu = wx.MenuItem(self.help_menu, wx.ID_ANY, "Nouns...", "Displays available nouns",
-                                           wx.ITEM_NORMAL)
-        self.help_menu.AppendItem(self.help_nouns_menu)
-        self.help_programs_menu = wx.MenuItem(self.help_menu, wx.ID_ANY, "Programs...",
-                                              "Displays available programs", wx.ITEM_NORMAL)
-        self.help_menu.AppendItem(self.help_programs_menu)
-        self.help_alarm_codes_menu = wx.MenuItem(self.help_menu, wx.ID_ANY, "Alarm codes...", "Displays alarm codes",
-                                                 wx.ITEM_NORMAL)
-        self.help_menu.AppendItem(self.help_alarm_codes_menu)
-        self.about_menuitem = wx.MenuItem(self.help_menu, wx.ID_ANY, "About...", "", wx.ITEM_NORMAL)
-        self.help_menu.AppendItem(self.about_menuitem)
-        self.menubar.Append(self.help_menu, "Help")
-        self.SetMenuBar(self.menubar)
-        # Menu Bar end
-
-        self.bitmap_5 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg",
-                                                                   wx.BITMAP_TYPE_ANY))
-        self.bitmap_6_copy = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg",
-                                                                        wx.BITMAP_TYPE_ANY))
-        self.bitmap_6 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg",
-                                                                   wx.BITMAP_TYPE_ANY))
-        self.bitmap_5_copy = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg",
-                                                                        wx.BITMAP_TYPE_ANY))
-        self.bitmap_5_copy_1 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg",
-                                                                          wx.BITMAP_TYPE_ANY))
-        self.bitmap_6_copy_copy = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg",
-                                                                             wx.BITMAP_TYPE_ANY))
-        self.bitmap_6_copy_copy_copy = wx.StaticBitmap(self, wx.ID_ANY,
-                                                       wx.Bitmap(config.IMAGES_DIR + "FrameHorizontal.jpg",
-                                                                 wx.BITMAP_TYPE_ANY))
-        self.bitmap_5_copy_2 = wx.StaticBitmap(self, wx.ID_ANY, wx.Bitmap(config.IMAGES_DIR + "FrameVertical.jpg",
-                                                                          wx.BITMAP_TYPE_ANY))
-
-        self.__set_properties()
-        self.__do_layout()
-
-        self.Bind(wx.EVT_BUTTON, GUI.keyboard["verb"].press, id=config.ID_VERBBUTTON)
-        self.Bind(wx.EVT_BUTTON, GUI.keyboard["noun"].press, id=config.ID_NOUNBUTTON)
-        self.Bind(wx.EVT_BUTTON, GUI.keyboard["plus"].press, id=config.ID_PLUSBUTTON)
-        self.Bind(wx.EVT_BUTTON, GUI.keyboard["minus"].press, id=config.ID_MINUSBUTTON)
-        self.Bind(wx.EVT_BUTTON, GUI.keyboard[0].press, id=config.ID_ZEROBUTTON)
-        self.Bind(wx.EVT_BUTTON, GUI.keyboard[7].press, id=config.ID_SEVENBUTTON)
-        self.Bind(wx.EVT_BUTTON, GUI.keyboard[4].press, id=config.ID_FOURBUTTON)
-        self.Bind(wx.EVT_BUTTON, GUI.keyboard[1].press, id=config.ID_ONEBUTTON)
-        self.Bind(wx.EVT_BUTTON, GUI.keyboard[8].press, id=config.ID_EIGHTBUTTON)
-        self.Bind(wx.EVT_BUTTON, GUI.keyboard[5].press, id=config.ID_FIVEBUTTON)
-        self.Bind(wx.EVT_BUTTON, GUI.keyboard[2].press, id=config.ID_TWOBUTTON)
-        self.Bind(wx.EVT_BUTTON, GUI.keyboard[9].press, id=config.ID_NINEBUTTON)
-        self.Bind(wx.EVT_BUTTON, GUI.keyboard[6].press, id=config.ID_SIXBUTTON)
-        self.Bind(wx.EVT_BUTTON, GUI.keyboard[3].press, id=config.ID_THREEBUTTON)
-        self.Bind(wx.EVT_BUTTON, GUI.keyboard["clear"].press, id=config.ID_CLRBUTTON)
-        self.Bind(wx.EVT_BUTTON, GUI.keyboard["proceed"].press, id=config.ID_PROBUTTON)
-        self.Bind(wx.EVT_BUTTON, GUI.keyboard["key_release"].press, id=config.ID_KEYRELBUTTON)
-        self.Bind(wx.EVT_BUTTON, GUI.keyboard["enter"].press, id=config.ID_ENTRBUTTON)
-        self.Bind(wx.EVT_BUTTON, GUI.keyboard["reset"].press, id=config.ID_RSETBUTTON)
-
-        # menu binds
-        self.Bind(wx.EVT_MENU, self.settings_menuitem_click, self.settings_menuitem)
-        self.Bind(wx.EVT_MENU, self.show_log_menuitem_click, self.show_log_menuitem)
-        self.Bind(wx.EVT_MENU, self.quit_menuitem_click, self.quit_menuitem)
-        self.Bind(wx.EVT_MENU, self.about_menuitem_click, self.about_menuitem)
-        self.Bind(wx.EVT_MENU, self.verbs_menuitem_click, self.help_verbs_menu)
-        self.Bind(wx.EVT_MENU, self.nouns_menuitem_click, self.help_nouns_menu)
-        self.Bind(wx.EVT_MENU, self.programs_menuitem_click, self.help_programs_menu)
-        self.Bind(wx.EVT_MENU, self.alarm_codes_menuitem_click, self.help_alarm_codes_menu)
-
-    def __set_properties(self):
-
-        self.SetTitle("basaGC")
-        _icon = wx.EmptyIcon()
-        _icon.CopyFromBitmap(wx.Bitmap(config.ICON, wx.BITMAP_TYPE_PNG))
-        self.SetIcon(_icon)
-        self.panel_1.SetBackgroundColour(wx.Colour(160, 160, 160))
-        self.VerbButton.SetMinSize((75, 75))
-        self.NounButton.SetMinSize((75, 75))
-        self.PlusButton.SetMinSize((75, 75))
-        self.MinusButton.SetMinSize((75, 75))
-        self.ZeroButton.SetMinSize((75, 75))
-        self.SevenButton.SetMinSize((75, 75))
-        self.FourButton.SetMinSize((75, 75))
-        self.OneButton.SetMinSize((75, 75))
-        self.EightButton.SetMinSize((75, 75))
-        self.FiveButton.SetMinSize((75, 75))
-        self.TwoButton.SetMinSize((75, 75))
-        self.NineButton.SetMinSize((75, 75))
-        self.SixButton.SetMinSize((75, 75))
-        self.ThreeButton.SetMinSize((75, 75))
-        self.ClrButton.SetMinSize((75, 75))
-        self.ProButton.SetMinSize((75, 75))
-        self.KeyRelButton.SetMinSize((75, 75))
-        self.EntrButton.SetMinSize((75, 75))
-        self.RsetButton.SetMinSize((75, 75))
-
-    def __do_layout(self):
-
-        sizer_1 = wx.BoxSizer(wx.VERTICAL)
-        sizer_3 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_4_copy = wx.BoxSizer(wx.VERTICAL)
-        sizer_5_copy_3 = wx.BoxSizer(wx.VERTICAL)
-        sizer_5_copy_2 = wx.BoxSizer(wx.VERTICAL)
-        sizer_5_copy_1 = wx.BoxSizer(wx.VERTICAL)
-        sizer_5_copy = wx.BoxSizer(wx.VERTICAL)
-        sizer_5 = wx.BoxSizer(wx.VERTICAL)
-        sizer_4 = wx.BoxSizer(wx.VERTICAL)
-        sizer_2 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_14 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_15 = wx.BoxSizer(wx.VERTICAL)
-        sizer_6 = wx.BoxSizer(wx.VERTICAL)
-        sizer_7 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_7_copy = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_7_copy_1 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_8 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_10_copy_1 = wx.BoxSizer(wx.VERTICAL)
-        sizer_11_copy_1 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_10_copy = wx.BoxSizer(wx.VERTICAL)
-        sizer_11_copy = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_9 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_10 = wx.BoxSizer(wx.VERTICAL)
-        sizer_11 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_12 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_13 = wx.BoxSizer(wx.VERTICAL)
-        grid_sizer_1_copy = wx.GridSizer(7, 2, 9, 10)
-        sizer_1.Add((20, 15), 0, 0, 0)
-        sizer_2.Add((20, 20), 2, wx.EXPAND, 0)
-        sizer_12.Add(self.bitmap_5, 0, 0, 0)
-        sizer_13.Add(self.bitmap_6_copy, 0, 0, 0)
-        sizer_13.Add((20, 5), 0, 0, 0)
-        grid_sizer_1_copy.Add(GUI.annunciators["uplink_acty"].widget, 0,
-                              wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
-        grid_sizer_1_copy.Add(GUI.annunciators["temp"].widget, 0,
-                              wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
-        grid_sizer_1_copy.Add(GUI.annunciators["no_att"].widget, 0,
-                              wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
-        grid_sizer_1_copy.Add(GUI.annunciators["gimbal_lock"].widget, 0, 0, 0)
-        grid_sizer_1_copy.Add(GUI.annunciators["stby"].widget, 0, 0, 0)
-        grid_sizer_1_copy.Add(GUI.annunciators["prog"].widget, 0, 0, 0)
-        grid_sizer_1_copy.Add(GUI.annunciators["key_rel"].widget, 0, 0, 0)
-        grid_sizer_1_copy.Add(GUI.annunciators["restart"].widget, 0, 0, 0)
-        grid_sizer_1_copy.Add(GUI.annunciators["opr_err"].widget, 0, 0, 0)
-        grid_sizer_1_copy.Add(GUI.annunciators["tracker"].widget, 0, 0, 0)
-        grid_sizer_1_copy.Add(GUI.annunciators["no_dap"].widget, 0, 0, 0)
-        grid_sizer_1_copy.Add(GUI.annunciators["alt"].widget, 0, 0, 0)
-        grid_sizer_1_copy.Add(GUI.annunciators["prio_disp"].widget, 0, 0, 0)
-        grid_sizer_1_copy.Add(GUI.annunciators["vel"].widget, 0, 0, 0)
-        sizer_13.Add(grid_sizer_1_copy, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
-        sizer_13.Add((20, 5), 0, 0, 0)
-        sizer_13.Add(self.bitmap_6, 0, 0, 0)
-        sizer_12.Add(sizer_13, 0, 0, 0)
-        sizer_12.Add(self.bitmap_5_copy, 0, 0, 0)
-        sizer_2.Add(sizer_12, 0, 0, 0)
-        sizer_2.Add((20, 20), 3, wx.EXPAND, 0)
-        sizer_14.Add(self.bitmap_5_copy_1, 0, 0, 0)
-        sizer_15.Add(self.bitmap_6_copy_copy, 0, 0, 0)
-        sizer_9.Add(GUI.annunciators["comp_acty"].widget, 0, wx.ALIGN_CENTER_VERTICAL, 0)
-        sizer_9.Add((20, 20), 1, 0, 0)
-        sizer_10.Add(GUI.dsky.static_display[0].widget, 0, 0, 0)
-        sizer_11.Add(GUI.dsky.control_registers["program"].digits[1].widget, 0, 0, 0)
-        sizer_11.Add(GUI.dsky.control_registers["program"].digits[2].widget, 0, 0, 0)
-        sizer_10.Add(sizer_11, 1, wx.EXPAND, 0)
-        sizer_9.Add(sizer_10, 1, wx.EXPAND, 0)
-        sizer_6.Add(sizer_9, 0, wx.EXPAND, 0)
-        sizer_6.Add((20, 14), 0, 0, 0)
-        sizer_10_copy.Add(GUI.dsky.static_display[1].widget, 0, 0, 0)
-        sizer_11_copy.Add(GUI.dsky.control_registers["verb"].digits[1].widget, 0, 0, 0)
-        sizer_11_copy.Add(GUI.dsky.control_registers["verb"].digits[2].widget, 0, 0, 0)
-        sizer_10_copy.Add(sizer_11_copy, 0, wx.EXPAND, 0)
-        sizer_8.Add(sizer_10_copy, 1, wx.EXPAND, 0)
-        sizer_8.Add((20, 20), 1, 0, 0)
-        sizer_10_copy_1.Add(GUI.dsky.static_display[2].widget, 0, 0, 0)
-        sizer_11_copy_1.Add(GUI.dsky.control_registers["noun"].digits[1].widget, 0, 0, 0)
-        sizer_11_copy_1.Add(GUI.dsky.control_registers["noun"].digits[2].widget, 0, 0, 0)
-        sizer_10_copy_1.Add(sizer_11_copy_1, 1, wx.EXPAND, 0)
-        sizer_8.Add(sizer_10_copy_1, 1, wx.EXPAND, 0)
-        sizer_6.Add(sizer_8, 1, wx.EXPAND, 0)
-        sizer_6.Add(GUI.dsky.static_display[3].widget, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
-        sizer_7_copy_1.Add(GUI.dsky.registers[1].sign.widget, 0, 0, 0)
-        sizer_7_copy_1.Add(GUI.dsky.registers[1].digits[0].widget, 0, 0, 0)
-        sizer_7_copy_1.Add(GUI.dsky.registers[1].digits[1].widget, 0, 0, 0)
-        sizer_7_copy_1.Add(GUI.dsky.registers[1].digits[2].widget, 0, 0, 0)
-        sizer_7_copy_1.Add(GUI.dsky.registers[1].digits[3].widget, 0, 0, 0)
-        sizer_7_copy_1.Add(GUI.dsky.registers[1].digits[4].widget, 0, 0, 0)
-        sizer_6.Add(sizer_7_copy_1, 0, wx.EXPAND, 0)
-        sizer_6.Add(GUI.dsky.static_display[4].widget, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
-        sizer_7_copy.Add(GUI.dsky.registers[2].sign.widget, 0, 0, 0)
-        sizer_7_copy.Add(GUI.dsky.registers[2].digits[0].widget, 0, 0, 0)
-        sizer_7_copy.Add(GUI.dsky.registers[2].digits[1].widget, 0, 0, 0)
-        sizer_7_copy.Add(GUI.dsky.registers[2].digits[2].widget, 0, 0, 0)
-        sizer_7_copy.Add(GUI.dsky.registers[2].digits[3].widget, 0, 0, 0)
-        sizer_7_copy.Add(GUI.dsky.registers[2].digits[4].widget, 0, 0, 0)
-        sizer_6.Add(sizer_7_copy, 0, wx.EXPAND, 0)
-        sizer_6.Add(GUI.dsky.static_display[5].widget, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
-        sizer_7.Add(GUI.dsky.registers[3].sign.widget, 0, 0, 0)
-        sizer_7.Add(GUI.dsky.registers[3].digits[0].widget, 0, 0, 0)
-        sizer_7.Add(GUI.dsky.registers[3].digits[1].widget, 0, 0, 0)
-        sizer_7.Add(GUI.dsky.registers[3].digits[2].widget, 0, 0, 0)
-        sizer_7.Add(GUI.dsky.registers[3].digits[3].widget, 0, 0, 0)
-        sizer_7.Add(GUI.dsky.registers[3].digits[4].widget, 0, 0, 0)
-        sizer_6.Add(sizer_7, 0, wx.EXPAND, 0)
-        self.panel_1.SetSizer(sizer_6)
-        sizer_15.Add(self.panel_1, 1, wx.EXPAND, 0)
-        sizer_15.Add(self.bitmap_6_copy_copy_copy, 0, 0, 0)
-        sizer_14.Add(sizer_15, 0, 0, 0)
-        sizer_14.Add(self.bitmap_5_copy_2, 0, 0, 0)
-        sizer_2.Add(sizer_14, 0, 0, 0)
-        sizer_2.Add((20, 20), 2, wx.EXPAND, 0)
-        sizer_1.Add(sizer_2, 0, wx.EXPAND, 0)
-        sizer_1.Add((20, 15), 0, 0, 0)
-        sizer_3.Add((8, 20), 0, 0, 0)
-        sizer_4.Add((20, 20), 1, 0, 0)
-        sizer_4.Add(self.VerbButton, 0, 0, 0)
-        sizer_4.Add((20, 5), 0, 0, 0)
-        sizer_4.Add(self.NounButton, 0, 0, 0)
-        sizer_4.Add((20, 20), 1, 0, 0)
-        sizer_3.Add(sizer_4, 0, wx.EXPAND, 0)
-        sizer_3.Add((8, 20), 0, 0, 0)
-        sizer_5.Add(self.PlusButton, 0, 0, 0)
-        sizer_5.Add((20, 5), 0, 0, 0)
-        sizer_5.Add(self.MinusButton, 0, 0, 0)
-        sizer_5.Add((20, 5), 0, 0, 0)
-        sizer_5.Add(self.ZeroButton, 0, 0, 0)
-        sizer_3.Add(sizer_5, 0, 0, 0)
-        sizer_3.Add((5, 20), 0, 0, 0)
-        sizer_5_copy.Add(self.SevenButton, 0, 0, 0)
-        sizer_5_copy.Add((20, 5), 0, 0, 0)
-        sizer_5_copy.Add(self.FourButton, 0, 0, 0)
-        sizer_5_copy.Add((20, 5), 0, 0, 0)
-        sizer_5_copy.Add(self.OneButton, 0, 0, 0)
-        sizer_3.Add(sizer_5_copy, 0, 0, 0)
-        sizer_3.Add((5, 20), 0, 0, 0)
-        sizer_5_copy_1.Add(self.EightButton, 0, 0, 0)
-        sizer_5_copy_1.Add((20, 5), 0, 0, 0)
-        sizer_5_copy_1.Add(self.FiveButton, 0, 0, 0)
-        sizer_5_copy_1.Add((20, 5), 0, 0, 0)
-        sizer_5_copy_1.Add(self.TwoButton, 0, 0, 0)
-        sizer_3.Add(sizer_5_copy_1, 0, 0, 0)
-        sizer_3.Add((5, 20), 0, 0, 0)
-        sizer_5_copy_2.Add(self.NineButton, 0, 0, 0)
-        sizer_5_copy_2.Add((20, 5), 0, 0, 0)
-        sizer_5_copy_2.Add(self.SixButton, 0, 0, 0)
-        sizer_5_copy_2.Add((20, 5), 0, 0, 0)
-        sizer_5_copy_2.Add(self.ThreeButton, 0, 0, 0)
-        sizer_3.Add(sizer_5_copy_2, 0, 0, 0)
-        sizer_3.Add((5, 20), 0, 0, 0)
-        sizer_5_copy_3.Add(self.ClrButton, 0, 0, 0)
-        sizer_5_copy_3.Add((20, 5), 0, 0, 0)
-        sizer_5_copy_3.Add(self.ProButton, 0, 0, 0)
-        sizer_5_copy_3.Add((20, 5), 0, 0, 0)
-        sizer_5_copy_3.Add(self.KeyRelButton, 0, 0, 0)
-        sizer_3.Add(sizer_5_copy_3, 0, 0, 0)
-        sizer_3.Add((5, 20), 0, 0, 0)
-        self.panel_1.SetSizer(sizer_6)
-        sizer_4_copy.Add((20, 20), 1, 0, 0)
-        sizer_4_copy.Add(self.EntrButton, 0, 0, 0)
-        sizer_4_copy.Add((20, 5), 0, 0, 0)
-        sizer_4_copy.Add(self.RsetButton, 0, 0, 0)
-        sizer_4_copy.Add((20, 20), 1, 0, 0)
-        sizer_3.Add(sizer_4_copy, 0, wx.EXPAND, 0)
-        sizer_3.Add((5, 20), 0, 0, 0)
-        sizer_1.Add(sizer_3, 1, 0, 0)
-        sizer_1.Add((20, 15), 0, 0, 0)
-        self.SetSizer(sizer_1)
-        sizer_1.Fit(self)
-        self.Layout()
-
-    # @staticmethod
-    # def start_verb_noun_flash():
-    #
-    #     """ Starts the verb/noun flash.
+        self.display(["b", "b"])
+    
+    def set_tooltip(self, tooltip):
+        
+        for digit in self.digits:
+            digit.set_tooltip(tooltip)
+    
+    # def start_verb_35_blink(self):
+    #     
+    #     if self.name != "program":
+    #         self.digits[0].start_blink()
+    #         self.digits[1].start_blink()
+    #     else:
+    #         self.display("88")
+    #     
+    #     self.verb_35_timer.singleShot(5000, self.stop_verb_35_blink)
+    # 
+    # def stop_verb_35_blink(self):
+    #     self.digits[0].stop_blink()
+    #     self.digits[1].stop_blink()
+    #     if self.name == "program":
+    #         self.display(BLANK)
+    #     else:
+    #         self.display("88")
+    #     for annunciator in gui_instance.annunciators.values():
+    #         annunciator.off()
+    # 
+    # def stop_blink(self):
+    #     self.digits[0].stop_blink()
+    #     self.digits[1].stop_blink()
+    
+    def display(self, data):
+        
+        self.digits[0].display(data[0])
+        if len(data) > 1:
+            self.digits[1].display(data[1])
+    
+    # def blank(self):
+    #     """ Blanks the whole control register.
     #     :return: None
     #     """
-    #
-    #     GUI.dsky.control_registers["verb"].start_blink()
-    #     GUI.dsky.control_registers["noun"].start_blink()
-    #
-    # @staticmethod
-    # def stop_verb_noun_flash():
-    #
-    #     """ Stops the verb/noun flash.
-    #     :return: None
-    #     """
-    #
-    #     GUI.dsky.control_registers["verb"].stop_blink()
-    #     GUI.dsky.control_registers["noun"].stop_blink()
+    #     
+    #     self.display(BLANK)
+    
+    # def start_blink(self):
+    #     self.digits[0].start_blink()
+    #     self.digits[1].start_blink()
 
+
+class DataRegister:
+    def __init__(self, central_widget, sign_digit, *digits):
+        
+        self.central_widget = central_widget
+        self.digits = [
+            sign_digit,
+            digits[0],
+            digits[1],
+            digits[2],
+            digits[3],
+            digits[4],
+        
+        ]
+        self.blink_data = {}
+        self.display(["b", "b", "b", "b", "b", "b"])
+    
+    def blank(self):
+        
+        """Blanks (clears) the whole data register."""
+        self.display(["b", 10, 10, 10, 10, 10])
+    
+    def set_tooltip(self, tooltip):
+        
+        for digit in self.digits:
+            digit.set_tooltip(tooltip)
+    
+    def display(self, data):
+        
+        """displays the data given, sending the call thru to gui"""
+        
+        self.digits[0].display(data[0])
+        self.digits[1].display(data[1])
+        self.digits[2].display(data[2])
+        self.digits[3].display(data[3])
+        self.digits[4].display(data[4])
+        self.digits[5].display(data[5])
+
+
+class Key(QtWidgets.QPushButton):
+    def __init__(self, central_widget, name, image, geometry):
+        
+        super().__init__(central_widget)
+        
+        self.name = name
+        self.setGeometry(geometry)
+        self.setObjectName(name)
+        self.icon = QtGui.QIcon()
+        self.icon.addPixmap(QtGui.QPixmap(config.IMAGES_DIR + image), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.setIcon(self.icon)
+        self.setIconSize(QtCore.QSize(65, 65))
+        self.setText("")
+        self.key_event_handler = None
+        self.clicked.connect(self.send_keypress)
+    
+    def set_key_event_handler(self, handler_func):
+        self.key_event_handler = handler_func
+    
+    def send_keypress(self):
+        self.key_event_handler(self.name)
+
+
+class Annunciator(QtWidgets.QLabel):
+    def __init__(self, central_widget, name, image_on, image_off, geometry):
+        
+        super().__init__(central_widget)
+        self.setGeometry(geometry)
+        self.setObjectName(name)
+        self.pixmaps = {
+            "on": QtGui.QPixmap(config.IMAGES_DIR + image_on),
+            "off": QtGui.QPixmap(config.IMAGES_DIR + image_off),
+        }
+        self.setText("")
+        self.is_lit = False
+        self.requested_state = False
+        self.blink_timer = QtCore.QTimer()
+        self.blink_timer.timeout.connect(self.invert)
+        self.off()
+    
+    def start_blink(self, interval=500):
+        """ Starts the annunciator blinking.
+        :param interval: the blink interval
+        :return: None
+        """
+        
+        self.blink_timer.start(interval)
+    
+    def stop_blink(self):
+        """ Stops the annunciator blinking.
+        :return: None
+        """
+        
+        self.blink_timer.stop()
+        self.off()
+    
+    def invert(self):
+        """ Blinks indicator """
+        
+        if self.is_lit:
+            self.off()
+        else:
+            self.on()
+    
     def on(self):
-
-        """ Turns the DSKY on.
-        :return: None
-        """
-
-        utils.log("DSKY on")
-        for item in GUI.dsky.static_display:
-            item.on()
-
+        self.is_lit = True
+        image = self.pixmaps["on"]
+        self.setPixmap(image)
+    
     def off(self):
+        self.is_lit = False
+        image = self.pixmaps["off"]
+        self.setPixmap(image)
 
-        """ Turns the DSKY off.
+
+class SignDigit(QtWidgets.QLabel):
+    '''
+    This class is a sign (+ or -) digit of the DSKY.
+    '''
+    
+    def __init__(self, central_widget, name, geometry):
+        '''
+        Initialiser
+        :param central_widget: the PyQt6 central widget to use
+        :type central_widget: 
+        :param name: the name of the widget
+        :type name: str
+        :param geometry: position where widget is located 
+        :type geometry: QRect object
+        :returns: None
+        '''
+        
+        super().__init__(central_widget)
+        self.setGeometry(geometry)
+        self.setObjectName(name)
+        self.digit_pixmaps = {
+            "+": QtGui.QPixmap(config.IMAGES_DIR + "PlusOn.jpg"),
+            "-": QtGui.QPixmap(config.IMAGES_DIR + "MinusOn.jpg"),
+            "b": QtGui.QPixmap(config.IMAGES_DIR + "PlusMinusOff.jpg"),
+        }
+        self.setText("")
+        self.display("b")
+        self.blink_data = {}
+    
+    def set_tooltip(self, tooltip):
+        self.setToolTip(tooltip)
+    
+    def display(self, digit_to_display):
+
+        # get pixmap
+        image = self.digit_pixmaps[digit_to_display]
+        # change picture
+        self.setPixmap(image)
+
+
+class Digit(QtWidgets.QLabel):
+    def __init__(self, central_widget, name, geometry):
+        super().__init__(central_widget)
+        self.setGeometry(geometry)
+        self.setObjectName(name)
+        self.digit_pixmaps = {
+            "0": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-0.jpg"),
+            "1": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-1.jpg"),
+            "2": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-2.jpg"),
+            "3": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-3.jpg"),
+            "4": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-4.jpg"),
+            "5": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-5.jpg"),
+            "6": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-6.jpg"),
+            "7": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-7.jpg"),
+            "8": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-8.jpg"),
+            "9": QtGui.QPixmap(config.IMAGES_DIR + "7Seg-9.jpg"),
+            "b": QtGui.QPixmap(config.IMAGES_DIR + "7SegOff.jpg"),  # blank
+        }
+
+        self.blink_data = {
+            "blink_value": None,
+            "is_blinking": False,
+            "is_blinking_lit": False,
+        }
+        
+        self.blink_timer = QtCore.QTimer()
+        self.blink_timer.timeout.connect(self.flip)
+        
+    
+    def set_tooltip(self, tooltip):
+        self.setToolTip(tooltip)
+    
+    def display(self, number_to_display):
+        
+        # cast to string (but should be a string already, so log it
+        if not isinstance(number_to_display, str):
+            utils.log("You should pass a string to be displayed bu GUI!")
+            number_to_display = str(number_to_display)
+
+        # only change image if we arn't flashing, it will be changed next flash
+        if self.blink_data["is_blinking"] == False:
+            image = self.digit_pixmaps[number_to_display]
+            self.setPixmap(image)
+        self.blink_data["blink_value"] = number_to_display
+
+    def start_blink(self):
+
+        """ Starts the digit blinking.
         :return: None
         """
+        #set_trace()
+        self.blink_data["is_blinking_lit"] = True
+        self.blink_data["is_blinking"] = True
+        #image = self.digit_pixmaps[self.blink_data["blink_value"]]
+        #self.setPixmap(image)
+        self.blink_timer.start(500)
 
-        utils.log("DSKY off")
-        for item in GUI.dsky.static_display:
-            item.off()
+    def flip(self):
 
-    def settings_menuitem_click(self, event):
+        """alternates the digit between a value and blank ie to flash the digit."""
 
-        """ Event handler for Settings menu item.
-        :param event: wxPython event (not used)
-        :return: None
-        """
+        # digit displaying the number, switch to blank
+        if self.blink_data["is_blinking_lit"]:
+            image = self.digit_pixmaps["b"]
+            self.setPixmap(image)
+            # self.display("b")
+            self.blink_data["is_blinking_lit"] = False
+        else:
+            # digit displaying blank, change to number
+            image = self.digit_pixmaps[self.blink_data["blink_value"]]
+            self.setPixmap(image)
+            #self.display(self.blink_data["blink_value"])
+            self.blink_data["is_blinking_lit"] = True
 
-        self.settings_dialog.log_level_combobox.SetSelection(config.LOG_LEVELS.index(config.current_log_level))
-        self.settings_dialog.Show()
+    def stop_blink(self):
+        self.blink_timer.stop()
+        self.blink_data["is_blinking"] = False
 
-    def show_log_menuitem_click(self, event):
+class GUI:
+    """This class represents the GUI. It contains the DSKY and its elements."""
+    
+    def __init__(self, main_window):
+        
+        """Class constructor."""
+        
+        self.input_source = None  # will be set later by register_input()
+        self.key_event_output = None  # will be set later by register
+        self.main_window = main_window
+        self.main_window.setObjectName("main_window")
+        self.main_window.resize(572, 658)
+        
+        self.verb_noun_flash_timer = QtCore.QTimer()
+        self.verb_noun_flash_timer.timeout.connect(self._flash_verb_noun)
+        
+        # init icon
+        self.icon = QtGui.QIcon()
+        self.icon.addPixmap(QtGui.QPixmap(config.IMAGES_DIR + "icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.main_window.setWindowIcon(self.icon)
+        
+        # init central widget
+        self.centralwidget = QtWidgets.QWidget(self.main_window)
+        self.centralwidget.setObjectName("centralwidget")
+        
+        # create frame borders for left and right frames
+        # left:
+        self.left_frame_left_border = QtWidgets.QLabel(self.centralwidget)
+        self.left_frame_bottom_border = QtWidgets.QLabel(self.centralwidget)
+        self.left_frame_right_border = QtWidgets.QLabel(self.centralwidget)
+        self.left_frame_top_border = QtWidgets.QLabel(self.centralwidget)
+        
+        # right:
+        self.right_frame_right_border = QtWidgets.QLabel(self.centralwidget)
+        self.right_frame_bottom_border = QtWidgets.QLabel(self.centralwidget)
+        self.right_frame_top_border = QtWidgets.QLabel(self.centralwidget)
+        self.right_frame_left_border = QtWidgets.QLabel(self.centralwidget)
+        
+        # indicators that are usually on for display purposes:
+        self.lighting_prog = QtWidgets.QLabel(self.centralwidget)
+        self.lighting_verb = QtWidgets.QLabel(self.centralwidget)
+        self.lighting_noun = QtWidgets.QLabel(self.centralwidget)
+        
+        # seperators:
+        self.lighting_sep_bar_1 = QtWidgets.QLabel(self.centralwidget)
+        self.lighting_sep_bar_2 = QtWidgets.QLabel(self.centralwidget)
+        self.lighting_sep_bar_3 = QtWidgets.QLabel(self.centralwidget)
+        
+        # other gui stuff
+        self.menubar = QtWidgets.QMenuBar(self.main_window)
+        self.action_about = QtWidgets.QAction(self.main_window)
+        self.action_alarm_codes = QtWidgets.QAction(self.main_window)
+        self.action_programs = QtWidgets.QAction(self.main_window)
+        self.action_nouns = QtWidgets.QAction(self.main_window)
+        self.action_verbs = QtWidgets.QAction(self.main_window)
+        self.action_quit = QtWidgets.QAction(self.main_window)
+        self.action_show_log = QtWidgets.QAction(self.main_window)
+        self.action_settings = QtWidgets.QAction(self.main_window)
+        self.menu_help = QtWidgets.QMenu(self.menubar)
+        self.menu_file = QtWidgets.QMenu(self.menubar)
+        
+        self.static_display_3 = QtWidgets.QLabel(self.centralwidget)
+        self.static_display_2 = QtWidgets.QLabel(self.centralwidget)
+        self.static_display_1 = QtWidgets.QLabel(self.centralwidget)
+        
+        # annunciators:
+        self.annunciators = {
+            "uplink_acty": Annunciator(
+                self.centralwidget,
+                name="uplink_acty",
+                image_off="UplinkActyOff.jpg",
+                image_on="UplinkActyOn.jpg",
+                geometry=QtCore.QRect(58, 28, 84, 40)),
+            "temp": Annunciator(
+                self.centralwidget,
+                name="temp",
+                image_off="TempOff.jpg",
+                image_on="TempOn.jpg",
+                geometry=QtCore.QRect(150, 28, 84, 40)),
+            "no_att": Annunciator(
+                self.centralwidget,
+                name="no_att",
+                image_off="NoAttOff.jpg",
+                image_on="NoAttOn.jpg",
+                geometry=QtCore.QRect(58, 76, 84, 40)),
+            "gimbal_lock": Annunciator(
+                self.centralwidget,
+                name="gimbal_lock",
+                image_off="GimbalLockOff.jpg",
+                image_on="GimbalLockOn.jpg",
+                geometry=QtCore.QRect(150, 76, 84, 40)),
+            "stby": Annunciator(
+                self.centralwidget,
+                name="stby",
+                image_off="StbyOff.jpg",
+                image_on="StbyOn.jpg",
+                geometry=QtCore.QRect(58, 125, 84, 40)),
+            "prog": Annunciator(
+                self.centralwidget,
+                name="prog",
+                image_off="ProgOff.jpg",
+                image_on="ProgOn.jpg",
+                geometry=QtCore.QRect(150, 125, 84, 40)),
+            "key_rel": Annunciator(
+                self.centralwidget,
+                name="key_rel",
+                image_off="KeyRelOff.jpg",
+                image_on="KeyRelOn.jpg",
+                geometry=QtCore.QRect(58, 174, 84, 40)),
+            "restart": Annunciator(
+                self.centralwidget,
+                name="key_rel",
+                image_off="RestartOff.jpg",
+                image_on="RestartOn.jpg",
+                geometry=QtCore.QRect(150, 174, 84, 40)),
+            "opr_err": Annunciator(
+                self.centralwidget,
+                name="opr_err",
+                image_off="OprErrOff.jpg",
+                image_on="OprErrOn.jpg",
+                geometry=QtCore.QRect(58, 223, 84, 40)),
+            "tracker": Annunciator(
+                self.centralwidget,
+                name="tracker",
+                image_off="TrackerOff.jpg",
+                image_on="TrackerOn.jpg",
+                geometry=QtCore.QRect(150, 223, 84, 40)),
+            "blank1": Annunciator(
+                self.centralwidget,
+                name="blank_1",
+                image_off="BlankOff.jpg",
+                image_on="BlankOff.jpg",
+                geometry=QtCore.QRect(58, 272, 84, 40)),
+            "blank2": Annunciator(
+                self.centralwidget,
+                name="blank_2",
+                image_off="BlankOff.jpg",
+                image_on="BlankOff.jpg",
+                geometry=QtCore.QRect(150, 272, 84, 40)),
+            "blank3": Annunciator(
+                self.centralwidget,
+                name="blank_3",
+                image_off="BlankOff.jpg",
+                image_on="BlankOff.jpg",
+                geometry=QtCore.QRect(58, 321, 84, 40)),
+            "blank4": Annunciator(
+                self.centralwidget,
+                name="blank_4",
+                image_off="BlankOff.jpg",
+                image_on="BlankOff.jpg",
+                geometry=QtCore.QRect(150, 321, 84, 40)),
+            "comp_acty": Annunciator(
+                self.centralwidget,
+                name="comp_acty",
+                image_off="CompActyOff.jpg",
+                image_on="CompActyOn.jpg",
+                geometry=QtCore.QRect(324, 22, 64, 64)),
+        }
+        
+        self.control_registers = {
+            "program": ControlRegister(self.centralwidget,
+                                       "program",
+                                       Digit(self.centralwidget,
+                                             name="control_register:program:1",
+                                             geometry=QtCore.QRect(452, 46, 32, 45)),
+                                       Digit(self.centralwidget,
+                                             name="control_register:program:2",
+                                             geometry=QtCore.QRect(484, 46, 32, 45))),
+            "verb": ControlRegister(self.centralwidget,
+                                    "verb",
+                                    Digit(self.centralwidget,
+                                          name="control_register:verb:1",
+                                          geometry=QtCore.QRect(324, 129, 32, 45)),
+                                    Digit(self.centralwidget,
+                                          name="control_register:verb:2",
+                                          geometry=QtCore.QRect(356, 129, 32, 45))),
+            "noun": ControlRegister(self.centralwidget,
+                                    "noun",
+                                    Digit(self.centralwidget,
+                                          name="control_register:noun:1",
+                                          geometry=QtCore.QRect(452, 129, 32, 45)),
+                                    Digit(self.centralwidget,
+                                          name="control_register:noun:2",
+                                          geometry=QtCore.QRect(484, 129, 32, 45))),
+        }
+        
+        self.data_registers = {
+            1: DataRegister(self.centralwidget,
+                            SignDigit(self.centralwidget,
+                                      name="data_register:1:sign",
+                                      geometry=QtCore.QRect(324, 193, 32, 45)),  # sign
+                            Digit(self.centralwidget,
+                                  name="data_register:1:1",
+                                  geometry=QtCore.QRect(356, 193, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:1:2",
+                                  geometry=QtCore.QRect(388, 193, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:1:3",
+                                  geometry=QtCore.QRect(420, 193, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:1:4",
+                                  geometry=QtCore.QRect(452, 193, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:1:5",
+                                  geometry=QtCore.QRect(484, 193, 32, 45))),
+            2: DataRegister(self.centralwidget,
+                            SignDigit(self.centralwidget,
+                                      name="data_register:2:sign",
+                                      geometry=QtCore.QRect(324, 257, 32, 45)),  # sign
+                            Digit(self.centralwidget,
+                                  name="data_register:2:1",
+                                  geometry=QtCore.QRect(356, 257, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:2:2",
+                                  geometry=QtCore.QRect(388, 257, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:2:3",
+                                  geometry=QtCore.QRect(420, 257, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:2:4",
+                                  geometry=QtCore.QRect(452, 257, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:2:5",
+                                  geometry=QtCore.QRect(484, 257, 32, 45))),
+            3: DataRegister(self.centralwidget,
+                            SignDigit(self.centralwidget,
+                                      name="data_register:3:sign",
+                                      geometry=QtCore.QRect(324, 321, 32, 45)),  # sign
+                            Digit(self.centralwidget,
+                                  name="data_register:3:1",
+                                  geometry=QtCore.QRect(356, 321, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:3:2",
+                                  geometry=QtCore.QRect(388, 321, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:3:3",
+                                  geometry=QtCore.QRect(420, 321, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:3:4",
+                                  geometry=QtCore.QRect(452, 321, 32, 45)),
+                            Digit(self.centralwidget,
+                                  name="data_register:3:5",
+                                  geometry=QtCore.QRect(484, 321, 32, 45)))
+        }
+        
+        self.keyboard = {
+            "verb":   Key(self.centralwidget,
+                          name="V",
+                          image="VerbUp.jpg",
+                          geometry=QtCore.QRect(6, 430, 75, 75)),
+            "noun":   Key(self.centralwidget,
+                          name="N",
+                          image="NounUp.jpg",
+                          geometry=QtCore.QRect(6, 510, 75, 75)),
+            "plus":   Key(self.centralwidget,
+                          name="+",
+                          image="PlusUp.jpg",
+                          geometry=QtCore.QRect(88, 390, 75, 75)),
+            "minus":   Key(self.centralwidget,
+                           name="-",
+                           image="MinusUp.jpg",
+                           geometry=QtCore.QRect(88, 470, 75, 75)),
+            0:         Key(self.centralwidget,
+                           name="0",
+                           image="0Up.jpg",
+                           geometry=QtCore.QRect(88, 550, 75, 75)),
+            1:         Key(self.centralwidget,
+                           name="1",
+                           image="1Up.jpg",
+                           geometry=QtCore.QRect(170, 550, 75, 75)),
+            2:         Key(self.centralwidget,
+                           name="2",
+                           image="2Up.jpg",
+                           geometry=QtCore.QRect(252, 550, 75, 75)),
+            3:         Key(self.centralwidget,
+                           name="3",
+                           image="3Up.jpg",
+                           geometry=QtCore.QRect(335, 550, 75, 75)),
+            4:         Key(self.centralwidget,
+                           name="4",
+                           image="4Up.jpg",
+                           geometry=QtCore.QRect(170, 470, 75, 75)),
+            5:         Key(self.centralwidget,
+                           name="5",
+                           image="5Up.jpg",
+                           geometry=QtCore.QRect(252, 470, 75, 75)),
+            6:         Key(self.centralwidget,
+                           name="6",
+                           image="6Up.jpg",
+                           geometry=QtCore.QRect(335, 470, 75, 75)),
+            7:         Key(self.centralwidget,
+                           name="7",
+                           image="7Up.jpg",
+                           geometry=QtCore.QRect(170, 390, 75, 75)),
+            8:         Key(self.centralwidget,
+                           name="8",
+                           image="8Up.jpg",
+                           geometry=QtCore.QRect(252, 390, 75, 75)),
+            9:         Key(self.centralwidget,
+                           name="9",
+                           image="9Up.jpg",
+                           geometry=QtCore.QRect(335, 390, 75, 75)),
+            "clr":     Key(self.centralwidget,
+                           name="C",
+                           image="ClrUp.jpg",
+                           geometry=QtCore.QRect(418, 470, 75, 75)),
+            "pro":     Key(self.centralwidget,
+                           name="P",
+                           image="ProUp.jpg",
+                           geometry=QtCore.QRect(418, 390, 75, 75)),
+            "key_rel": Key(self.centralwidget,
+                           name="K",
+                           image="KeyRelUp.jpg",
+                           geometry=QtCore.QRect(418, 550, 75, 75)),
+            "entr":    Key(self.centralwidget,
+                           name="E",
+                           image="EntrUp.jpg",
+                           geometry=QtCore.QRect(496, 411, 75, 75)),
+            "rset":    Key(self.centralwidget,
+                           name="R",
+                           image="RsetUp.jpg",
+                           geometry=QtCore.QRect(496, 491, 75, 75)),
+        }
+        
+        self.setup_ui(self.main_window)
 
-        """ Event handler for "Show Log" menu item.
-        :param event: wxPython event (not used)
-        :return: None
-        """
+    def get_output_widgets(self):
+    
+        """returns the objects that are output objects"""
+    
+        return self.annunciators, self.control_registers, self.data_registers
+    
+    def register_input(self, output_function):
+        """ regesters the given function as the output, qtpy will then use this as input to display"""
+        self.input_source = output_function
+    
+    def register_key_event_handler(self, handler_func):
+        for key in self.keyboard:
+            self.keyboard[key].set_key_event_handler(handler_func)
+    
+    def set_verb_noun_flash(self, state_to_set):
+        if state_to_set == "on":
+            self.control_registers["verb"].start_blink()
+            self.control_registers["noun"].start_blink()
+        elif state_to_set == "off":
+            self.control_registers["verb"].stop_blink()
+            self.control_registers["noun"].stop_blink()
+        else:
+            print("Didn't understand your command, do you want me to flash or what?")
+    
+    def _flash_verb_noun(self):
+        pass
+    
+    def setup_ui(self, main_window):
+        
+        self.left_frame_left_border.setGeometry(QtCore.QRect(42, 14, 8, 360))
+        self.left_frame_left_border.setText("")
+        self.left_frame_left_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameVerticalL.jpg"))
+        self.left_frame_left_border.setObjectName("left_frame_left_border")
+        
+        self.left_frame_bottom_border.setGeometry(QtCore.QRect(50, 362, 211, 16))
+        self.left_frame_bottom_border.setText("")
+        self.left_frame_bottom_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameHorizontal.jpg"))
+        self.left_frame_bottom_border.setObjectName("left_frame_bottom_border")
+        
+        self.left_frame_right_border.setGeometry(QtCore.QRect(242, 14, 8, 360))
+        self.left_frame_right_border.setText("")
+        self.left_frame_right_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameVerticalL.jpg"))
+        self.left_frame_right_border.setObjectName("left_frame_right_border")
+        
+        self.left_frame_top_border.setGeometry(QtCore.QRect(50, 10, 211, 16))
+        self.left_frame_top_border.setText("")
+        self.left_frame_top_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameHorizontal.jpg"))
+        self.left_frame_top_border.setObjectName("left_frame_top_border")
+        
+        self.right_frame_right_border.setGeometry(QtCore.QRect(516, 14, 8, 360))
+        self.right_frame_right_border.setText("")
+        self.right_frame_right_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameVerticalL.jpg"))
+        self.right_frame_right_border.setObjectName("right_frame_right_border")
+        
+        self.right_frame_bottom_border.setGeometry(QtCore.QRect(324, 362, 211, 16))
+        self.right_frame_bottom_border.setText("")
+        self.right_frame_bottom_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameHorizontal.jpg"))
+        self.right_frame_bottom_border.setObjectName("right_frame_bottom_border")
+        
+        self.right_frame_top_border.setGeometry(QtCore.QRect(324, 10, 201, 16))
+        self.right_frame_top_border.setText("")
+        self.right_frame_top_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameHorizontal.jpg"))
+        self.right_frame_top_border.setObjectName("right_frame_top_border")
+        
+        self.right_frame_left_border.setGeometry(QtCore.QRect(316, 14, 8, 360))
+        self.right_frame_left_border.setText("")
+        self.right_frame_left_border.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "FrameVerticalL.jpg"))
+        self.right_frame_left_border.setObjectName("right_frame_left_border")
+        
+        self.lighting_prog.setGeometry(QtCore.QRect(452, 22, 64, 24))
+        self.lighting_prog.setText("")
+        self.lighting_prog.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "rProgOn.jpg"))
+        self.lighting_prog.setObjectName("lighting_prog")
+        
+        self.lighting_verb.setGeometry(QtCore.QRect(324, 105, 64, 24))
+        self.lighting_verb.setText("")
+        self.lighting_verb.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "VerbOn.jpg"))
+        self.lighting_verb.setObjectName("lighting_verb")
+        self.lighting_noun.setGeometry(QtCore.QRect(452, 105, 64, 24))
+        self.lighting_noun.setText("")
+        self.lighting_noun.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "NounOn.jpg"))
+        self.lighting_noun.setObjectName("lighting_noun")
+        self.lighting_sep_bar_1 = QtWidgets.QLabel(self.centralwidget)
+        self.lighting_sep_bar_1.setGeometry(QtCore.QRect(324, 174, 192, 19))
+        self.lighting_sep_bar_1.setText("")
+        self.lighting_sep_bar_1.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "SeparatorOn.jpg"))
+        self.lighting_sep_bar_1.setObjectName("lighting_sep_bar_1")
+        self.lighting_sep_bar_2.setGeometry(QtCore.QRect(324, 238, 192, 19))
+        self.lighting_sep_bar_2.setText("")
+        self.lighting_sep_bar_2.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "SeparatorOn.jpg"))
+        self.lighting_sep_bar_2.setObjectName("lighting_sep_bar_2")
+        self.lighting_sep_bar_3.setGeometry(QtCore.QRect(324, 302, 192, 19))
+        self.lighting_sep_bar_3.setText("")
+        self.lighting_sep_bar_3.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "SeparatorOn.jpg"))
+        self.lighting_sep_bar_3.setObjectName("lighting_sep_bar_3")
+        
+        self.static_display_1.setGeometry(QtCore.QRect(388, 22, 64, 152))
+        self.static_display_1.setText("")
+        self.static_display_1.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "CenterBlock.jpg"))
+        self.static_display_1.setScaledContents(True)
+        self.static_display_1.setObjectName("static_display_1")
+        self.static_display_2.setGeometry(QtCore.QRect(452, 89, 64, 19))
+        self.static_display_2.setText("")
+        self.static_display_2.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "ShortHorizontal.jpg"))
+        self.static_display_2.setObjectName("static_display_2")
+        self.static_display_3.setGeometry(QtCore.QRect(324, 86, 64, 19))
+        self.static_display_3.setText("")
+        self.static_display_3.setPixmap(QtGui.QPixmap(config.IMAGES_DIR + "ShortHorizontal.jpg"))
+        self.static_display_3.setObjectName("static_display_3")
+        self.static_display_2.raise_()
+        self.static_display_3.raise_()
+        self.left_frame_left_border.raise_()
+        self.left_frame_bottom_border.raise_()
+        self.left_frame_right_border.raise_()
+        self.left_frame_top_border.raise_()
+        self.right_frame_right_border.raise_()
+        self.right_frame_bottom_border.raise_()
+        self.right_frame_top_border.raise_()
+        self.right_frame_left_border.raise_()
+        self.lighting_prog.raise_()
+        
+        for key in self.annunciators:
+            self.annunciators[key].raise_()
+        
+        # for register in self.control_registers:
+        #     for digit in self.control_registers[register]:
+        #         self.control_registers[register][digit].raise_()
+        
+        # for register in self.data_registers:
+        #     for digit in self.data_registers[register]:
+        #         self.data_registers[register][digit].raise_()
+        
+        # misc setup
+        self.lighting_verb.raise_()
+        self.lighting_noun.raise_()
+        
+        self.lighting_sep_bar_1.raise_()
+        self.lighting_sep_bar_2.raise_()
+        self.lighting_sep_bar_3.raise_()
+        
+        self.static_display_1.raise_()
+        
+        main_window.setCentralWidget(self.centralwidget)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 572, 21))
+        self.menubar.setObjectName("menubar")
+        self.menu_file.setObjectName("menu_file")
+        self.menu_help.setObjectName("menu_help")
+        main_window.setMenuBar(self.menubar)
+        self.action_settings.setEnabled(True)
+        self.action_settings.setObjectName("action_settings")
+        self.action_show_log.setObjectName("action_show_log")
+        self.action_quit.setObjectName("action_quit")
+        self.action_verbs.setObjectName("action_verbs")
+        self.action_nouns.setObjectName("action_nouns")
+        self.action_programs.setObjectName("action_programs")
+        self.action_alarm_codes.setObjectName("action_alarm_codes")
+        self.action_about.setObjectName("action_about")
+        self.menu_file.addAction(self.action_settings)
+        self.menu_file.addAction(self.action_show_log)
+        self.menu_file.addSeparator()
+        self.menu_file.addAction(self.action_quit)
+        self.menu_help.addAction(self.action_verbs)
+        self.menu_help.addAction(self.action_nouns)
+        self.menu_help.addAction(self.action_programs)
+        self.menu_help.addAction(self.action_alarm_codes)
+        self.menu_help.addSeparator()
+        self.menu_help.addAction(self.action_about)
+        self.menubar.addAction(self.menu_file.menuAction())
+        self.menubar.addAction(self.menu_help.menuAction())
+        
+        # self.retranslateUi(main_window)
+        QtCore.QMetaObject.connectSlotsByName(main_window)
+        
+        # def retranslateUi(self, main_window):
+        #     _translate = QtCore.QCoreApplication.translate
+        #     main_window.setWindowTitle(_translate("main_window", "basaGC"))
+        #     self.menu_file.setTitle(_translate("main_window", "&File"))
+        #     self.menu_help.setTitle(_translate("main_window", "&Help"))
+        #     self.action_settings.setText(_translate("main_window", "&Settings..."))
+        #     self.action_show_log.setText(_translate("main_window", "Show &Log..."))
+        #     self.action_quit.setText(_translate("main_window", "&Quit"))
+        #     self.action_verbs.setText(_translate("main_window", "&Verbs..."))
+        #     self.action_nouns.setText(_translate("main_window", "&Nouns..."))
+        #     self.action_programs.setText(_translate("main_window", "&Programs"))
+        #     self.action_alarm_codes.setText(_translate("main_window", "&Alarm Codes..."))
+        #     self.action_about.setText(_translate("main_window", "Abou&t..."))
 
-        self.log_viewer.Show()
 
-    def quit_menuitem_click(self, event):
-
-        """ Event handler for Quit menu item.
-        :param event: wxPython event (not used)
-        :return: None
-        """
-
-        GUI.computer.quit()
-
-    def about_menuitem_click(self, event):
-
-        """ Event handler for Help/About menu item.
-        :param event: wxPython event (not used)
-        :return: None
-        """
-
-        about_dialog = wx.AboutDialogInfo()
-
-        about_dialog.SetIcon(wx.Icon(config.ICON, wx.BITMAP_TYPE_PNG))
-        about_dialog.SetName(config.PROGRAM_NAME)
-        about_dialog.SetVersion(config.VERSION)
-        about_dialog.SetDescription(config.PROGRAM_DESCRIPTION)
-        about_dialog.SetCopyright(config.COPYRIGHT)
-        about_dialog.SetWebSite(config.WEBSITE)
-        about_dialog.SetLicence(config.LICENCE)
-        about_dialog.AddDeveloper(config.DEVELOPERS)
-
-        wx.AboutBox(about_dialog)
-
-    def verbs_menuitem_click(self, event):
-        self.help_viewer.SetTitle("Verbs Listing")
-        verbs_list = ""
-        for verb_number, verb in self.computer.verbs.iteritems():
-            if int(verb_number) < 39:
-                this_verb = verb(None)
-            else:
-                this_verb = verb()
-            verbs_list += "Verb " + verb_number + ":\t" + this_verb.name + "\n"
-            del this_verb
-        self.help_viewer.viewer.SetValue(verbs_list)
-        self.help_viewer.Show()
-
-    def nouns_menuitem_click(self, event):
-        self.help_viewer.SetTitle("Nouns Listing")
-        nouns_list = ""
-        for noun_number, noun in self.computer.nouns.iteritems():
-            this_noun = noun()
-            nouns_list += "Noun " + noun_number + ":\t" + this_noun.description + "\n"
-        self.help_viewer.viewer.SetValue(nouns_list)
-        self.help_viewer.Show()
-
-    def programs_menuitem_click(self, event):
-        self.help_viewer.SetTitle("Programs Listing")
-        programs_list = ""
-        for program_number, program in self.computer.programs.iteritems():
-            this_program = program()
-            programs_list += "Program " + program_number + ":\t" + this_program.description + "\n"
-        self.help_viewer.viewer.SetValue(programs_list)
-        self.help_viewer.Show()
-
-    def alarm_codes_menuitem_click(self, event):
-        self.help_viewer.SetTitle("Alarm Codes")
-        alarm_codes_list = ""
-        for alarm_code, description in config.ALARM_CODES.iteritems():
-            alarm_codes_list += "0X" + str(alarm_code) + ":\t" + description + "\n"
-        self.help_viewer.viewer.SetValue(alarm_codes_list)
-        self.help_viewer.Show()
-
-
-class BASAGCApp(wx.App):
-    """ The main entry point for the GUI. Required by wxPython.
-    """
-
-    def OnInit(self):
-        """ GUI init.
-        :return: 1
-        """
-
-        wx.InitAllImageHandlers()
-        dsky = GUI(None, wx.ID_ANY, "")
-        self.SetTopWindow(dsky)
-        dsky.Show()
-        return 1
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    main_window = QtWidgets.QMainWindow()
+    ui = GUI(main_window)
+    computer = Computer(ui)
+    main_window.show()
+    sys.exit(app.exec_())

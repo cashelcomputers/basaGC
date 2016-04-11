@@ -1,37 +1,15 @@
-#!/usr/bin/env python2
-# -*- coding: UTF-8 -*-
-""" This module contains all nouns used by the guidance computer.
-"""
-#  This file is part of basaGC (https://github.com/cashelcomputers/basaGC),
-#  copyright 2014 Tim Buchanan, cashelcomputers (at) gmail.com
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#  MA 02110-1301, USA.
-#
-#
-#  Includes code and images from the Virtual AGC Project (http://www.ibiblio.org/apollo/index.html)
-#  by Ronald S. Burkey <info@sandroid.org>
+#!/usr/bin/env python3
+""" This module contains all nouns used by the guidance computer."""
 
-from collections import OrderedDict
 import inspect
 import sys
+from collections import OrderedDict
 
-from telemachus import get_telemetry, TelemetryNotAvailable
-import utils
-import config
+from . import config
+from . import utils
+from .telemachus import get_telemetry, TelemetryNotAvailable
 
-gc = None
+computer = None
 
 def octal(value):
 
@@ -126,7 +104,7 @@ class Noun09(Noun):
     def return_data(self):
 
         utils.log("Noun 09 requested")
-        alarm_codes = gc.alarm_codes
+        alarm_codes = computer.alarm_codes
         data = {
             1: str(alarm_codes[0]),
             2: str(alarm_codes[1]),
@@ -178,10 +156,10 @@ class Noun14(Noun):
                                      number="14")
 
     def return_data(self):
-        if not gc.next_burn:
-            gc.program_alarm(115)
+        if not computer.next_burn:
+            computer.program_alarm(115)
             return False
-        burn = gc.next_burn
+        burn = computer.next_burn
         expected_delta_v_at_cutoff = burn.velocity_at_cutoff
         actual_delta_v_at_cutoff = get_telemetry("orbitalVelocity")
         delta_v_error = actual_delta_v_at_cutoff - expected_delta_v_at_cutoff
@@ -311,7 +289,7 @@ class Noun30(Noun):
 
     def return_data(self):
 
-        target_id = gc.noun_data["30"]
+        target_id = computer.noun_data["30"]
         data = {
             1: target_id,
             2: None,
@@ -322,7 +300,7 @@ class Noun30(Noun):
         return data
 
     def receive_data(self, data):
-        gc.noun_data["30"] = data
+        computer.noun_data["30"] = data
 #
 # def noun31(calling_verb):
 #     raise NounNotImplementedError
@@ -346,10 +324,10 @@ class Noun33(Noun):
 
     def return_data(self):
 
-        if not gc.next_burn:
-            gc.program_alarm(alarm_code=115, message="No burn data loaded")
+        if not computer.next_burn:
+            computer.program_alarm(alarm_code=115, message="No burn data loaded")
             return False
-        time_until_ignition = utils.seconds_to_time(gc.next_burn.calculate_time_to_ignition())
+        time_until_ignition = utils.seconds_to_time(computer.next_burn.calculate_time_to_ignition())
         hours = str(int(time_until_ignition["hours"]))
         minutes = str(int(time_until_ignition["minutes"]))
         seconds = str(int(time_until_ignition["seconds"])).replace(".", "")
@@ -447,10 +425,10 @@ class Noun40(Noun):
         super(Noun40, self).__init__("Burn Data (Time from ignition, Δv to be gained, accumulated Δv", number="40")
 
     def return_data(self):
-        if not gc.next_burn:
-            gc.program_alarm(115)
+        if not computer.next_burn:
+            computer.program_alarm(115)
             return False
-        burn = gc.next_burn
+        burn = computer.next_burn
         time_to_ignition = utils.seconds_to_time(burn.time_until_ignition)
         minutes_to_ignition = str(int(time_to_ignition["minutes"])).zfill(2)
         seconds_to_ignition = str(int(time_to_ignition["seconds"])).zfill(2)
@@ -596,15 +574,15 @@ class Noun49(Noun):
     def return_data(self):
         # check that the maneuver has phase angles loaded
         try:
-            if not gc.next_burn.calling_program and not gc.next_burn.calling_program.phase_angle_required:
-                gc.program_alarm(120)
+            if not computer.next_burn.calling_program and not computer.next_burn.calling_program.phase_angle_required:
+                computer.program_alarm(120)
                 return False
         except AttributeError:
-            gc.program_alarm(120)
+            computer.program_alarm(120)
             return False
         
-        phase_angle_required = gc.next_burn.calling_program.phase_angle_required
-        telemachus_target_id = config.TELEMACHUS_BODY_IDS[gc.next_burn.calling_program.target_name]
+        phase_angle_required = computer.next_burn.calling_program.phase_angle_required
+        telemachus_target_id = config.TELEMACHUS_BODY_IDS[computer.next_burn.calling_program.target_name]
         current_phase_angle = get_telemetry("body_phaseAngle", body_number=telemachus_target_id)
         phase_angle_difference = str(round(current_phase_angle - phase_angle_required, 1)).replace(".", "")
         current_phase_angle = str(round(current_phase_angle, 1)).replace(".", "")
@@ -861,15 +839,15 @@ class Noun95(Noun):
 
     def return_data(self):
 
-        if not gc.next_burn:
-            gc.program_alarm(115)
+        if not computer.next_burn:
+            computer.program_alarm(115)
             return False
 
-        time_to_ignition = utils.seconds_to_time(gc.next_burn.time_until_ignition)
+        time_to_ignition = utils.seconds_to_time(computer.next_burn.time_until_ignition)
         minutes_to_ignition = str(int(time_to_ignition["minutes"])).zfill(2)
         seconds_to_ignition = str(int(time_to_ignition["seconds"])).zfill(2)
-        delta_v = str(int(gc.next_burn.delta_v_required))
-        velocity_at_cutoff = str(int(gc.next_burn.velocity_at_cutoff))
+        delta_v = str(int(computer.next_burn.delta_v_required))
+        velocity_at_cutoff = str(int(computer.next_burn.velocity_at_cutoff))
 
         data = {
             1: "-" + minutes_to_ignition + "b" + seconds_to_ignition,
