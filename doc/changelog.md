@@ -3,6 +3,11 @@ basaGC changelog
 
 Please note that this file only contains changes from version 0.5.0 onwards. All dates are in dd/mm/yy format.
 
+12/04/16: version 2.0:
+- Changed widget toolkit to PyQt5 from wxPython
+- Now uses Python 3
+- Many bugfixes and refactorings
+
 16/12/14: version 0.5.6:
 - Added Program 40
 - Added Noun 14, Noun 40
