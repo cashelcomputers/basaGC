@@ -247,7 +247,6 @@ class MonitorVerb(DisplayVerb):
             self.is_tooltips_set = True
 
         # display data on DSKY registers
-        set_trace()
         Verb.computer.dsky.set_register(output[0], "data_1")
         Verb.computer.dsky.set_register(output[1], "data_2")
         Verb.computer.dsky.set_register(output[2], "data_3")
@@ -1228,6 +1227,7 @@ class Verb82(ExtendedVerb):
 
         #super(Verb82, self).execute()
         #computer.routines[30]()
+        set_trace()
         Verb.computer.execute_verb(verb="16", noun="44")
 
 

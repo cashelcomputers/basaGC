@@ -1,17 +1,12 @@
 basaGC
 ======
 
-Apollo Guidance Computer for Kerbal Space Program
+Apollo Guidance Computer for Kerbal Space Program.
 
 Thanks to Ron Burkey (<info@sandroid.org>) for VirtualAGC!
 
 This is my reimplementation of the Apollo Guidance Computer (AGC) and Display/Keyboard (DSKY) for Kerbal Space Program.
 
-UPDATE 16/3/16: I haven't looked at this project for quite some time, but i'm back from Duna now :) my next goal is to 
-drop wxPython and move to PyQt5, so I can finally get away from Python 2.7 stay tuned...
-
-UPDATE 26/3/16: Now (mostly) works using PyQt5, only for branch pre2.0. Once the bugs are ironed out I'll make a new
-release. Please note changed requirements below!
 
 Prerequisites:
 
@@ -27,10 +22,9 @@ that directory and type "./basagc.py", on Windows double-click on the file basag
 Please Note! This is a work in progress. Only a few functions of the AGC are implemented. Some buttons and warning
 lamps don't work.
 
-Historical note: I have attempted to follow, as closely as possible 
-and with the documentation available to me, the real life AGC. 
-However, some things have to be changed for KSP, for a number of 
-reasons.
+Historical note: I have attempted to follow, as closely as possible and with the documentation available to me, the
+real life AGC. It should be noted that this is a superficial recreation, not a hard-core simulation of the AGC. Google
+"Virtual AGC" for that!
 
 Known issues:
 ------------
