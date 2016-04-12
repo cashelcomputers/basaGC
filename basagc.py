@@ -9,11 +9,11 @@ from basagc import gui, computer
 if __name__ == "__main__":
     
     app = QApplication(sys.argv)
-    MainWindow = QMainWindow()
+    main_window = QMainWindow()
     
-    ui = gui.GUI(MainWindow)
+    ui = gui.GUI(main_window)
     computer = computer.Computer(ui)
-    # gui.CHARIN = computer.dsky.charin
-    MainWindow.show()
+    main_window.setWindowTitle('basaGC');
+    main_window.show()
     
     sys.exit(app.exec_())
