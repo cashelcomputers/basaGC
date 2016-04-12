@@ -102,6 +102,8 @@ class Verb:
             raise NounNotAcceptableError
         utils.log("Executing Verb {}: {}".format(self.number, self.name))
         self.dsky.current_verb = self
+        if self.noun:
+            Verb.computer.dsky.set_register(self.noun, "noun")
 
     # def _activity(self, event):
     #
@@ -257,9 +259,9 @@ class MonitorVerb(DisplayVerb):
 
         """ Starts the timer to monitor the verb """
 
-        # if dsky.backgrounded_update is not None:
-        #     dsky.backgrounded_update.terminate()
-        dsky.display_lock = self
+        # if Verb.computer.keyboard_state["backgrounded_update"] is not None:
+        #     Verb.computer.keyboard_state["backgrounded_update"].terminate()
+        Verb.computer.keyboard_state["display_lock"] = self
 
         try:
             self._send_output()
@@ -288,9 +290,9 @@ class MonitorVerb(DisplayVerb):
         """
 
         utils.log("Terminating V{}".format(self.number))
-        dsky.annunciators["key_rel"].off()
-        dsky.display_lock = None
-        # dsky.backgrounded_update = None
+        Verb.computer.dsky.stop_annunciator_blink("key_rel")
+        Verb.computer.keyboard_state["display_lock"] = None
+        Verb.computer.keyboard_state["backgrounded_update"] = None
         self.timer.stop()
         self.noun = None
         # self.activity_timer.Stop()
@@ -305,10 +307,11 @@ class MonitorVerb(DisplayVerb):
         :return: None
         """
 
-        dsky.backgrounded_update = self
-        dsky.display_lock = None
+        Verb.computer.keyboard_state["backgrounded_update"] = self
+        Verb.computer.keyboard_state["display_lock"] = None
         self.timer.stop()
-        dsky.annunciators["key_rel"].start_blink()
+        Verb.computer.dsky.start_annunciator_blink("key_rel")
+        
 
     def resume(self):
 
@@ -316,8 +319,8 @@ class MonitorVerb(DisplayVerb):
         :return: None
         """
 
-        dsky.display_lock = self
-        dsky.backgrounded_update = None
+        Verb.computer.keyboard_state["display_lock"] = self
+        Verb.computer.keyboard_state["backgrounded_update"] = None
         Verb.computer.dsky.set_register(self.number, "verb")
         Verb.computer.dsky.set_register(self.noun, "noun") 
     
@@ -482,7 +485,7 @@ class Verb05(DisplayVerb):
         """
 
         super(Verb05, self).execute()
-        noun_function = Verb.computer.nouns[Verb.computer.dsky.requested_noun]()
+        noun_function = Verb.computer.nouns[Verb.computer.keyboard_state["requested_noun"]]()
         noun_data = noun_function.return_data()
         if not noun_data:
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
@@ -849,8 +852,8 @@ class Verb32(Verb):
         :return: None
         """
 
-        if isinstance(dsky.state["backgrounded_update"], MonitorVerb):
-            dsky.state["backgrounded_update"].terminate()  # TODO
+        if isinstance(Verb.computer.keyboard_state["backgrounded_update"], MonitorVerb):
+            Verb.computer.keyboard_state["backgrounded_update"].terminate()  # TODO
         else:
             utils.log("V32 called, but nothing to recycle!")
 
@@ -874,8 +877,8 @@ class Verb33(Verb):
         :return: None
         """
 
-        if isinstance(dsky.state["backgrounded_update"], MonitorVerb):
-            dsky.state["backgrounded_update"].terminate()
+        if isinstance(Verb.computer.keyboard_state["backgrounded_update"], MonitorVerb):
+            Verb.computer.keyboard_state["backgrounded_update"].terminate()
         else:
             utils.log("V33 called, but nothing to proceed with!")
 
@@ -899,11 +902,10 @@ class Verb34(Verb):
         :return: None
         """
 
-        if dsky.backgrounded_update:
+        if Verb.computer.keyboard_state["backgrounded_update"]:
             utils.log("Terminating backgrounded update")
-            dsky.backgrounded_update.terminate()
-            if dsky.annunciators["key_rel"].blink_timer.active():
-                dsky.annunciators["key_rel"].stop_blink()
+            Verb.computer.keyboard_state["backgrounded_update"].terminate()
+            Verb.computer.dsky.stop_annunciator_blink("key_rel")
         if Verb.computer.running_program:
             utils.log("Terminating active program {}".format(Verb.computer.running_program.number))
             # have to use try block to catch and ignore expected ProgramTerminated exception
@@ -945,8 +947,8 @@ class Verb35(Verb):
             self.dsky.set_register(value="88", register=register)
         # blinks the verb/noun registers
         self.dsky.verb_noun_flash_on()
-        self.dsky.annunciators["opr_err"].start_blink()
-        self.dsky.annunciators["key_rel"].start_blink()
+        self.dsky.start_annunciator_blink("opr_err")
+        self.dsky.start_annunciator_blink("key_rel")
         self.flash_timer.singleShot(5000, self.terminate)
         self.computer.flash_comp_acty(500)
         
@@ -957,8 +959,8 @@ class Verb35(Verb):
         self.dsky.verb_noun_flash_off()
         self.dsky.set_register("88", "verb")
         self.dsky.set_register("88", "noun")
-        self.dsky.annunciators["opr_err"].stop_blink()
-        self.dsky.annunciators["key_rel"].stop_blink()
+        self.dsky.stop_annunciator_blink("opr_err")
+        self.dsky.stop_annunciator_blink("key_rel")
         self.dsky.set_register(value="bb", register="program")
         self.computer.remove_job(self)
         
@@ -1227,7 +1229,6 @@ class Verb82(ExtendedVerb):
 
         #super(Verb82, self).execute()
         #computer.routines[30]()
-        set_trace()
         Verb.computer.execute_verb(verb="16", noun="44")
 
 

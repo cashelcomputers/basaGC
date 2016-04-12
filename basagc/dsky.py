@@ -233,7 +233,11 @@ class DSKY:
         except KeyError:
             utils.log("You tried to change a annunciator that doesnt exist :(", "WARNING")
 
-    
+    def start_annunciator_blink(self, name):
+        self.annunciators[name].start_blink()
+
+    def stop_annunciator_blink(self, name):
+        self.annunciators[name].stop_blink()
 
     def stop_comp_acty_flash(self, event):
 

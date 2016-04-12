@@ -268,7 +268,6 @@ class Program15(Program):
         # calculate the first and second burn Δv parameters
         self.delta_v_first_burn, self.computer.moi_burn_delta_v = basagc.maneuver.calculate_delta_v_hohmann(self.departure_altitude,
                                                                                                  self.destination_altitude)
-        print((self.computer.moi_burn_delta_v))
 
         # calculate the time to complete the Hohmann transfer
         self.time_to_transfer = basagc.maneuver.time_to_transfer(self.departure_altitude, self.destination_altitude,

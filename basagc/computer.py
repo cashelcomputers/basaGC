@@ -45,8 +45,8 @@ class Computer:
             "is_data_being_loaded": False,
             "verb_position": 0,
             "noun_position": 0,
-            "requested_verb": 0,
-            "requested_noun": 0,
+            "requested_verb": "",
+            "requested_noun": "",
             "current_verb": 0,
             "current_noun": 0,
             "current_program": 0,
@@ -61,7 +61,7 @@ class Computer:
         self.main_loop_timer = QTimer()
         self.main_loop_timer.timeout.connect(self.main_loop)
 
-        # init slow loop (for less important tasks that can be ran approx every second)
+        # init slow loop (for less important tasks that can be ran approx 2 seconds)
         self.slow_loop_timer = QTimer()
         self.slow_loop_timer.timeout.connect(self.slow_loop)
 
@@ -242,7 +242,7 @@ class Computer:
         # if verb doesn't exist, smack operator over head
             try:
                 # if there is a noun entered by user, pass it to verb
-                if self.keyboard_state["requested_noun"] == 0:
+                if self.keyboard_state["requested_noun"] == "":
                     verb_to_execute = self.verbs[verb]()
                 else:
                     verb_to_execute = self.verbs[verb](self.keyboard_state["requested_noun"])
@@ -251,7 +251,7 @@ class Computer:
                 return
         else:
             verb_to_execute = self.verbs[verb](noun)
-        self.keyboard_state["requested_noun"] = 0  # reset noun state for next time    
+        # self.keyboard_state["requested_noun"] = ""  # reset noun state for next time    
         self.add_job(verb_to_execute)
         self.flash_comp_acty(200)
         verb_to_execute.execute()
@@ -264,7 +264,6 @@ class Computer:
         :returns: 
         '''
         utils.log("Executing P{}".format(program_number))
-        print(self.programs)
         program = self.programs[program_number]()
         program.execute()
         

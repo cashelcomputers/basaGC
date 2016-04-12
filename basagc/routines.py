@@ -38,9 +38,7 @@ def charin(keypress, state, dsky, computer):
         else:
             dsky.set_register(keypress, display_register, "2")
             state["register_index"] = 0
-            print(state["input_data_buffer"])
             state["input_data_buffer"] += keypress
-            print(state["input_data_buffer"])
             
     
     def handle_data_register_load():
@@ -176,11 +174,11 @@ def charin(keypress, state, dsky, computer):
             computer.operator_error("Expected a number for noun choice")
             return
         elif state["noun_position"] == 0:
-            dsky.control_registers["noun"].digits[0].display(keypress)
+            dsky.set_register(keypress, "noun", digit="1")
             state["requested_noun"] = keypress
             state["noun_position"] = 1
         elif state["noun_position"] == 1:
-            dsky.control_registers["noun"].digits[1].display(keypress)
+            dsky.set_register(keypress, "noun", digit="2")
             state["requested_noun"] += keypress
             state["noun_position"] = 2
 
@@ -231,10 +229,11 @@ def charin(keypress, state, dsky, computer):
         :return: None
         """
         if state["backgrounded_update"]:
+            backgrounded_update = state["backgrounded_update"].resume
             if state["display_lock"]:
                 state["display_lock"].terminate()
             dsky.annunciators["key_rel"].stop_blink()
-            state["backgrounded_update"].resume()
+            backgrounded_update()
             state["backgrounded_update"] = None
             state["is_verb_being_loaded"] = False
             state["is_noun_being_loaded"] = False

@@ -685,10 +685,10 @@ class Noun50(Noun):
 
 class Noun62(Noun):
     def __init__(self):
-        super(Noun62, self).__init__("Surface Velocity, Altitude Rate, Altitude", number="62")
+        super(Noun62, self).__init__("Orbital Velocity, Altitude Rate, Altitude", number="62")
 
     def return_data(self):
-        surface_velocity = str(round(get_telemetry("surfaceVelocity"), 1))
+        surface_velocity = str(round(get_telemetry("relativeVelocity"), 1))
         altitude_rate = str(round(get_telemetry("verticalSpeed"), 1))
         altitude = str(round(get_telemetry("altitude") / 1000, 1))
 
@@ -702,7 +702,7 @@ class Noun62(Noun):
             3: altitude,
             "is_octal": False,
             "tooltips": [
-                "Surface Velocity (xxxx.x m/s)",
+                "Inertial Velocity (xxxx.x m/s)",
                 "Altitude Rate (xxxx.x m/s)",
                 "Altitude (xxxx.x km)",
             ],
