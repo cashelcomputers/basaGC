@@ -86,7 +86,7 @@ class Verb:
                 output += item.zfill(5)
             elif item[0] == "-":
                 output += item.zfill(6)
-            elif item[0].isdigit():
+            else:
                 output = "+"
                 output += item.zfill(5)
             out_data.append(output)
