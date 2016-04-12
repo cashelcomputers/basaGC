@@ -240,8 +240,8 @@ def charin(keypress, state, dsky, computer):
             state["is_data_being_loaded"] = False
             state["verb_position"] = 0
             state["noun_position"] = 0
-            state["requested_verb"] = 0
-            state["requested_noun"] = 0
+            state["requested_verb"] = ""
+            state["requested_noun"] = ""
             return
     
         # if the computer is off, we only want to accept the PRO key input,
