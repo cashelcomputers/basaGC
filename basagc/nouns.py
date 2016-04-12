@@ -32,61 +32,6 @@ class NounNotImplementedError(Exception):
 
     pass
 
-# -----------------------BEGIN NORMAL NOUNS--------------------------------------
-
-# no noun 00
-
-# def noun01(calling_verb):
-#     description = "Specify address and display in fractional format"
-#     raise NounNotImplementedError
-
-# def noun02(calling_verb=None, data=None, base=8):
-#
-#     if data == None:
-#         dsky.request_data(calling_verb, 3)
-#         return "need data"
-#     else:
-#         data = int(data)
-#         data = octal(data)
-#         print("BASE: {}".format(base))
-#         if base == 8:
-#             return_data = {
-#                 1: memory.memory[data].get_oct(),
-#                 2: memory.memory[data + 1].get_oct(),
-#                 3: memory.memory[data + 2].get_oct(),
-#                 "description": "Data in location",
-#                 "is_octal": True,
-#             }
-#         elif base == 10:
-#             return_data = {
-#                 1: memory.memory[data].get_int,
-#                 2: memory.memory[data + 1].get_int,
-#                 3: memory.memory[data + 2].get_int,
-#                 "description": "Data in location",
-#                 "is_octal": False,
-#             }
-#         else:
-#             raise ValueError("Base must be either 8 or 10")
-#         return return_data
-
-# def noun03(calling_verb):
-#     description = "Specify address and display as degrees"
-#     raise NounNotImplementedError
-
-# no noun 04
-
-# def noun05(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun06(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun07(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun08(calling_verb):
-#     raise NounNotImplementedError
-
 
 class Noun(object):
 
@@ -97,11 +42,12 @@ class Noun(object):
     def return_data(self):
         raise NounNotImplementedError
 
+# -----------------------BEGIN NORMAL NOUNS--------------------------------------
 
 class Noun09(Noun):
 
     def __init__(self):
-        super(Noun09, self).__init__(description="Alarm Codes", number="09")
+        super().__init__(description="Alarm Codes", number="09")
 
     def return_data(self):
 
@@ -121,39 +67,10 @@ class Noun09(Noun):
         return data
 
 
-# def noun09(calling_verb):
-#
-#     """ Alarm codes.
-#     :param calling_verb: the verb calling the noun.
-#     :return: noun data
-#     """
-#     description = "Alarm codes (first, second, last)"
-#     utils.log("Noun 09 requested")
-#     alarm_codes = computer.alarm_codes
-#     data = {
-#         1: alarm_codes[0],
-#         2: alarm_codes[1],
-#         3: alarm_codes[2],
-#         "is_octal": True,
-#     }
-#     return data
-
-# def noun10(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun11(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun12(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun13(calling_verb):
-#     raise NounNotImplementedError
-#
 class Noun14(Noun):
 
     def __init__(self):
-        super(Noun14, self).__init__(description="Burn error display (Expected Δv at cutoff (xxxxx m/s), Actual Δv at"
+        super().__init__(description="Burn error display (Expected Δv at cutoff (xxxxx m/s), Actual Δv at"
                                                  "cutoff (xxxxx m/s), Difference (xxxx.x m/s)",
                                      number="14")
 
@@ -193,7 +110,7 @@ class Noun14(Noun):
 class Noun17(Noun):
 
     def __init__(self):
-        super(Noun17, self).__init__("Attitude (Roll, Pitch, Yaw)", number="17")
+        super().__init__("Attitude (Roll, Pitch, Yaw)", number="17")
 
     def return_data(self):
 
@@ -224,78 +141,19 @@ class Noun17(Noun):
         return data
 
 
-# def noun17(calling_verb=None):
-#
-#     """ Roll, Pitch, Yaw.
-#     :param calling_verb: the verb calling the noun.
-#     :return: noun data
-#     """
-#
-#     description = "Attitude (Roll, Pitch, Yaw)"
-#
-#     # FIXME: need to make sure that data is correct length (sometimes drops the last 0 when input is xxx.x rather than
-#     # xxx.xx
-#     roll = str(round(get_telemetry("roll"), 2))
-#     pitch = str(round(get_telemetry("pitch"), 2))
-#     yaw = str(round(get_telemetry("heading"), 2))
-#
-#     roll = roll.replace(".", "")
-#     pitch = pitch.replace(".", "")
-#     yaw = yaw.replace(".", "")
-#
-#     data = {
-#         1: int(roll),
-#         2: int(pitch),
-#         3: int(yaw),
-#         "is_octal": False,
-#     }
-#     return data
 
-# def noun18(calling_verb):
-#     raise NounNotImplementedError
-#
-# # no noun 19
-#
-# def noun20(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun21(calling_verb):
-#     raise NounNotImplementedError
-#
-#
-# def noun22(calling_verb):
-#     raise NounNotImplementedError
-#
-# # no noun 23
-#
-# def noun24(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun25(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun26(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun27(calling_verb):
-#     raise NounNotImplementedError
-#
-# # no noun 28
-#
-# def noun29(calling_verb):
-#     raise NounNotImplementedError
 #
 class Noun30(Noun):
     def __init__(self):
-        super(Noun30, self).__init__("Octal Target ID (000XX)", number="30")
+        super().__init__("Octal Target ID (000XX)", number="30")
 
     def return_data(self):
 
-        target_id = computer.noun_data["30"]
+        target_id = computer.noun_data["30"][0]
         data = {
             1: target_id,
-            2: None,
-            3: None,
+            2: "",
+            3: "",
             "tooltips": ["Target Octal ID", None, None],
             "is_octal": True,
         }
@@ -303,26 +161,12 @@ class Noun30(Noun):
 
     def receive_data(self, data):
         computer.noun_data["30"] = data
-#
-# def noun31(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun32(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun33(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun34(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun35(calling_verb):
-#     raise NounNotImplementedError
+
 
 class Noun33(Noun):
 
     def __init__(self):
-        super(Noun33, self).__init__("Time to Ignition (00xxx hours, 000xx minutes, 0xx.xx seconds)", number="33")
+        super().__init__("Time to Ignition (00xxx hours, 000xx minutes, 0xx.xx seconds)", number="33")
 
     def return_data(self):
 
@@ -336,8 +180,8 @@ class Noun33(Noun):
 
         data = {
             1: "-" + hours,
-            2: "-bbb" + minutes,
-            3: "-bbb" + seconds,
+            2: "-000" + minutes,
+            3: "-000" + seconds,
             "tooltips": [
                 "Time To Ignition (hhhhh)",
                 "Time To Ignition (bbbmm)",
@@ -351,7 +195,7 @@ class Noun33(Noun):
 class Noun36(Noun):
 
     def __init__(self):
-        super(Noun36, self).__init__("Mission Elapsed Time (MET) (dddhh, bbbmm, bss.ss)", number="36")
+        super().__init__("Mission Elapsed Time (MET) (dddhh, bbbmm, bss.ss)", number="36")
 
     def return_data(self):
         try:
@@ -386,7 +230,7 @@ class Noun36(Noun):
 class Noun40(Noun):
 
     def __init__(self):
-        super(Noun40, self).__init__("Burn Data (Time from ignition, Δv to be gained, accumulated Δv", number="40")
+        super().__init__("Burn Data (Time from ignition, Δv to be gained, accumulated Δv", number="40")
 
     def return_data(self):
         if not computer.next_burn:
@@ -415,7 +259,7 @@ class Noun40(Noun):
 class Noun43(Noun):
 
     def __init__(self):
-        super(Noun43, self).__init__("Geographic Position (Latitude, Longitude, Altitude)", number="43")
+        super().__init__("Geographic Position (Latitude, Longitude, Altitude)", number="43")
 
     def return_data(self):
         try:
@@ -453,7 +297,7 @@ class Noun43(Noun):
 
 class Noun44(Noun):
     def __init__(self):
-        super(Noun44, self).__init__("Apoapsis (xxx.xx km), Periapsis (xxx.xx km), Time To Apoapsis (hmmss)",
+        super().__init__("Apoapsis (xxx.xx km), Periapsis (xxx.xx km), Time To Apoapsis (hmmss)",
                                      number="44")
 
     def return_data(self):
@@ -488,7 +332,7 @@ class Noun44(Noun):
 
 class Noun49(Noun):
     def __init__(self):
-        super(Noun49, self).__init__("Phase angles for automaneuver", number="49")
+        super().__init__("Phase angles for automaneuver", number="49")
     
     def return_data(self):
         # check that the maneuver has phase angles loaded
@@ -523,7 +367,7 @@ class Noun49(Noun):
 
 class Noun50(Noun):
     def __init__(self):
-        super(Noun50, self).__init__("Surface Velocity Display (X, Y, Z in xxxx.x m/s)", number="50")
+        super().__init__("Surface Velocity Display (X, Y, Z in xxxx.x m/s)", number="50")
 
     def return_data(self):
         surface_velocity_x = str(round(get_telemetry("surfaceVelocityx"), 1)).replace(".", "")
@@ -546,7 +390,7 @@ class Noun50(Noun):
 
 class Noun62(Noun):
     def __init__(self):
-        super(Noun62, self).__init__("Orbital Velocity, Altitude Rate, Altitude", number="62")
+        super().__init__("Orbital Velocity, Altitude Rate, Altitude", number="62")
 
     def return_data(self):
         surface_velocity = str(round(get_telemetry("relativeVelocity"), 1))
@@ -574,7 +418,7 @@ class Noun62(Noun):
 class Noun95(Noun):
     
     def __init__(self):
-        super(Noun95, self).__init__(description="Hohmann Transfer Data Display", number="95")
+        super().__init__(description="Hohmann Transfer Data Display", number="95")
 
     def return_data(self):
 
@@ -600,19 +444,6 @@ class Noun95(Noun):
             ],
         }
         return data
-
-#
-# def noun96(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun97(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun98(calling_verb):
-#     raise NounNotImplementedError
-#
-# def noun99(calling_verb):
-#     raise NounNotImplementedError
 
 # generate a OrderedDict of all nouns for inclusion in the computer
 nouns = OrderedDict()

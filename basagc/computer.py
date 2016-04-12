@@ -73,7 +73,7 @@ class Computer:
         self.alarm_codes = [0, 0, 0]
         self.running_programs = []
         self.noun_data = {
-            "30": [],
+            "30": ["00002"],
         }
         self.next_burn = None
         self._burn_queue = []

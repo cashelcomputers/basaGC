@@ -139,7 +139,7 @@ class ExtendedVerb(Verb):
     """
 
     def __init__(self, name, verb_number):
-        super(ExtendedVerb, self).__init__(name, verb_number, noun=None)
+        super().__init__(name, verb_number, noun=None)
 
 
 class DataVerb(Verb):
@@ -157,7 +157,7 @@ class DataVerb(Verb):
         :return: None
         """
 
-        super(DataVerb, self).__init__(name, verb_number, noun)
+        super().__init__(name, verb_number, noun)
         self.noun = noun
 
 
@@ -176,7 +176,7 @@ class DisplayVerb(DataVerb):
         :return: None
         """
 
-        super(DisplayVerb, self).__init__(name, verb_number, noun)
+        super().__init__(name, verb_number, noun)
 
     def execute(self):
 
@@ -195,7 +195,7 @@ class MonitorVerb(DisplayVerb):
 
     def __init__(self, name, verb_number, noun):
 
-        super(MonitorVerb, self).__init__(name, verb_number, noun)
+        super().__init__(name, verb_number, noun)
         self.timer = QTimer()
         self.timer.timeout.connect(self._update_display)
         self.is_tooltips_set = False
@@ -211,7 +211,7 @@ class MonitorVerb(DisplayVerb):
             self.timer.start(config.DISPLAY_UPDATE_INTERVAL)
 
         if self.noun is None:
-            self.noun = Verb.computer.dsky.requested_noun
+            self.noun = Verb.computer.keyboard_state["requested_noun"]
         if self.noun in self.illegal_nouns:
             raise NounNotAcceptableError
         noun_function = Verb.computer.nouns[self.noun]()
@@ -273,7 +273,7 @@ class MonitorVerb(DisplayVerb):
         self.timer.start(config.DISPLAY_UPDATE_INTERVAL)
 
     def execute(self):
-        super(MonitorVerb, self).execute()
+        super().execute()
 
     def _update_display(self):
 
@@ -341,7 +341,7 @@ class LoadVerb(DataVerb):
         :return: None
         """
 
-        super(LoadVerb, self).__init__(name, verb_number, noun)
+        super().__init__(name, verb_number, noun)
 
     def accept_input(self, data):
         """ Accepts data provided by user via DSKY
@@ -368,11 +368,11 @@ class Verb01(DisplayVerb):
         :return: None
         """
 
-        super(Verb01, self).__init__(name="Display Octal component 1 in R1", verb_number="01", noun=noun)
+        super().__init__(name="Display Octal component 1 in R1", verb_number="01", noun=noun)
         
     def execute(self):
 
-        super(Verb01, self).execute()
+        super().execute()
         noun_function = Verb.computer.nouns[self.noun]()
         noun_data = noun_function.return_data()
         if noun_data is False:
@@ -394,7 +394,7 @@ class Verb02(DisplayVerb):
         :return: None
         """
 
-        super(Verb02, self).__init__(name="Display Octal component 2 in R1", verb_number="02", noun=noun)
+        super().__init__(name="Display Octal component 2 in R1", verb_number="02", noun=noun)
 
     #def execute(self):
         #super(Verb2, self).execute()
@@ -421,7 +421,7 @@ class Verb03(DisplayVerb):
         :return: None
         """
 
-        super(Verb03, self).__init__(name="Display Octal component 3 in R1", verb_number="03", noun=noun)
+        super().__init__(name="Display Octal component 3 in R1", verb_number="03", noun=noun)
 
     #def execute(self):
         #super(Verb3, self).execute()
@@ -448,7 +448,7 @@ class Verb04(DisplayVerb):
         :return: None
         """
 
-        super(Verb04, self).__init__(name="Display Octal components 1, 2 in R1, R2", verb_number="04", noun=noun)
+        super().__init__(name="Display Octal components 1, 2 in R1, R2", verb_number="04", noun=noun)
 
     def execute(self):
 
@@ -456,7 +456,7 @@ class Verb04(DisplayVerb):
         :return: None
         """
 
-        super(Verb04, self).execute()
+        super().execute()
         noun_function = Verb.computer.nouns[Verb.computer.dsky.state["requested_noun"]]
         noun_data = noun_function(calling_verb=self)
         output = self._format_output_data(noun_data)
@@ -475,7 +475,7 @@ class Verb05(DisplayVerb):
         :return: None
         """
 
-        super(Verb05, self).__init__(name="Display Octal components 1, 2, 3 in R1, R2, R3", verb_number="05", noun=noun)
+        super().__init__(name="Display Octal components 1, 2, 3 in R1, R2, R3", verb_number="05", noun=noun)
         self.illegal_nouns = []
 
     def execute(self):
@@ -484,7 +484,7 @@ class Verb05(DisplayVerb):
         :return: None
         """
 
-        super(Verb05, self).execute()
+        super().execute()
         noun_function = Verb.computer.nouns[Verb.computer.keyboard_state["requested_noun"]]()
         noun_data = noun_function.return_data()
         if not noun_data:
@@ -507,7 +507,7 @@ class Verb06(DisplayVerb):
         :return: None
         """
 
-        super(Verb06, self).__init__(name="Display Decimal in R1 or in R1, R2 or in R1, R2, R3", verb_number="06",
+        super().__init__(name="Display Decimal in R1 or in R1, R2 or in R1, R2, R3", verb_number="06",
                                     noun=noun)
 
     def execute(self):
@@ -516,7 +516,7 @@ class Verb06(DisplayVerb):
         :return: None
         """
 
-        super(Verb06, self).execute()
+        super().execute()
         noun_function = Verb.computer.nouns[self.noun]()
         noun_data = noun_function.return_data()
         if not noun_data:
@@ -528,7 +528,6 @@ class Verb06(DisplayVerb):
         Verb.computer.dsky.set_tooltip("data_1", noun_data["tooltips"][0])
         Verb.computer.dsky.set_tooltip("data_2", noun_data["tooltips"][1])
         Verb.computer.dsky.set_tooltip("data_3", noun_data["tooltips"][2])
-
         Verb.computer.dsky.set_register(output[0], "data_1")
         Verb.computer.dsky.set_register(output[1], "data_2")
         Verb.computer.dsky.set_register(output[2], "data_3")
@@ -579,7 +578,7 @@ class Verb11(MonitorVerb):
         :return: None
         """
 
-        super(Verb11, self).__init__(name="Monitor Octal component 1 in R1", verb_number="11", noun=noun)
+        super().__init__(name="Monitor Octal component 1 in R1", verb_number="11", noun=noun)
 
 
 class Verb12(MonitorVerb):
@@ -593,7 +592,7 @@ class Verb12(MonitorVerb):
         :return: None
         """
 
-        super(Verb12, self).__init__(name="Monitor Octal component 2 in R1", verb_number="12", noun=noun)
+        super().__init__(name="Monitor Octal component 2 in R1", verb_number="12", noun=noun)
 
 
 class Verb13(MonitorVerb):
@@ -607,7 +606,7 @@ class Verb13(MonitorVerb):
         :return: None
         """
 
-        super(Verb13, self).__init__(name="Monitor Octal component 3 in R1", verb_number="13", noun=noun)
+        super().__init__(name="Monitor Octal component 3 in R1", verb_number="13", noun=noun)
 
 
 class Verb14(MonitorVerb):
@@ -621,7 +620,7 @@ class Verb14(MonitorVerb):
         :return: None
         """
 
-        super(Verb14, self).__init__(name="Monitor Octal components 1, 2 in R1, R2", verb_number="14", noun=noun)
+        super().__init__(name="Monitor Octal components 1, 2 in R1, R2", verb_number="14", noun=noun)
 
 
 class Verb15(MonitorVerb):
@@ -635,7 +634,7 @@ class Verb15(MonitorVerb):
         :return: None
         """
 
-        super(Verb15, self).__init__(name="Monitor Octal components 1, 2, 3 in R1, R2, R3", verb_number="15", noun=noun)
+        super().__init__(name="Monitor Octal components 1, 2, 3 in R1, R2, R3", verb_number="15", noun=noun)
 
 
 class Verb16(MonitorVerb):
@@ -649,7 +648,7 @@ class Verb16(MonitorVerb):
         :return: None
         """
 
-        super(Verb16, self).__init__(name="Monitor Decimal in R1 or in R1, R2 or in R1, R2, R3", verb_number="16",
+        super().__init__(name="Monitor Decimal in R1 or in R1, R2 or in R1, R2, R3", verb_number="16",
                                      noun=noun)
 
     def execute(self):
@@ -657,7 +656,7 @@ class Verb16(MonitorVerb):
         """ Executes the verb.
         :return: None
         """
-        super(Verb16, self).execute()
+        super().execute()
         self.start_monitor()
 
 
@@ -672,7 +671,7 @@ class Verb17(MonitorVerb):
         :return: None
         """
 
-        super(Verb17, self).__init__(name="Monitor Double Precision Decimal in R1, R2 (test only)", verb_number="17",
+        super().__init__(name="Monitor Double Precision Decimal in R1, R2 (test only)", verb_number="17",
                                      noun=noun)
 
 # no verb 18
@@ -693,7 +692,7 @@ class Verb21(LoadVerb):
         :return: None
         """
 
-        super(Verb21, self).__init__(name="Load component 1 into R1", verb_number="21", noun=noun)
+        super().__init__(name="Load component 1 into R1", verb_number="21", noun=noun)
 
     def execute(self):
 
@@ -725,7 +724,7 @@ class Verb22(LoadVerb):
         :return: None
         """
 
-        super(Verb22, self).__init__(name="Load component 2 into R2", verb_number="22", noun=noun)
+        super().__init__(name="Load component 2 into R2", verb_number="22", noun=noun)
 
     def execute(self):
 
@@ -747,7 +746,7 @@ class Verb23(LoadVerb):
         :return: None
         """
 
-        super(Verb23, self).__init__(name="Load component 3 into R3", verb_number="23", noun=noun)
+        super().__init__(name="Load component 3 into R3", verb_number="23", noun=noun)
 
     def execute(self):
 
@@ -782,7 +781,7 @@ class Verb24(LoadVerb):
         :return: None
         """
 
-        super(Verb24, self).__init__(name="Load component 1, 2 into R1, R2", verb_number="24", noun=noun)
+        super().__init__(name="Load component 1, 2 into R1, R2", verb_number="24", noun=noun)
 
     def execute(self):
 
@@ -804,7 +803,7 @@ class Verb25(LoadVerb):
         :return: None
         """
 
-        super(Verb25, self).__init__(name="Load component 1, 2, 3 into R1, R2, R3", verb_number="25", noun=noun)
+        super().__init__(name="Load component 1, 2, 3 into R1, R2, R3", verb_number="25", noun=noun)
 
     def execute(self):
 
@@ -844,7 +843,7 @@ class Verb32(Verb):
         :return: None
         """
 
-        super(Verb32, self).__init__(name="Recycle program", verb_number="32", noun=noun)
+        super().__init__(name="Recycle program", verb_number="32", noun=noun)
 
     def execute(self):
 
@@ -869,7 +868,7 @@ class Verb33(Verb):
             :return: None
             """
 
-        super(Verb33, self).__init__(name="Proceed without DSKY inputs", verb_number="33", noun=noun)
+        super().__init__(name="Proceed without DSKY inputs", verb_number="33", noun=noun)
 
     def execute(self):
 
@@ -894,7 +893,7 @@ class Verb34(Verb):
         :return: None
         """
 
-        super(Verb34, self).__init__(name="Terminate function", verb_number="34", noun=noun)
+        super().__init__(name="Terminate function", verb_number="34", noun=noun)
 
     def execute(self):
 
@@ -927,7 +926,7 @@ class Verb35(Verb):
         :return: None
         """
 
-        super(Verb35, self).__init__(name="Test lights", verb_number="35")
+        super().__init__(name="Test lights", verb_number="35")
         self.flash_timer = QTimer()
 
     def execute(self):
@@ -976,7 +975,7 @@ class Verb36(Verb):
         :return: None
         """
 
-        super(Verb36, self).__init__(name="Request fresh start", verb_number="36", noun=noun)
+        super().__init__(name="Request fresh start", verb_number="36", noun=noun)
 
     def execute(self):
 
@@ -998,7 +997,7 @@ class Verb37(Verb):
         :return: None
         """
 
-        super(Verb37, self).__init__(name="Change program (Major Mode)", verb_number="37")
+        super().__init__(name="Change program (Major Mode)", verb_number="37")
 
     def execute(self):
 
@@ -1006,7 +1005,7 @@ class Verb37(Verb):
         :return: None
         """
 
-        super(Verb37, self).execute()
+        super().execute()
         self.dsky.request_data(requesting_object=self.receive_data, display_location="noun")
 
     def receive_data(self, data):
@@ -1180,7 +1179,7 @@ class Verb75(ExtendedVerb):
         :return: None
         """
 
-        super(Verb75, self).__init__(name="Backup liftoff", verb_number="75")
+        super().__init__(name="Backup liftoff", verb_number="75")
 
     def execute(self):
 
@@ -1219,7 +1218,7 @@ class Verb82(ExtendedVerb):
         :return: None
         """
 
-        super(Verb82, self).__init__(name="Request orbital parameters display (R30)", verb_number="82")
+        super().__init__(name="Request orbital parameters display (R30)", verb_number="82")
 
     def execute(self):
 
@@ -1273,7 +1272,7 @@ class Verb82(ExtendedVerb):
 #
 class Verb93(ExtendedVerb):
     def __init__(self):
-        super(Verb93, self).__init__(name="Disable Autopilot", verb_number="93")
+        super().__init__(name="Disable Autopilot", verb_number="93")
 
     def execute(self):
         Verb.computer.disable_direction_autopilot()
@@ -1307,7 +1306,7 @@ class Verb99(ExtendedVerb):
         :return: None
         """
 
-        super(Verb99, self).__init__(name="Please enable engine", verb_number="99")
+        super().__init__(name="Please enable engine", verb_number="99")
 
     def execute(self, object_requesting_proceed):
 
@@ -1318,7 +1317,7 @@ class Verb99(ExtendedVerb):
         # stop any display updates
         if self.dsky.current_verb:
             self.dsky.current_verb.terminate()
-        super(Verb99, self).execute()
+        super().execute()
 
 
 

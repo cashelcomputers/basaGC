@@ -70,10 +70,11 @@ def charin(keypress, state, dsky, computer):
         """
         #set_trace()
         if keypress == "P":
-            dsky.stop_blink()
+            dsky.verb_noun_flash_off()
             utils.log("Proceeding without input, calling {}(proceed)".format(state["object_requesting_data"]))
             state["object_requesting_data"]("proceed")
             state["input_data_buffer"] = ""
+            state["is_expecting_data"] = False
             return
     
         # if we receive ENTER, the load is complete and we will call the

@@ -269,7 +269,9 @@ class DSKY:
         :param is_proceed_available: True if the user can key in PROCEED instead of data
         :return: None
         """
-        self.blank_register(display_location)
+        # if is_proceed_available is set True, don't blank display as it should be showing data to proceed with
+        if not is_proceed_available:
+            self.blank_register(display_location)
         utils.log("{} requesting data".format(requesting_object))
         self.verb_noun_flash_on()
         self.computer.keyboard_state["object_requesting_data"] = requesting_object
@@ -307,13 +309,14 @@ class DSKY:
 
     def stop_blink(self):
 
-        """ Stops the verb/noun flash
+        """ 
+        THIS METHOD IS DEPRECIATED. It is left in here to catch any other usages.
+
+        Stops the verb/noun flash
         :return: None
         """
-
-        self.computer.keyboard_state["is_expecting_data"] = False
-        for d in self.control_registers.values():
-            d.stop_blink()
+        utils.log(message="Called depreciated method stop_blink(). Please use verb_noun_flash_off()", log_level="ERROR")
+        
 
 
     def flash_comp_acty(self):

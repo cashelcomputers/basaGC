@@ -5,12 +5,14 @@ import inspect
 import sys
 from collections import OrderedDict
 
+from pudb import set_trace
+
 import basagc.maneuver
-from . import config
-from . import routines
-from . import utils
+from basagc import config
+
+from basagc import utils
 from basagc.maneuver import Burn
-from .telemachus import get_telemetry, KSPNotConnected, check_connection
+from basagc.telemachus import get_telemetry, KSPNotConnected, check_connection
 
 
 class Program(object):
@@ -84,14 +86,17 @@ class Program00(Program):
 
         #super(Program00, self).execute()
 
-# class Program01(Program):
-#     def __init__(self, name, number):
-#         super(Program01, self).__init__(name=, number)
-#
-#     def execute(self):
-#         super(Program01, self).execute()
-#         log.info("Program 01 executing")
-#         self.computer.dsky.annunciators["no_att"].on()
+class Program01(Program):
+    '''
+    Prelaunch or service - Initialization program
+    
+    '''
+    
+    def __init__(self):
+        super().__init__(decription="Prelaunch or service - Initialization program", number="01")
+
+    def execute(self):
+        pass  # TODO
 
 
 class Program11(Program):
@@ -106,7 +111,7 @@ class Program11(Program):
         :return: None
         """
 
-        super(Program11, self).__init__(description="Earth Orbit Insertion Monitor", number="11")
+        super().__init__(description="Earth Orbit Insertion Monitor", number="11")
 
     def execute(self):
 
@@ -114,7 +119,7 @@ class Program11(Program):
         :return: None
         """
 
-        super(Program11, self).execute()
+        super().execute()
         utils.log("Program 11 executing", log_level="INFO")
 
         # test if KSP is connected
@@ -168,7 +173,7 @@ class Program15(Program):
         # TODO: scale final altitude based on crafts TWR
         # TODO: request twr from user
 
-        super(Program15, self).__init__(description="TMI Calculate", number="15")
+        super().__init__(description="TMI Calculate", number="15")
         self.delta_v_first_burn = 0.0
         self.time_to_transfer = 0.0
         self.orbiting_body = None
@@ -192,7 +197,7 @@ class Program15(Program):
         :return: None
         """
 
-        super(Program15, self).execute()
+        super().execute()
         
         # if no connection to KSP, do P00DOO abort
         if not check_connection():
@@ -206,8 +211,7 @@ class Program15(Program):
             return
         self.target_name = self._check_target()
         
-        self.computer.noun_data["30"] = config.OCTAL_BODY_NAMES[self.target_name]
-
+        #self.computer.noun_data["30"] = config.OCTAL_BODY_NAMES[self.target_name]
         self.computer.execute_verb(verb="01", noun="30")
         self.computer.dsky.request_data(requesting_object=self._accept_target_input, display_location="data_1",
                              is_proceed_available=True)
@@ -217,7 +221,7 @@ class Program15(Program):
         utils.log("Removing burn data", log_level="DEBUG")
         self.computer.remove_burn(self.first_burn)
         self.computer.remove_burn(self.second_burn)
-        super(Program15, self).terminate()
+        super().terminate()
 
     def _accept_target_input(self, target):
 
@@ -384,11 +388,11 @@ class Program15(Program):
 
 class Program40(Program):
     def __init__(self):
-        super(Program40, self).__init__(description="SPS Burn", number="40")
+        super().__init__(description="SPS Burn", number="40")
         self.burn = self.computer.next_burn
 
     def execute(self):
-        super(Program40, self).execute()
+        super().execute()
         # if TIG < 2 mins away, abort burn
         if utils.seconds_to_time(self.burn.time_until_ignition)["minutes"] < 2:
             self.computer.remove_burn(self.computer.next_burn)
@@ -409,7 +413,7 @@ class Program40(Program):
             self.burn.execute()
 
     def terminate(self):
-        super(Program40, self).terminate()
+        super().terminate()
         self.burn.terminate()
 
 class ProgramNotImplementedError(Exception):
