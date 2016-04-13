@@ -10,12 +10,17 @@ This is my reimplementation of the Apollo Guidance Computer (AGC) and Display/Ke
 Screenshots here: http://imgur.com/a/Tj5mJ
 
 Prerequisites:
+---
 
 - KSP (tested on 1.0.5), should work on any version that Telemachus works on
 - python 3.x
 - PyQt5
 - Telemachus mod for KSP
 - Mechjeb mod
+
+Installation:
+---
+See doc/installation.md
 
 To run basaGC, unzip the download to a folder of your choice. On Linux, in a terminal change to
 that directory and type "./basagc.py", on Windows double-click on the file basagc.py.
