@@ -7,6 +7,7 @@ Thanks to Ron Burkey (<info@sandroid.org>) for VirtualAGC!
 
 This is my reimplementation of the Apollo Guidance Computer (AGC) and Display/Keyboard (DSKY) for Kerbal Space Program.
 
+Screenshots here: http://imgur.com/a/Tj5mJ
 
 Prerequisites:
 

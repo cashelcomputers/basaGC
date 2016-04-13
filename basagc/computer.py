@@ -13,6 +13,7 @@ from basagc import routines
 from basagc import telemachus
 from basagc import utils
 from basagc import verbs
+from basagc import imu
 
 
 class Computer:
@@ -35,8 +36,9 @@ class Computer:
         nouns.computer = self
 
         self.ui = ui
-
         self.dsky = dsky.DSKY(self, self.ui)
+        self.imu = imu.IMU(self)
+        
         self.keyboard_state = {
             "input_data_buffer": "",
             "register_index": 0,
@@ -184,7 +186,6 @@ class Computer:
             telemachus.get_api_listing()
         except telemachus.KSPNotConnected:
             utils.log("Cannot retrieve telemetry listing - no connection to KSP", log_level="WARNING")
-            self.dsky.annunciators["no_att"].on()
         else:
             utils.log("Retrieved telemetry listing", log_level="INFO")
 
@@ -194,6 +195,9 @@ class Computer:
         self.main_loop_timer.start(config.LOOP_TIMER_INTERVAL)
         self.slow_loop_timer.start(config.SLOW_LOOP_TIMER_INTERVAL)
         self.is_powered_on = True
+
+        #start IMU
+        self.imu.on()
 
     def main_loop(self):
 
@@ -382,26 +386,26 @@ class Computer:
 
         pass
 
-    def check_ksp_connection(self):
+    #def check_ksp_connection(self):
 
-        """ checks if we have a connection to Telemachus / KSP
-        :return: None
-        """
-        # set_trace()
-        if not telemachus.check_connection():
-            if self.is_ksp_connected:
-                # we have just lost the connection, illuminate NO ATT annunciator and log it
-                self.dsky.annunciators["no_att"].on()
-                utils.log("No connection to KSP, navigation functions unavailable", log_level="ERROR")
-                self.is_ksp_connected = False
-        else:
-            if not self.is_ksp_connected:
-                # have just regained connection, deluminate NO ATT annunciator and log it
-                self.dsky.annunciators["no_att"].off()
-                utils.log("Connection to KSP established", log_level="INFO")
-                self.is_ksp_connected = True
-            if not telemachus.telemetry:
-                telemachus.get_api_listing()
+        #""" checks if we have a connection to Telemachus / KSP
+        #:return: None
+        #"""
+        ## set_trace()
+        #if not telemachus.check_connection():
+            #if self.is_ksp_connected:
+                ## we have just lost the connection, illuminate NO ATT annunciator and log it
+                #self.dsky.annunciators["no_att"].on()
+                #utils.log("No connection to KSP, navigation functions unavailable", log_level="ERROR")
+                #self.is_ksp_connected = False
+        #else:
+            #if not self.is_ksp_connected:
+                ## have just regained connection, deluminate NO ATT annunciator and log it
+                #self.dsky.annunciators["no_att"].off()
+                #utils.log("Connection to KSP established", log_level="INFO")
+                #self.is_ksp_connected = True
+            #if not telemachus.telemetry:
+                #telemachus.get_api_listing()
 
     def check_paused_state(self):
 

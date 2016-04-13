@@ -67,7 +67,6 @@ def get_api_listing():
             telemetry[name] = b["apistring"]
 
 
-
 def get_telemetry(data, body_number=None):
     """ Contacts telemachus for the requested data.
 

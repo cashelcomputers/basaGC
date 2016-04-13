@@ -149,7 +149,7 @@ class Program11(Program):
 
 class Program15(Program):
 
-    """ Calculates TMI
+    """ Calculates TMI burn
     :return: None
     """
 

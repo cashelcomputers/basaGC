@@ -1293,7 +1293,15 @@ class Verb93(ExtendedVerb):
 #
 # #no verb 98
 #
+class Verb98(ExtendedVerb):
+    
+    def __init__(self):
+        super().__init__(name="Debug", verb_number="98")
 
+    def execute(self):
+        super().execute()
+        Verb.computer.imu.set_fine_align()
+        
 
 class Verb99(ExtendedVerb):
 
