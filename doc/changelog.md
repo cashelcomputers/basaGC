@@ -3,6 +3,11 @@ basaGC changelog
 
 Please note that this file only contains changes from version 0.5.0 onwards. All dates are in dd/mm/yy format.
 
+13/04/16: version 2.0.1:
+- bug fixes
+- tweaked some behaviour to act more like AGC
+- added secret debug verb
+
 12/04/16: version 2.0:
 - Changed widget toolkit to PyQt5 from wxPython
 - Now uses Python 3
