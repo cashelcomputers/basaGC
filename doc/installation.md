@@ -7,7 +7,8 @@ Linux:
 * Install Python 3.2+ (sometimes already installed) using your package manager eg for Fedora do "dnf install python3"
 * Install PyQt using your package manager or pip3
 * If installing from zip file, just extract the contents into any directory
-* Either click on basagc.py in the top-level directory or run in a terminal "python3 basagc.py"
+* Either click on basagc.py in the top-level directory or in a terminal, cd to the base directory and run
+"python3 basagc.py"
 * Start navigating :)
 
 Windows:
