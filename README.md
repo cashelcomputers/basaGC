@@ -22,8 +22,13 @@ Installation:
 ---
 See doc/installation.md
 
+Running basaGC:
+-----
+
 To run basaGC, unzip the download to a folder of your choice. On Linux, in a terminal change to
 that directory and type "./basagc.py", on Windows double-click on the file basagc.py.
+
+
 
 Please Note! This is a work in progress. Only a few functions of the AGC are implemented. Some buttons and warning
 lamps don't work.
