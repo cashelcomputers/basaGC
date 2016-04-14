@@ -906,13 +906,13 @@ class Verb35(Verb):
         self.dsky.start_annunciator_blink("key_rel")
         self.flash_timer.singleShot(5000, self.terminate)
         self.computer.flash_comp_acty(500)
+        self.computer.memory_hack = self
         
     def terminate(self):
         '''
         Terminates the verb updates
         :returns: None
         '''
-        
         for annunciator in self.dsky.annunciators.values():
             annunciator.off()
         self.dsky.verb_noun_flash_off()
@@ -922,6 +922,7 @@ class Verb35(Verb):
         self.dsky.stop_annunciator_blink("key_rel")
         self.dsky.set_register(value="bb", register="program")
         #self.computer.remove_job(self)
+        self.computer.memory_hack = None
         
 
 class Verb36(Verb):

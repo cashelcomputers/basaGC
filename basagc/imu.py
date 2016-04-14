@@ -20,7 +20,6 @@ class IMU:
         self._is_on = False
         self.is_course_aligned = False
         self.is_fine_aligned = False
-        self.computer.dsky.set_annunciator("no_att")
         self.gyro_angles = {
             "inner": 0.0,  # Y axis, aka pitch
             "middle": 0.0,  # Z axis, aka heading

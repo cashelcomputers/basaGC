@@ -222,9 +222,6 @@ class Computer:
         self.slow_loop_timer.start(config.SLOW_LOOP_TIMER_INTERVAL)
         self.is_powered_on = True
 
-        #start IMU
-        self.imu.on()
-
     def main_loop(self):
 
         """ The guidance computer main loop.
