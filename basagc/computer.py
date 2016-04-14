@@ -2,7 +2,6 @@
 """This file contains the guts of the guidance computer"""
 
 from PyQt5.QtCore import QTimer
-
 from pudb import set_trace  # lint:ok
 
 from basagc import config
@@ -109,6 +108,15 @@ class Computer:
         :returns: None
         '''
         routines.charin(keypress, self.keyboard_state, self.dsky, self)
+
+    def add_to_mainloop(self, func):
+        self.main_loop_table.append(func)
+
+    def remove_from_mainloop(self, func):
+        if func in self.main_loop_table:
+            self.main_loop_table.remove(func)
+        else:
+            utils.log("Cannot remove function from mainloop, function {} not found".format(func))
 
     def register_charin(self):
         '''
@@ -224,7 +232,7 @@ class Computer:
         """
 
         # check KSP paused state
-        self.check_paused_state()
+        # self.check_paused_state()
 
         # run each item in process queue
         for item in self.main_loop_table:

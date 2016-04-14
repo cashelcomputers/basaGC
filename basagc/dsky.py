@@ -5,7 +5,7 @@ interface between the computer and the gui toolkit.
 """
 
 from basagc import utils
-from pudb import set_trace
+from pudb import set_trace  # lint:ok
 
 
 class DSKY:
@@ -28,7 +28,6 @@ class DSKY:
         self.annunciators = output_widgets[0]
         self._control_registers = output_widgets[1]
         self._data_registers = output_widgets[2]
-        # self.keyboard = Keyboard(ui)
 
         self.registers = {
             "program": {
@@ -356,77 +355,3 @@ class DSKY:
         this_register = self.get_register(register)
         for digit in this_register.values():
             digit.set_tooltip(tooltip)
-
-#class Digit:
-
-    #def __init__(self, widget):
-
-        #self.widget = widget
-        #self.is_blinking_lit = True
-        #self.current_display = None
-        #self.value_to_blink = None
-        #self.blink_timer = QtCore.QTimer()
-        #self.blink_timer.timeout.connect(self.flip)
-        #self.setText("")
-        #self.display(10)
-        #self.last_value = None
-        #self.is_blinking = False
-
-    #def set_tooltip(self, tooltip):
-        #'''
-        #Sets the tooltip on the widget.
-        #:param tooltip: tooltip text
-        #:type tooltip: str
-        #:returns: None
-        #'''
-        #self.setToolTip(tooltip)
-
-    #def start_blink(self):
-
-        #""" Starts the digit blinking.
-        #:return: None
-        #"""
-        #self.is_blinking_lit = False
-        #self.is_blinking = True
-        #self.display(10)
-        #self.blink_timer.start(500)
-
-    #def stop_blink(self):
-        #'''
-        #Stops the register blinking.
-        #:returns: None
-        #'''
-
-        #self.is_blinking = False
-        #self.blink_timer.stop()
-
-    #def flip(self):
-
-        #"""alternates the digit between a value and blank ie to flash the digit."""
-
-        ## digit displaying the number, switch to blank
-        #if self.is_blinking_lit:
-            #self.display(10)
-            #self.is_blinking_lit = False
-        #else:
-            ## digit displaying blank, change to number
-            #self.display(self.last_value)
-            #self.is_blinking_lit = True
-
-    #def display(self, number_to_display):
-
-
-        ## if we are flashing, only need to change stored digit
-        #if self.is_blinking:
-            #if self.is_blinking_lit:
-                #self.last_value = number_to_display
-        #else:
-            ## stores the last value displayed, in case we need to flash
-            #self.last_value = self.current_display
-
-            ## store the value we shall be displaying
-            #self.current_display = number_to_display
-
-
-
-#

@@ -43,18 +43,14 @@ class Program(object):
         utils.log("Executing Program {}: {}".format(self.number, self.description))
         self.computer.flash_comp_acty(500)
         self.computer.dsky.set_register(self.number, "program")
-        #self.computer.dsky.control_registers["program"].display(self.number)
-        # self.computer.running_programs.append(self)
         self.computer.running_program = self
 
     def terminate(self):
 
         """Terminates the program"""
 
-        # self.computer.running_programs.remove(self)
         if self.computer.running_program == self:
             self.computer.running_program = None
-        raise ProgramTerminated
 
     def restart(self):
 
@@ -62,7 +58,6 @@ class Program(object):
         :return: None
         """
 
-        # self.terminate()
         self.execute()
 
 
@@ -80,15 +75,9 @@ class Program00(Program):
 
         super(Program00, self).__init__(description="AGC Idling", number="00")
 
-    #def execute(self):
-
-        #""" Executes the program.
-        #:return: None
-        #"""
-
-        #super(Program00, self).execute()
 
 class Program01(Program):
+    
     '''
     Prelaunch or service - Initialization program
     
@@ -125,7 +114,45 @@ class Program01(Program):
         :returns: None
         '''
         Program.computer.imu.set_fine_align()
+        Program.computer.execute_program("02")
 
+
+class Program02(Program):
+    '''
+    Waits until liftoff is detected, blanks display and starts P11
+    '''
+
+    def __init__(self):
+        
+        """ Class constructor.
+        :return: None
+        """
+        super().__init__(description="Prelaunch or service - Gyrocompassing program", number="02")
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.timeout)
+
+    def execute(self):
+
+        """ Executes the program.
+        :return: None
+        """
+        super().execute()
+        Program.computer.add_to_mainloop(self.check_for_liftoff)
+
+    def check_for_liftoff(self):
+        if get_telemetry("verticalSpeed") > 1:
+            utils.log("Liftoff discrete")
+            Program.computer.remove_from_mainloop(self.check_for_liftoff)
+
+            # Clear display
+            for register in ["verb", "noun", "program", "data_1", "data_2", "data_3"]:
+                Program.computer.dsky.blank_register(register)
+            # pause for 1 second, then run P11
+            self.timer.start(1000)
+
+    def timeout(self):
+        self.timer.stop()
+        Program.computer.execute_program("11")
 
 class Program11(Program):
 
@@ -472,14 +499,6 @@ class Program40(Program):
 class ProgramNotImplementedError(Exception):
 
     """ This exception is raised when the selected program hasn't been implemented yet.
-    """
-
-    pass
-
-
-class ProgramTerminated(Exception):
-
-    """ This exception is raised when a program self-terminates.
     """
 
     pass

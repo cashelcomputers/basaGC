@@ -3,8 +3,10 @@ basaGC changelog
 
 Please note that this file only contains changes from version 0.5.0 onwards. All dates are in dd/mm/yy format.
 
-?: version 2.?:
-
+14/04/16: version 2.1.0:
+- bug fixes
+- Added Programs 01 and 02
+- Added IMU module
 
 13/04/16: version 2.0.1:
 - bug fixes
