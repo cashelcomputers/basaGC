@@ -5,12 +5,14 @@ import inspect
 import sys
 from collections import OrderedDict
 
-from pudb import set_trace
+from pudb import set_trace  # lint:ok
+from PyQt5.QtCore import QTimer
 
 import basagc.maneuver
 from basagc import config
 
 from basagc import utils
+
 from basagc.maneuver import Burn
 from basagc.telemachus import get_telemetry, KSPNotConnected, check_connection
 
@@ -93,10 +95,36 @@ class Program01(Program):
     '''
     
     def __init__(self):
-        super().__init__(decription="Prelaunch or service - Initialization program", number="01")
+        
+        """ Class constructor.
+        :return: None
+        """
+        super().__init__(description="Prelaunch or service - Initialization program", number="01")
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.timeout)
 
     def execute(self):
-        pass  # TODO
+
+        """ Executes the program.
+        :return: None
+        """
+        
+        super().execute()
+        if check_connection() == False:
+            Program.computer.program_alarm(111)
+            self.terminate()
+            return
+        Program.computer.imu.on()
+        
+            
+        self.timer.start(10000)
+
+    def timeout(self):
+        '''
+        called when timer hits 0
+        :returns: None
+        '''
+        Program.computer.imu.set_fine_align()
 
 
 class Program11(Program):
@@ -217,6 +245,10 @@ class Program15(Program):
                              is_proceed_available=True)
 
     def terminate(self):
+        '''
+        Terminates the program.
+        :returns: None
+        '''
 
         utils.log("Removing burn data", log_level="DEBUG")
         self.computer.remove_burn(self.first_burn)
@@ -349,8 +381,8 @@ class Program15(Program):
             phase_angle_difference = 180 + abs(phase_angle_difference)
         self.delta_time_to_burn = phase_angle_difference / ((360 / self.orbital_period) - (360 /
                                                                                     self.departure_body_orbital_period))
-        delta_time = utils.seconds_to_time(self.delta_time_to_burn)
-        velocity_at_cutoff = get_telemetry("orbitalVelocity") + self.delta_v_first_burn
+        # delta_time = utils.seconds_to_time(self.delta_time_to_burn)
+        # velocity_at_cutoff = get_telemetry("orbitalVelocity") + self.delta_v_first_burn
 
     def _check_orbital_parameters(self):
 
@@ -387,11 +419,24 @@ class Program15(Program):
             return get_telemetry("target_name")
 
 class Program40(Program):
+    
+    '''
+    Controls a SPS (Service Propulsion System) burn.
+    '''
+    
     def __init__(self):
+        '''
+        instance constructor.
+        :returns: None
+        '''
         super().__init__(description="SPS Burn", number="40")
         self.burn = self.computer.next_burn
 
     def execute(self):
+        '''
+        Executes the program
+        :returns: None
+        '''
         super().execute()
         # if TIG < 2 mins away, abort burn
         if utils.seconds_to_time(self.burn.time_until_ignition)["minutes"] < 2:
@@ -408,11 +453,19 @@ class Program40(Program):
             self.burn.execute()
 
     def _ten_minute_monitor(self):
+        '''
+        Part of the sequence of P40
+        :returns: None
+        '''
         if utils.seconds_to_time(self.burn.time_until_ignition)["minutes"] < 10:
             self.computer.main_loop_table.remove(self._ten_minute_monitor)
             self.burn.execute()
 
     def terminate(self):
+        '''
+        Terminates the program.
+        :returns: None
+        '''
         super().terminate()
         self.burn.terminate()
 

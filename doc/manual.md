@@ -45,6 +45,7 @@ Currently implemented verbs:
 
 - Verb 75: Backup Liftoff Discrete
 - Verb 82: Request orbital parameters display
+- Verb 99: Please enable engine
 
 Currently implemented nouns:
 ----------------------------

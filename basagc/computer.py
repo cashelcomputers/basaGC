@@ -3,7 +3,7 @@
 
 from PyQt5.QtCore import QTimer
 
-from pudb import set_trace
+from pudb import set_trace  # lint:ok
 
 from basagc import config
 from basagc import dsky
@@ -84,7 +84,7 @@ class Computer:
         self.is_direction_autopilot_engaged = False
         self.is_thrust_autopilot_engaged = False
         self.moi_burn_delta_v = 0.0  # a bit of a hack, need to rethink this
-        self.jobs = []
+        # self.jobs = []
 
         self.nouns = nouns.nouns
         self.verbs = verbs.verbs
@@ -102,12 +102,30 @@ class Computer:
         self.on()
 
     def charin(self, keypress):
+        '''
+        Receives a keypress event and passes it on to routines.charin
+        :param keypress: the value of the key pressed
+        :type keypress: str
+        :returns: None
+        '''
         routines.charin(keypress, self.keyboard_state, self.dsky, self)
 
     def register_charin(self):
+        '''
+        Registers the charin handler with the GUI
+        :returns: None
+        '''
         self.ui.register_key_event_handler(self.charin)
 
     def set_keyboard_state(self, state_name, new_value):
+        '''
+        setter for keyboard state
+        :param state_name: the name of the state to change
+        :type state_name: str
+        :param new_value: the new value
+        :type new_value: str
+        :returns: None
+        '''
         self.keyboard_state[state_name] = new_value
 
     def add_burn_to_queue(self, burn_object, execute=True):
@@ -256,7 +274,7 @@ class Computer:
         else:
             verb_to_execute = self.verbs[verb](noun)
         # self.keyboard_state["requested_noun"] = ""  # reset noun state for next time    
-        self.add_job(verb_to_execute)
+        # self.add_job(verb_to_execute)
         self.flash_comp_acty(200)
         verb_to_execute.execute()
 
@@ -282,6 +300,10 @@ class Computer:
         self.comp_acty_timer.start(duration)
 
     def _comp_acty_off(self):
+        '''
+        Turns off the comp acty annunciator
+        :returns: None
+        '''
         self.dsky.annunciators["comp_acty"].off()
         self.comp_acty_timer.stop()
     
@@ -296,13 +318,13 @@ class Computer:
             utils.log("OPERATOR ERROR: " + message, log_level="ERROR")
         self.dsky.annunciators["opr_err"].blink_timer.start(500)
         
-    def remove_job(self, job):
-        utils.log("Removing job from jobs list: {}".format(job))
-        self.jobs.remove(job)
+    #def remove_job(self, job):
+        #utils.log("Removing job from jobs list: {}".format(job))
+        #self.jobs.remove(job)
 
-    def add_job(self, job):
-        utils.log("Adding job to jobs list: {}".format(job))
-        self.jobs.append(job)
+    #def add_job(self, job):
+        #utils.log("Adding job to jobs list: {}".format(job))
+        #self.jobs.append(job)
 
     def reset_alarm_codes(self):
 
@@ -335,7 +357,7 @@ class Computer:
         :return: None
         """
 
-        alarm_message = config.ALARM_CODES[alarm_code]
+        # alarm_message = config.ALARM_CODES[alarm_code]
         alarm_code += 2000
         if self.alarm_codes[0] != 0:
             self.alarm_codes[1] = self.alarm_codes[0]
@@ -407,30 +429,30 @@ class Computer:
             #if not telemachus.telemetry:
                 #telemachus.get_api_listing()
 
-    def check_paused_state(self):
+    #def check_paused_state(self):
 
-        """ Checks the paused state of KSP, and illuminates STBY annunciator and logs state as necessary.
-        :return: None
-        """
+        #""" Checks the paused state of KSP, and illuminates STBY annunciator and logs state as necessary.
+        #:return: None
+        #"""
 
-        if self.is_ksp_connected:
-            paused_state = telemachus.get_telemetry("paused")
-            # if the paused state hasn't changed, skip any annunciator changes
-            if paused_state != self.ksp_paused_state:
-                if paused_state == 0:
-                    self.dsky.annunciators["stby"].off()
-                    utils.log("KSP unpaused, all systems go", log_level="INFO")
-                elif paused_state == 1:
-                    self.dsky.annunciators["stby"].on()
-                    utils.log("KSP paused", log_level="INFO")
-                elif paused_state == 2:
-                    self.dsky.annunciators["stby"].on()
-                    utils.log("No power to Telemachus antenna", log_level="WARNING")
-                elif paused_state == 3:
-                    self.dsky.annunciators["stby"].on()
-                    utils.log("Telemachus antenna off", log_level="WARNING")
-                elif paused_state == 4:
-                    self.dsky.annunciators["stby"].on()
-                    utils.log("No Telemachus antenna found", log_level="WARNING")
-                self.ksp_paused_state = paused_state
+        #if self.is_ksp_connected:
+            #paused_state = telemachus.get_telemetry("paused")
+            ## if the paused state hasn't changed, skip any annunciator changes
+            #if paused_state != self.ksp_paused_state:
+                #if paused_state == 0:
+                    #self.dsky.annunciators["stby"].off()
+                    #utils.log("KSP unpaused, all systems go", log_level="INFO")
+                #elif paused_state == 1:
+                    #self.dsky.annunciators["stby"].on()
+                    #utils.log("KSP paused", log_level="INFO")
+                #elif paused_state == 2:
+                    #self.dsky.annunciators["stby"].on()
+                    #utils.log("No power to Telemachus antenna", log_level="WARNING")
+                #elif paused_state == 3:
+                    #self.dsky.annunciators["stby"].on()
+                    #utils.log("Telemachus antenna off", log_level="WARNING")
+                #elif paused_state == 4:
+                    #self.dsky.annunciators["stby"].on()
+                    #utils.log("No Telemachus antenna found", log_level="WARNING")
+                #self.ksp_paused_state = paused_state
 
