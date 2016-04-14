@@ -18,7 +18,7 @@ In this manual, I shall abbreviate the keypresses as follows:
 V16N44E means key in [VERB]16[NOUN]44[ENTR].
 
 *PLEASE NOTE:* the following lists may lag behind the program. For the latest info on verbs, nouns and programs,
-consult the Help menu.
+consult the source.
 
 Currently implemented verbs:
 ---------------------------
@@ -61,14 +61,18 @@ Currently implemented programs (major modes):
 ---------------------------------------------
 
 - Program 00: AGC idling (called POO by mission control :)
+- Program 01: Prelaunch or service - Initialization program
+- Program 02: Prelaunch or service - Gyrocompassing program
 - Program 11: Earth orbit insertion monitor
 - Program 15: TMI initiate/cutoff
 
-Detailed Program 11 listing:
+How to set up basaGC for launch:
 ----------------------------
 
-IRL, P11 would be triggered automatically by receiving the liftoff discrete signal. At the moment you can start P11 by
-running Verb 75 (V75E). P11 will first display V16N62 (surface velocity, altitude rate of change, and altitude).
+Key in V37E01E (start program 01) to start the IMU. After 10 seconds, confirm NO ATT annunciator is extinguished. When
+complete, P01 will start P02. P02 waits until it detects a liftoff, then automatically runs P11 (launch monitor.) The
+data registers show, from top to bottom, orbital velocity (xxxx.x) ms-1, altitude rate (xxxx.x) ms-1, and altitude 
+above pad (xxxx.x) km.
 
 At any time during ascent, the user can run V82 to bring up the orbit insertion display. Apoapsis and periapsis should
 be read as XXXX.X km, and time to apoapsis should be read in HMMSS. The original AGC didnt't have decimal places in the
