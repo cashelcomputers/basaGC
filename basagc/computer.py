@@ -2,7 +2,7 @@
 """This file contains the guts of the guidance computer"""
 
 from PyQt5.QtCore import QTimer
-from pudb import set_trace  # lint:ok
+# from pudb import set_trace  # lint:ok
 
 from basagc import config
 from basagc import dsky

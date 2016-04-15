@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """This module contains internal routines used by the guidance computer."""
 
-from pudb import set_trace
+# from pudb import set_trace
 
 from basagc import utils
 

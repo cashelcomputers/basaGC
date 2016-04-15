@@ -3,7 +3,7 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from basagc import config
-from pudb import set_trace
+# from pudb import set_trace
 #from basagc.computer import Computer
 from basagc import utils
 

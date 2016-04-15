@@ -5,7 +5,7 @@ import inspect
 import sys
 from collections import OrderedDict
 
-from pudb import set_trace  # lint:ok
+# from pudb import set_trace  # lint:ok
 from PyQt5.QtCore import QTimer
 
 import basagc.maneuver
