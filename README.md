@@ -13,7 +13,7 @@ Prerequisites:
 ---
 
 - KSP (tested on 1.0.5), should work on any version that Telemachus works on
-- python 3.x
+- python 3.4
 - PyQt5
 - Telemachus mod for KSP
 - Mechjeb mod
