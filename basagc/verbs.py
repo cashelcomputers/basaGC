@@ -6,7 +6,8 @@ import logging
 import sys
 from collections import OrderedDict
 
-from pudb import set_trace  # lint:ok
+# from pudb import set_trace  # lint:ok
+
 from PyQt5.QtCore import QTimer
 from basagc import config, nouns, programs, utils, dsky
 from basagc.telemachus import KSPNotConnected, TelemetryNotAvailable
