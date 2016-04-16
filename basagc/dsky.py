@@ -72,6 +72,10 @@ class DSKY:
         }
 
 
+    def blank_all_registers(self):
+        for register in ["verb", "noun", "program", "data_1", "data_2", "data_3"]:
+                self.blank_register(register)
+
     def blink_register(self, register):
 
         """

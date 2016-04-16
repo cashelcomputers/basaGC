@@ -128,3 +128,25 @@ def send_command_to_ksp(command_string):
         utils.log("Query string: {}".format(command_string), log_level="ERROR")
         utils.log("Caught exception urllib2.URLERROR", log_level="ERROR")
         raise KSPNotConnected
+
+def print_all_telemetry():
+    print("Telemetry available:")
+    for item in sorted(telemetry):
+        print("- " + item)
+    print()
+    print("Commands available:")
+    for item in sorted(commands):
+        print("- " + item)
+
+def add_maneuver_node(ut, delta_v):
+
+    ut = str(round(ut, 2))
+    delta_v_x = str(round(delta_v[0], 2))
+    delta_v_y = str(round(delta_v[1], 2))
+    delta_v_z = str(round(delta_v[2], 2))
+    
+    print("UT: " + str(get_telemetry("universalTime")))
+    
+    command_string = "command=" + telemetry["addManeuverNode"] + "[" + str(ut) + "," + delta_v_x  + "," + delta_v_y  + "," + delta_v_z + "]"
+    print(command_string)
+    send_command_to_ksp(command_string)

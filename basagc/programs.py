@@ -5,7 +5,7 @@ import inspect
 import sys
 from collections import OrderedDict
 
-# from pudb import set_trace  # lint:ok
+from pudb import set_trace  # lint:ok
 from PyQt5.QtCore import QTimer
 
 import basagc.maneuver
@@ -262,6 +262,8 @@ class Program15(Program):
         self.departure_body = get_telemetry("body")
         self.orbiting_body = get_telemetry("body")
 
+        
+        # check that orbital parameters are within range to conduct burn
         if not self._check_orbital_parameters():
             return
         self.target_name = self._check_target()
@@ -315,7 +317,7 @@ class Program15(Program):
         target_apoapsis = float(get_telemetry("body_ApA", body_number=telemachus_target_id))
 
         # set destination altitude
-        self.destination_altitude = target_apoapsis + 500000
+        self.destination_altitude = 11400000
         # if target == "Mun":
         #     self.destination_altitude = 12750000
 
@@ -351,6 +353,7 @@ class Program15(Program):
         # calculate time of ignition (TIG)
         self.delta_time_to_burn = self.phase_angle_difference / ((360 / self.orbital_period) -
                                                                  (360 / self.departure_body_orbital_period))
+        print("FFFF" + str(self.delta_time_to_burn))
 
         # if the time of ignition is less than 120 seconds in the future, schedule the burn for next orbit
         if self.delta_time_to_burn <= 120:
@@ -369,14 +372,14 @@ class Program15(Program):
         utils.log("Current Phase Angle: {:.2f}, difference: {:.2f}".format(
             current_phase_angle,
             self.phase_angle_difference))
+        print(get_telemetry("universalTime") + self.delta_time_to_burn)
         utils.log("Time to burn: {} hours, {} minutes, {} seconds".format(
             int(delta_time["hours"]),
             int(delta_time["minutes"]),
             delta_time["seconds"]))
 
         # calculate the Δt from now of TIG for both burns
-        self.time_of_ignition_first_burn = get_telemetry("missionTime") + self.delta_time_to_burn
-
+        self.time_of_ignition_first_burn = get_telemetry("universalTime") + self.delta_time_to_burn
         # create a Burn object for the outbound burn
         self.first_burn = Burn(delta_v=self.delta_v_first_burn,
                                direction="prograde",
@@ -389,7 +392,7 @@ class Program15(Program):
 
         # display burn parameters and go to poo
         self.computer.execute_verb(verb="06", noun="95")
-        self.computer.go_to_poo()
+        # self.computer.go_to_poo()
 
     def recalculate_phase_angles(self):
     
@@ -406,8 +409,8 @@ class Program15(Program):
         phase_angle_difference = current_phase_angle - self.phase_angle_required
         if phase_angle_difference < 0:
             phase_angle_difference = 180 + abs(phase_angle_difference)
-        self.delta_time_to_burn = phase_angle_difference / ((360 / self.orbital_period) - (360 /
-                                                                                    self.departure_body_orbital_period))
+        self.delta_time_to_burn = phase_angle_difference / ((360 / self.orbital_period) - (360 / self.departure_body_orbital_period))
+        print(self.delta_time_to_burn)
         # delta_time = utils.seconds_to_time(self.delta_time_to_burn)
         # velocity_at_cutoff = get_telemetry("orbitalVelocity") + self.delta_v_first_burn
 
@@ -423,7 +426,7 @@ class Program15(Program):
             return False
 
         # check if orbit is excessively inclined
-        target_inclination = float(get_telemetry("target_inclination"))
+        target_inclination = get_telemetry("target_inclination")
         vessel_inclination = get_telemetry("inclination")
         if (vessel_inclination > (target_inclination - 0.5)) and (vessel_inclination > (target_inclination + 0.5)):
             self.computer.poodoo_abort(225)
@@ -462,7 +465,7 @@ class Program40(Program):
     def execute(self):
         '''
         Executes the program
-        :returns: None
+        :returns: NoneTIG > 1 hour away
         '''
         super().execute()
         # if TIG < 2 mins away, abort burn
@@ -471,6 +474,7 @@ class Program40(Program):
             self.computer.poodoo_abort(226)
             return
         # if time to ignition if further than a hour away, display time to ignition
+        print(utils.seconds_to_time(self.burn.time_until_ignition))
         if utils.seconds_to_time(self.burn.time_until_ignition)["hours"] > 0:
             utils.log("TIG > 1 hour away")
             self.computer.execute_verb(verb="16", noun="33")

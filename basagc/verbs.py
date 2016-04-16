@@ -11,6 +11,7 @@ from collections import OrderedDict
 from PyQt5.QtCore import QTimer
 from basagc import config, nouns, programs, utils, dsky
 from basagc.telemachus import KSPNotConnected, TelemetryNotAvailable
+from basagc import telemachus
 
 log = logging.getLogger("Verbs")
 
@@ -1077,7 +1078,7 @@ class Verb98(ExtendedVerb):
         '''
         
         super().execute()
-        Verb.computer.imu.set_fine_align()
+        telemachus.print_all_telemetry()
         
 
 class Verb99(ExtendedVerb):
@@ -1085,15 +1086,15 @@ class Verb99(ExtendedVerb):
     """ Please enable engine
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
 
         """ Class constructor
         :return: None
         """
-
+        self.object_requesting_proceed = kwargs["object_requesting_proceed"]
         super().__init__(name="Please enable engine", verb_number="99")
 
-    def execute(self, object_requesting_proceed):
+    def execute(self):
 
         """ Executes the verb.
         :return: None
@@ -1107,15 +1108,11 @@ class Verb99(ExtendedVerb):
 
 
         # blank the DSKY
-        for register in list(self.dsky.control_registers.values()):
-            register.blank()
-        for register in list(self.dsky.data_registers.values()):
-            register.blank()
+        self.dsky.blank_all_registers()
 
         # re-display the verb number since the register has been blanked
         Verb.computer.dsky.set_register("99", "verb")
-        self.dsky.control_registers["verb"].display("99")
-        self.dsky.request_data(requesting_object=object_requesting_proceed, display_location=None,
+        self.dsky.request_data(requesting_object=self.object_requesting_proceed, display_location=None,
                              is_proceed_available=True)
 
 
