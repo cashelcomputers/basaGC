@@ -8,7 +8,7 @@ from collections import OrderedDict
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 PROGRAM_NAME = "basaGC"
-VERSION = "2.1.3"
+VERSION = "2.2.0"
 LICENCE_FILE = BASE_DIR + "/licence"
 
 IMAGES_DIR = BASE_DIR + "/images/"
