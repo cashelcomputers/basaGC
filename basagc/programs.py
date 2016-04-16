@@ -6,7 +6,7 @@ import sys
 import math
 from collections import OrderedDict
 
-from pudb import set_trace  # lint:ok
+# from pudb import set_trace  # lint:ok
 from PyQt5.QtCore import QTimer
 
 import basagc.maneuver
@@ -237,7 +237,7 @@ class Program15(Program):
         self.time_of_ignition_first_burn = 0.0
         self.delta_time_to_burn = 0.0
         self.phase_angle_difference = 0.0
-        self.target_name = ""
+        self.target_name = "Mun"
         self.departure_body = None
         self.departure_altitude = 0
         self.destination_altitude = 0
@@ -267,46 +267,48 @@ class Program15(Program):
         # check that orbital parameters are within range to conduct burn
         if not self._check_orbital_parameters():
             return
-        self.target_name = self._check_target()
-        
-        #self.computer.noun_data["30"] = config.OCTAL_BODY_NAMES[self.target_name]
-        self.computer.execute_verb(verb="21", noun="30")
-        self.computer.dsky.request_data(requesting_object=self._accept_target_input, display_location="data_1",
-                             is_proceed_available=True)
+        #self.target_name = self._check_target()
+        #
+        ##self.computer.noun_data["30"] = config.OCTAL_BODY_NAMES[self.target_name]
+        #self.computer.execute_verb(verb="21", noun="30")
+        #self.computer.dsky.request_data(requesting_object=self._accept_target_input, display_location="data_1",
+                             #is_proceed_available=True)
 
-    def terminate(self):
-        '''
-        Terminates the program.
-        :returns: None
-        '''
-
-        utils.log("Removing burn data", log_level="DEBUG")
-        self.computer.remove_burn(self.first_burn)
-        self.computer.remove_burn(self.second_burn)
-        super().terminate()
-
-    def _accept_target_input(self, target):
-
-        """ Called by P15 after user as entered target choice.
-        :param target: string of octal target code
-        :return: None
-        """
-
-        if target == "proceed":
-            self.target_name = self.target_name.lstrip("0")
-        elif target[0] == ("+" or "-"):
-            self.computer.operator_error("Expected octal input, decimal input provided")
-            self.execute()
-            return
-        #elif target not in list(config.OCTAL_BODY_IDS.values()):
-            #utils.log("{} {} is not a valid target".format(target, type(target)))
-            #self.computer.poodoo_abort(223, message="Target not valid")
-            #return TODO: add this back in
-        else:
-            self.target_name = config.OCTAL_BODY_IDS[target.lstrip("0")]
-        self.computer.dsky.set_register("25", "noun")
         self.computer.execute_verb(verb="21", noun="25")
         self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_whole_part, display_location="data_1")
+
+    #def terminate(self):
+        #'''
+        #Terminates the program.
+        #:returns: None
+        #'''
+
+        #utils.log("Removing burn data", log_level="DEBUG")
+        #self.computer.remove_burn(self.first_burn)
+        #self.computer.remove_burn(self.second_burn)
+        #super().terminate()
+
+    #def _accept_target_input(self, target):
+
+        #""" Called by P15 after user as entered target choice.
+        #:param target: string of octal target code
+        #:return: None
+        #"""
+
+        #if target == "proceed":
+            #self.target_name = self.target_name.lstrip("0")
+        #elif target[0] == ("+" or "-"):
+            #self.computer.operator_error("Expected octal input, decimal input provided")
+            #self.execute()
+            #return
+        ##elif target not in list(config.OCTAL_BODY_IDS.values()):
+            ##utils.log("{} {} is not a valid target".format(target, type(target)))
+            ##self.computer.poodoo_abort(223, message="Target not valid")
+            ##return TODO: add this back in
+        #else:
+            #self.target_name = config.OCTAL_BODY_IDS[target.lstrip("0")]
+        #self.computer.execute_verb(verb="21", noun="25")
+        #self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_whole_part, display_location="data_1")
 
     def _accept_initial_mass_whole_part(self, mass):
         Program.computer.noun_data["25"][0] = mass
@@ -378,7 +380,7 @@ class Program15(Program):
         # calculate time of ignition (TIG) HOW MANY SECONDS IN FUTURE
         self.delta_time_to_burn = self.phase_angle_difference / ((360 / self.orbital_period) -
                                                                  (360 / self.departure_body_orbital_period))
-        print("FFFF" + str(self.delta_time_to_burn))
+
 
         # if the time of ignition is less than 120 seconds in the future, schedule the burn for next orbit
         if self.delta_time_to_burn <= 120:
@@ -399,7 +401,6 @@ class Program15(Program):
         utils.log("Current Phase Angle: {:.2f}, difference: {:.2f}".format(
             current_phase_angle,
             self.phase_angle_difference))
-        print(get_telemetry("universalTime") + self.delta_time_to_burn)
         utils.log("Time to burn: {} hours, {} minutes, {} seconds".format(
             int(delta_time["hours"]),
             int(delta_time["minutes"]),
@@ -408,7 +409,7 @@ class Program15(Program):
         self.duration_of_burn = self.burn_time()
         self.time_of_ignition = self.time_of_node - (self.duration_of_burn / 2)
         
-        print(self.time_of_ignition_first_burn)
+
         # create a Burn object for the outbound burn
         self.first_burn = Burn(delta_v=self.delta_v_first_burn,
                                direction="prograde",
@@ -423,7 +424,7 @@ class Program15(Program):
 
         # display burn parameters and go to poo
         self.computer.execute_verb(verb="06", noun="95")
-        # self.computer.go_to_poo()
+        self.computer.go_to_poo()
 
     def burn_time(self):
         initial_mass_str = self.computer.noun_data["25"][0] + "." + self.computer.noun_data["25"][1]
@@ -434,14 +435,15 @@ class Program15(Program):
         exhaust_velocity = specific_impulse * 9.81
         delta_v = self.delta_v_first_burn
         burn_duration = (initial_mass * exhaust_velocity / thrust) * (1 - math.exp(-delta_v / exhaust_velocity))
-        print()
-        print("-" * 40)
-        print("Initial mass: {} tonnes".format(initial_mass))
-        print("Thrust: {} kN".format(thrust))
-        print("Specific Impulse: {} seconds".format(specific_impulse))
-        print("Exhaust Velocity: {:.2f} kg/s".format(exhaust_velocity))
-
-        print("Burn Duration: {:.1f} seconds".format(burn_duration))
+        utils.log(log_level="info")
+        utils.log("-" * 40, log_level="info")
+        utils.log("Burn duration calculations:", log_level="info")
+        utils.log("Initial mass: {} tonnes".format(initial_mass), log_level="info")
+        utils.log("Thrust: {} kN".format(thrust), log_level="info")
+        utils.log("Specific Impulse: {} seconds".format(specific_impulse), log_level="info")
+        utils.log("Exhaust Velocity: {:.2f} kg/s".format(exhaust_velocity), log_level="info")
+        utils.log("Burn Duration: {:.1f} seconds".format(burn_duration), log_level="info")
+        utils.log("-" * 40, log_level="info")
         return burn_duration
         
     
@@ -461,7 +463,7 @@ class Program15(Program):
         if phase_angle_difference < 0:
             phase_angle_difference = 180 + abs(phase_angle_difference)
         self.delta_time_to_burn = phase_angle_difference / ((360 / self.orbital_period) - (360 / self.departure_body_orbital_period))
-        print(self.delta_time_to_burn)
+
         # delta_time = utils.seconds_to_time(self.delta_time_to_burn)
         # velocity_at_cutoff = get_telemetry("orbitalVelocity") + self.delta_v_first_burn
 
@@ -525,7 +527,6 @@ class Program40(Program):
             self.computer.poodoo_abort(226)
             return
         # if time to ignition if further than a hour away, display time to ignition
-        print(self.burn.time_until_ignition)
         if utils.seconds_to_time(self.burn.time_until_ignition)["hours"] > 0:
             utils.log("TIG > 1 hour away")
             self.computer.execute_verb(verb="16", noun="33")

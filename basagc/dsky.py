@@ -5,8 +5,7 @@ interface between the computer and the gui toolkit.
 """
 
 from basagc import utils
-from pudb import set_trace  # lint:ok
-
+# from pudb import set_trace  # lint:ok
 
 
 class DSKY:

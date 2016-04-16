@@ -2,7 +2,7 @@
 """This file contains the guts of the guidance computer"""
 
 from PyQt5.QtCore import QTimer
-from pudb import set_trace  # lint:ok
+# from pudb import set_trace  # lint:ok
 
 from basagc import config
 from basagc import dsky
@@ -282,11 +282,9 @@ class Computer:
                 self.operator_error("Verb {} does not exist :(".format(verb))
                 return
         else:
-            print(noun)
             verb_to_execute = self.verbs[verb](noun, **kwargs)
 
         self.flash_comp_acty(200)
-        #set_trace()
         verb_to_execute.execute()
 
     def execute_program(self, program_number):
