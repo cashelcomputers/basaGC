@@ -673,7 +673,7 @@ class Verb21(LoadVerb):
         """ Executes the verb.
         :return: None
         """
-
+        super().execute()
         Verb.computer.dsky.request_data(self.accept_input, display_location="data_1")
 
 
@@ -687,7 +687,7 @@ class Verb22(LoadVerb):
         """ Class constructor
         :return: None
         """
-
+        
         super().__init__(name="Load component 2 into R2", verb_number="22", noun=noun)
 
     def execute(self):
@@ -695,7 +695,7 @@ class Verb22(LoadVerb):
         """ Executes the verb.
         :return: None
         """
-
+        super().execute()
         Verb.computer.dsky.request_data(self.accept_input, display_location="data_2")
 
 
@@ -717,7 +717,7 @@ class Verb23(LoadVerb):
         """ Executes the verb.
         :return: None
         """
-
+        super().execute()
         Verb.computer.dsky.request_data(self.accept_input, display_location="data_3")
 
 

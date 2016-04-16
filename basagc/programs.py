@@ -270,7 +270,7 @@ class Program15(Program):
         self.target_name = self._check_target()
         
         #self.computer.noun_data["30"] = config.OCTAL_BODY_NAMES[self.target_name]
-        self.computer.execute_verb(verb="01", noun="30")
+        self.computer.execute_verb(verb="21", noun="30")
         self.computer.dsky.request_data(requesting_object=self._accept_target_input, display_location="data_1",
                              is_proceed_available=True)
 
@@ -304,7 +304,32 @@ class Program15(Program):
             #return TODO: add this back in
         else:
             self.target_name = config.OCTAL_BODY_IDS[target.lstrip("0")]
-        # calculate the maneuver and add recalculation job to gc main loop
+        self.computer.dsky.set_register("25", "noun")
+        self.computer.execute_verb(verb="21", noun="25")
+        self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_whole_part, display_location="data_1")
+
+    def _accept_initial_mass_whole_part(self, mass):
+        Program.computer.noun_data["25"][0] = mass
+        self.computer.execute_verb(verb="22", noun="25")
+        self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_fractional_part, display_location="data_2")
+        
+    def _accept_initial_mass_fractional_part(self, mass):
+        Program.computer.noun_data["25"][1] = mass
+        self.computer.execute_verb(verb="21", noun="31")
+        self.computer.dsky.request_data(requesting_object=self._accept_thrust_whole_part, display_location="data_1")
+
+    def _accept_thrust_whole_part(self, thrust):
+        Program.computer.noun_data["31"][0] = thrust
+        self.computer.execute_verb(verb="22", noun="31")
+        self.computer.dsky.request_data(requesting_object=self._accept_thrust_fractional_part, display_location="data_2")
+
+    def _accept_thrust_fractional_part(self, thrust):
+        Program.computer.noun_data["31"][1] = thrust
+        self.computer.execute_verb(verb="21", noun="38")
+        self.computer.dsky.request_data(requesting_object=self._accept_isp, display_location="data_1")
+
+    def _accept_isp(self, isp):
+        Program.computer.noun_data["38"][0] = isp
         self.calculate_maneuver()
 
     def calculate_maneuver(self):
