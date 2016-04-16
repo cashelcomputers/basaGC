@@ -3,6 +3,7 @@
 
 import inspect
 import sys
+import math
 from collections import OrderedDict
 
 from pudb import set_trace  # lint:ok
@@ -317,9 +318,8 @@ class Program15(Program):
         target_apoapsis = float(get_telemetry("body_ApA", body_number=telemachus_target_id))
 
         # set destination altitude
-        self.destination_altitude = 11400000
-        # if target == "Mun":
-        #     self.destination_altitude = 12750000
+        # self.destination_altitude = 11400000  # for impact
+        self.destination_altitude = 15000000
 
         # obtain parameters to calculate burn
         self.departure_altitude = get_telemetry("altitude")
@@ -350,7 +350,7 @@ class Program15(Program):
         # if self.phase_angle_difference < 0:
         #     self.phase_angle_difference = 180 + abs(self.phase_angle_difference)
 
-        # calculate time of ignition (TIG)
+        # calculate time of ignition (TIG) HOW MANY SECONDS IN FUTURE
         self.delta_time_to_burn = self.phase_angle_difference / ((360 / self.orbital_period) -
                                                                  (360 / self.departure_body_orbital_period))
         print("FFFF" + str(self.delta_time_to_burn))
@@ -360,6 +360,8 @@ class Program15(Program):
             utils.log("Time of ignition less that 2 minutes in the future, starting burn during next orbit")
             self.delta_time_to_burn += get_telemetry("period")
 
+        #calculate the universal time of node
+        self.time_of_node = get_telemetry("universalTime") + self.delta_time_to_burn
         # convert the raw value in seconds to HMS
         delta_time = utils.seconds_to_time(self.delta_time_to_burn)
 
@@ -378,15 +380,19 @@ class Program15(Program):
             int(delta_time["minutes"]),
             delta_time["seconds"]))
 
-        # calculate the Δt from now of TIG for both burns
-        self.time_of_ignition_first_burn = get_telemetry("universalTime") + self.delta_time_to_burn
+        self.duration_of_burn = self.burn_time()
+        self.time_of_ignition = self.time_of_node - (self.duration_of_burn / 2)
+        
+        print(self.time_of_ignition_first_burn)
         # create a Burn object for the outbound burn
         self.first_burn = Burn(delta_v=self.delta_v_first_burn,
                                direction="prograde",
-                               time_of_ignition=self.time_of_ignition_first_burn,
+                               time_of_ignition=self.time_of_ignition,
+                               time_of_node=self.time_of_node,
                                calling_program=self)
 
 
+        
         # load the Burn object into computer
         self.computer.add_burn_to_queue(self.first_burn, execute=False)
 
@@ -394,6 +400,26 @@ class Program15(Program):
         self.computer.execute_verb(verb="06", noun="95")
         # self.computer.go_to_poo()
 
+    def burn_time(self):
+        initial_mass_str = self.computer.noun_data["25"][0] + "." + self.computer.noun_data["25"][1]
+        initial_mass = float(initial_mass_str)
+        thrust_string = self.computer.noun_data["31"][0] + "." + self.computer.noun_data["31"][1]
+        thrust = float(thrust_string)
+        specific_impulse = float(self.computer.noun_data["38"][0])
+        exhaust_velocity = specific_impulse * 9.81
+        delta_v = self.delta_v_first_burn
+        burn_duration = (initial_mass * exhaust_velocity / thrust) * (1 - math.exp(-delta_v / exhaust_velocity))
+        print()
+        print("-" * 40)
+        print("Initial mass: {} tonnes".format(initial_mass))
+        print("Thrust: {} kN".format(thrust))
+        print("Specific Impulse: {} seconds".format(specific_impulse))
+        print("Exhaust Velocity: {:.2f} kg/s".format(exhaust_velocity))
+
+        print("Burn Duration: {:.1f} seconds".format(burn_duration))
+        return burn_duration
+        
+    
     def recalculate_phase_angles(self):
     
         """ This function is to be placed in the GC main loop to recalculate maneuver parameters.
@@ -421,7 +447,7 @@ class Program15(Program):
         """
 
         # check if orbit is circular
-        if get_telemetry("eccentricity") > 0.001:
+        if get_telemetry("eccentricity") > 0.003:
             self.computer.poodoo_abort(224)
             return False
 
@@ -465,7 +491,7 @@ class Program40(Program):
     def execute(self):
         '''
         Executes the program
-        :returns: NoneTIG > 1 hour away
+        :returns: None
         '''
         super().execute()
         # if TIG < 2 mins away, abort burn
@@ -474,7 +500,7 @@ class Program40(Program):
             self.computer.poodoo_abort(226)
             return
         # if time to ignition if further than a hour away, display time to ignition
-        print(utils.seconds_to_time(self.burn.time_until_ignition))
+        print(self.burn.time_until_ignition)
         if utils.seconds_to_time(self.burn.time_until_ignition)["hours"] > 0:
             utils.log("TIG > 1 hour away")
             self.computer.execute_verb(verb="16", noun="33")

@@ -77,6 +77,9 @@ class Computer:
         self.running_programs = []
         self.noun_data = {
             "30": ["00002"],
+            "25": ["00022", "05700", ""],
+            "31": ["00650", "00000"],
+            "38": ["00320", "", ""],
         }
         self.next_burn = None
         self._burn_queue = []

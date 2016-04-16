@@ -141,10 +141,32 @@ class Noun17(Noun):
         return data
 
 
-
-#
-class Noun30(Noun):
+class Noun25(Noun):
+    
     def __init__(self):
+        
+        super().__init__("Spacecraft mass", number="25")
+        self.mass_whole_part = computer.noun_data["25"][0]
+        self.mass_fractional_part = computer.noun_data["25"][1]
+
+    def return_data(self):
+
+        data = {
+            1: self.mass_whole_part,
+            2: self.mass_fractional_part,
+            3: "bbbbb",
+            "tooltips": ["Spacecraft mass ", None, None],
+            "is_octal": True,
+        }
+        return data
+
+
+
+        
+class Noun30(Noun):
+    
+    def __init__(self):
+        
         super().__init__("Octal Target ID (000XX)", number="30")
 
     def return_data(self):
@@ -162,6 +184,23 @@ class Noun30(Noun):
     def receive_data(self, data):
         computer.noun_data["30"] = data
 
+class Noun31(Noun):
+    
+    def __init__(self):
+        
+        super().__init__("Stage Max Thrust", number="31")
+
+    def return_data(self):
+
+        
+        data = {
+            1: computer.noun_data["31"][0],
+            2: computer.noun_data["31"][1],
+            3: "bbbbb",
+            "tooltips": ["Stage Max Thrust (s) ", None, None],
+            "is_octal": False,
+        }
+        return data
 
 class Noun33(Noun):
 
@@ -224,6 +263,23 @@ class Noun36(Noun):
         }
         return data
 
+class Noun38(Noun):
+    
+    def __init__(self):
+        
+        super().__init__("Stage Specific Impulse", number="38")
+
+    def return_data(self):
+
+        
+        data = {
+            1: computer.noun_data["38"][0],
+            2: "bbbbb",
+            3: "bbbbb",
+            "tooltips": ["Stage Specific Impulse (s) ", None, None],
+            "is_octal": False,
+        }
+        return data
 
 #-----------------------BEGIN MIXED NOUNS--------------------------------------
 

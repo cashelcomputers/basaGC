@@ -344,9 +344,9 @@ class LoadVerb(Verb):
         :param data: the data
         :return: None
         """
-        Verb.computer.noun_data[self.noun].append(data)
-
-        utils.log(data)
+        #Verb.computer.noun_data[self.noun].[append(data)]
+        
+        Verb.computer.noun_data[self.noun][21 - int(self.number)] = data
 
 #---------------------------BEGIN VERB CLASS DEFINITIONS------------------------
 
@@ -380,7 +380,6 @@ class Verb01(DisplayVerb):
             return
         output = self._format_output_data(noun_data)
         Verb.computer.dsky.set_register(output[0], "data_1")
-        #Verb.computer.dsky.data_registers[1].display(output[0])
 
 
 class Verb02(DisplayVerb):
@@ -395,20 +394,21 @@ class Verb02(DisplayVerb):
         """
 
         super().__init__(name="Display Octal component 2 in R1", verb_number="02", noun=noun)
+        
+    def execute(self):
 
-    #def execute(self):
-        #super(Verb2, self).execute()
-        #if self.data == None:
-            #noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
-            #noun_function(calling_verb=self, base=8)
-            #return
-        #else:
-            #noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
-            #self.noun_data = noun_function(calling_verb=self, data=self.data, base=8)
-            #output = _format_output_data(self.noun_data)
-            #computer.dsky.data_registers[1].display(output[2], output[3])
-            #self.data = None
-
+        """ Executes the verb
+        :return: None
+        """
+        
+        super().execute()
+        noun_function = Verb.computer.nouns[self.noun]()
+        noun_data = noun_function.return_data()
+        if noun_data is False:
+            # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
+            return
+        output = self._format_output_data(noun_data)
+        Verb.computer.dsky.set_register(output[1], "data_2")
 
 class Verb03(DisplayVerb):
 
@@ -422,20 +422,23 @@ class Verb03(DisplayVerb):
         """
 
         super().__init__(name="Display Octal component 3 in R1", verb_number="03", noun=noun)
+        
+    def execute(self):
 
-    #def execute(self):
-        #super(Verb3, self).execute()
-        #if self.data == None:
-            #noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
-            #noun_function(calling_verb=self, base=8)
-            #return
-        #else:
-            #noun_function = computer.nouns[computer.dsky.state["requested_noun"]]
-            #self.noun_data = noun_function(calling_verb=self, data=self.data, base=8)
-            #output = _format_output_data(self.noun_data)
-            #computer.dsky.data_registers[1].display(output[4], output[5])
-            #self.data = None
+        """ Executes the verb
+        :return: None
+        """
+        
 
+        super().execute()
+        noun_function = Verb.computer.nouns[self.noun]()
+        noun_data = noun_function.return_data()
+        if noun_data is False:
+            # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
+            return
+        output = self._format_output_data(noun_data)
+        print(output)
+        Verb.computer.dsky.set_register(output[2], "data_3")
 
 class Verb04(DisplayVerb):
 
@@ -671,17 +674,7 @@ class Verb21(LoadVerb):
         :return: None
         """
 
-        dsky.request_data(self.accept_input, dsky.data_registers[1])
-
-    # def accept_input(self, data):
-    #
-    #     """ Accepts data provided by user via DSKY
-    #     :param data: the data
-    #     :return: None
-    #     """
-    #     Verb.computer.noun_data[self.noun].append(data)
-    #
-    #     utils.log(data)
+        Verb.computer.dsky.request_data(self.accept_input, display_location="data_1")
 
 
 class Verb22(LoadVerb):
@@ -703,7 +696,7 @@ class Verb22(LoadVerb):
         :return: None
         """
 
-        dsky.request_data(self.accept_input, dsky.data_registers[2])
+        Verb.computer.dsky.request_data(self.accept_input, display_location="data_2")
 
 
 class Verb23(LoadVerb):
@@ -725,20 +718,7 @@ class Verb23(LoadVerb):
         :return: None
         """
 
-        Verb.computer.dsky.request_data(requesting_object=self.accept_input, display_location=dsky.data_registers[3])
-
-    def accept_input(self, data):
-
-        """ Accepts data provided by user via DSKY
-        :param data: the data
-        :return: None
-        """
-
-        Verb.computer.loaded_data["verb"] = self.number
-        Verb.computer.loaded_data["noun"] = dsky.current_noun
-        Verb.computer.loaded_data[3] = data
-        if Verb.computer.object_requesting_data:
-            Verb.computer.object_requesting_data()
+        Verb.computer.dsky.request_data(self.accept_input, display_location="data_3")
 
 
 class Verb24(LoadVerb):

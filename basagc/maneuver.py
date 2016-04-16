@@ -64,7 +64,7 @@ class Burn:
 
     """ This object models a burn maneuver """
 
-    def __init__(self, delta_v, direction, time_of_ignition, recalc_function=None, calling_program=None):
+    def __init__(self, delta_v, direction, time_of_ignition, time_of_node, recalc_function=None, calling_program=None):
 
         """ Class constructor
 
@@ -81,6 +81,7 @@ class Burn:
         self.delta_v_required = delta_v
         self.direction = direction
         self.time_of_ignition = time_of_ignition
+        self.time_of_node = time_of_node
         self.is_display_blanked = False
         self.is_verb_99_executed = False
         self.time_until_ignition = self.calculate_time_to_ignition()
@@ -109,7 +110,7 @@ class Burn:
         self.add_maneuver_node()
 
     def add_maneuver_node(self):
-        ut = telemachus.get_telemetry("universalTime") + self.time_until_ignition
+        ut = self.time_of_node
         self.maneuver_node = telemachus.add_maneuver_node(
             ut=ut,
             delta_v=(0.0, 0.0, self.delta_v_required)
@@ -208,7 +209,6 @@ class Burn:
         :return: time to ignition in seconds
         :rtype : float
         """
-
         current_time = get_telemetry("universalTime")
         return self.time_of_ignition - current_time
 
