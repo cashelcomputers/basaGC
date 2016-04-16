@@ -1,0 +1,46 @@
+TMI (Trans-Munar Injection) (P15):
+---------
+
+- Key in V37E15E (Execute Program 15: Calculate TMI burn)
+- Check P15 is running
+- Check V21 N25 (Load data into data register 1: vessel mass (whole part)) flashing
+- Key in (without sign) vessel mass (whole part), followed by ENTR
+- Check V22 N25 (Load data into data register 2: vessel mass (fractional part)) flashing
+- Key in (without sign) vessel mass (fractional part), followed by ENTR
+- Check V21 N31 (Load data into data register 1: total thrust (whole part)) flashing
+- Key in (without sign) total thrust (whole part), followed by ENTR
+- Check V22 N31 (Load data into data register 2: total thrust (fractional part)) flashing
+- Key in (without sign) total thrust (fractional part), followed by ENTR
+- Check V21 N38 (Load data into data register 1: Specific impulse (Isp)) flashing
+- Key in (without sign) Specific impulse, followed by ENTR
+- Calculation complete
+- Check Program 00 is running
+- Check V06 N95 (Display on 3 data registers: TMI Burn Data Display)
+  - R1: Time to ignition (TIG) (mmbss minutes, blank, seconds,)
+  - R2: Delta-V for burn (xxxxx m/s)
+  - R3: Predicted Velocity at cutoff (xxxxx m/s)
+
+- Key in V37E40E (Execute Program 40: Execute burn)
+- Check P40 running
+- Check V16 N40 (monitor on 3 data registers: Burn Data)
+  - R1: Time to ignition (TIG) (mmbss minutes, blank, seconds,)
+  - R2: Delta-V for burn (xxxxx m/s)
+  - R3: Accumulated delta-V (xxxxx m/s)
+- Check R1 counting down
+- ENSURE timewarp is halted before T-2 minutes
+- At T-1m45s, display blanks
+- After 5 seconds, display returns. Attitude autopilot engages
+- Check vessel maneuvering to point to maneuver node
+- At T-10 seconds, display blanks
+- Check flashing V99 (Please enable engine)
+- Key in PRO
+- Display resumes, engine ignites at t=0
+- Check R3 (Accumulated delta-V) imcreasing
+- Check for engine cutoff at approx R2 value
+- Check autopilot disarmed
+- Check P00 running
+- Check V06 N14 (Display on 3 registers: Burn error display)
+  - R1: Expected Δv at cutoff (xxxxx m/s)
+  - R2: Actual Δv at cutoff (xxxxx m/s)
+  - R3: Difference (xxxx.x m/s)
+- Check for Mun intercept

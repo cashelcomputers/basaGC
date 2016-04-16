@@ -36,7 +36,8 @@ Currently implemented verbs:
 - Verb 14: Monitor Octal component 1 and 2 in R1 and R2
 - Verb 15: Monitor Octal component 1, 2 and 3 in R1, R2 and R3
 - Verb 16: Monitor decimal in R1 or R1, R2 or R1, R2, R3
-
+- Verb 21: Load component 1 into R1
+- Verb 22: Load component 2 into R2
 - Verb 23: Load component 3 into R3
 
 - Verb 35: Lamp Test (this verb is a bit different, to run it we simply key in V35E).
@@ -51,11 +52,19 @@ Currently implemented nouns:
 ----------------------------
 
 - Noun 09: Alarm codes
+- Noun 14: Burn error display
 - Noun 17: Spacecraft altitude
+- Noun 25: Spacecraft mass
+- Noun 30: Target ID
+- Noun 31: Max thrust
+- Noun 33: Time to ignition (TIG)
 - Noun 36: Mission Elapsed Time
+- Noun 38: Specific Impulse (Isp)
 - Noun 43: Geographic Position
 - Noun 44: Apoapsis as XXXX.X, periapsis as XXXX.X, time to apoapsis in HMMSS
+- Noun 50: Surface velocity display
 - Noun 62: Surface speed, altitude ASL in meters, Vertical speed
+- Noun 95: TMI burn data display
 
 Currently implemented programs (major modes):
 ---------------------------------------------
@@ -64,7 +73,8 @@ Currently implemented programs (major modes):
 - Program 01: Prelaunch or service - Initialization program
 - Program 02: Prelaunch or service - Gyrocompassing program
 - Program 11: Earth orbit insertion monitor
-- Program 15: TMI initiate/cutoff
+- Program 15: TMI calculate
+- Program 40: TMI execute
 
 How to set up basaGC for launch:
 ----------------------------
@@ -77,6 +87,27 @@ above pad (xxxx.x) km.
 At any time during ascent, the user can run V82 to bring up the orbit insertion display. Apoapsis and periapsis should
 be read as XXXX.X km, and time to apoapsis should be read in HMMSS. The original AGC didnt't have decimal places in the
 display registers, so we don't have them here.
+
+How to get to Mun:
+----
+
+Orbit around Kerbin must be circular, or neally so (eccentricity < 0.003). Key in V37E15E, which will start Program 11,
+TMI burn calculator. V21 N25 is flashing, asking us to load (key in) the first component of N25, which is the whole 
+part of your vessels mass (get mass from MechJeb) in tonnes, with leading zeros. For example, if your mass is 12.345
+tonnes, the whole part is 12 (the part up to the decimal point). So we would key in 00012, then ENTR. Now V22 N25 is
+flashing, asking us to enter the second component of N25, which is the fractional part of your vessels mass. In the
+given abobe, this would be 345, so we would key in 34500 (add trailing zeros) followed by ENTR.
+
+Next up, V21 N31 is flashing, asking for the whole part of your vessels total thrust (get it from MechJeb), in kN. For
+example, if your vessels thrust is 34.567 kN, key in 00034 followed by ENTR. Then V22 N31 flashes, which is the
+fractional part of your vessels thrust. In the given abobe, this would be 567, so we would key in 56700 (add trailing
+zeros) followed by ENTR.
+
+Next, V21 N38 is flashing, asking us for specific impulse (Isp) of our engines (right-click on rocket engines to find
+Isp). Key in the value for Isp with leading zeros, eg 00350 where Isp = 350. Key in ENTR.
+
+From here, follow the TMI Calc checklist in the checklists folder from "Calculation complete" onwards. More details
+to be added here Soon(tm)
 
 Alarm codes:
 ------------

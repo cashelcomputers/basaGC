@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                     datefmt='%d/%m/%y %H:%M',
                     filename='../gc.log',
-                    filemode='w')
+                    filemode='a')
 
 gc_log = logging.getLogger()
 
@@ -37,7 +37,7 @@ def seconds_to_time(seconds):
     }
 
 
-def log(message, log_level="DEBUG"):
+def log(message="", log_level="DEBUG"):
 
     """ Logs messages to log file and log viewer
     :param message: the message to log

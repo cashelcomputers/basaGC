@@ -3,6 +3,7 @@
 
 import inspect
 import sys
+import math
 from collections import OrderedDict
 
 # from pudb import set_trace  # lint:ok
@@ -236,7 +237,7 @@ class Program15(Program):
         self.time_of_ignition_first_burn = 0.0
         self.delta_time_to_burn = 0.0
         self.phase_angle_difference = 0.0
-        self.target_name = ""
+        self.target_name = "Mun"
         self.departure_body = None
         self.departure_altitude = 0
         self.destination_altitude = 0
@@ -262,46 +263,75 @@ class Program15(Program):
         self.departure_body = get_telemetry("body")
         self.orbiting_body = get_telemetry("body")
 
+        
+        # check that orbital parameters are within range to conduct burn
         if not self._check_orbital_parameters():
             return
-        self.target_name = self._check_target()
+        #self.target_name = self._check_target()
+        #
+        ##self.computer.noun_data["30"] = config.OCTAL_BODY_NAMES[self.target_name]
+        #self.computer.execute_verb(verb="21", noun="30")
+        #self.computer.dsky.request_data(requesting_object=self._accept_target_input, display_location="data_1",
+                             #is_proceed_available=True)
+
+        self.computer.execute_verb(verb="21", noun="25")
+        self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_whole_part, display_location="data_1")
+
+    #def terminate(self):
+        #'''
+        #Terminates the program.
+        #:returns: None
+        #'''
+
+        #utils.log("Removing burn data", log_level="DEBUG")
+        #self.computer.remove_burn(self.first_burn)
+        #self.computer.remove_burn(self.second_burn)
+        #super().terminate()
+
+    #def _accept_target_input(self, target):
+
+        #""" Called by P15 after user as entered target choice.
+        #:param target: string of octal target code
+        #:return: None
+        #"""
+
+        #if target == "proceed":
+            #self.target_name = self.target_name.lstrip("0")
+        #elif target[0] == ("+" or "-"):
+            #self.computer.operator_error("Expected octal input, decimal input provided")
+            #self.execute()
+            #return
+        ##elif target not in list(config.OCTAL_BODY_IDS.values()):
+            ##utils.log("{} {} is not a valid target".format(target, type(target)))
+            ##self.computer.poodoo_abort(223, message="Target not valid")
+            ##return TODO: add this back in
+        #else:
+            #self.target_name = config.OCTAL_BODY_IDS[target.lstrip("0")]
+        #self.computer.execute_verb(verb="21", noun="25")
+        #self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_whole_part, display_location="data_1")
+
+    def _accept_initial_mass_whole_part(self, mass):
+        Program.computer.noun_data["25"][0] = mass
+        self.computer.execute_verb(verb="22", noun="25")
+        self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_fractional_part, display_location="data_2")
         
-        #self.computer.noun_data["30"] = config.OCTAL_BODY_NAMES[self.target_name]
-        self.computer.execute_verb(verb="01", noun="30")
-        self.computer.dsky.request_data(requesting_object=self._accept_target_input, display_location="data_1",
-                             is_proceed_available=True)
+    def _accept_initial_mass_fractional_part(self, mass):
+        Program.computer.noun_data["25"][1] = mass
+        self.computer.execute_verb(verb="21", noun="31")
+        self.computer.dsky.request_data(requesting_object=self._accept_thrust_whole_part, display_location="data_1")
 
-    def terminate(self):
-        '''
-        Terminates the program.
-        :returns: None
-        '''
+    def _accept_thrust_whole_part(self, thrust):
+        Program.computer.noun_data["31"][0] = thrust
+        self.computer.execute_verb(verb="22", noun="31")
+        self.computer.dsky.request_data(requesting_object=self._accept_thrust_fractional_part, display_location="data_2")
 
-        utils.log("Removing burn data", log_level="DEBUG")
-        self.computer.remove_burn(self.first_burn)
-        self.computer.remove_burn(self.second_burn)
-        super().terminate()
+    def _accept_thrust_fractional_part(self, thrust):
+        Program.computer.noun_data["31"][1] = thrust
+        self.computer.execute_verb(verb="21", noun="38")
+        self.computer.dsky.request_data(requesting_object=self._accept_isp, display_location="data_1")
 
-    def _accept_target_input(self, target):
-
-        """ Called by P15 after user as entered target choice.
-        :param target: string of octal target code
-        :return: None
-        """
-
-        if target == "proceed":
-            self.target_name = self.target_name.lstrip("0")
-        elif target[0] == ("+" or "-"):
-            self.computer.operator_error("Expected octal input, decimal input provided")
-            self.execute()
-            return
-        #elif target not in list(config.OCTAL_BODY_IDS.values()):
-            #utils.log("{} {} is not a valid target".format(target, type(target)))
-            #self.computer.poodoo_abort(223, message="Target not valid")
-            #return TODO: add this back in
-        else:
-            self.target_name = config.OCTAL_BODY_IDS[target.lstrip("0")]
-        # calculate the maneuver and add recalculation job to gc main loop
+    def _accept_isp(self, isp):
+        Program.computer.noun_data["38"][0] = isp
         self.calculate_maneuver()
 
     def calculate_maneuver(self):
@@ -315,9 +345,8 @@ class Program15(Program):
         target_apoapsis = float(get_telemetry("body_ApA", body_number=telemachus_target_id))
 
         # set destination altitude
-        self.destination_altitude = target_apoapsis + 500000
-        # if target == "Mun":
-        #     self.destination_altitude = 12750000
+        # self.destination_altitude = 11400000  # for impact
+        self.destination_altitude = 15000000
 
         # obtain parameters to calculate burn
         self.departure_altitude = get_telemetry("altitude")
@@ -348,15 +377,18 @@ class Program15(Program):
         # if self.phase_angle_difference < 0:
         #     self.phase_angle_difference = 180 + abs(self.phase_angle_difference)
 
-        # calculate time of ignition (TIG)
+        # calculate time of ignition (TIG) HOW MANY SECONDS IN FUTURE
         self.delta_time_to_burn = self.phase_angle_difference / ((360 / self.orbital_period) -
                                                                  (360 / self.departure_body_orbital_period))
+
 
         # if the time of ignition is less than 120 seconds in the future, schedule the burn for next orbit
         if self.delta_time_to_burn <= 120:
             utils.log("Time of ignition less that 2 minutes in the future, starting burn during next orbit")
             self.delta_time_to_burn += get_telemetry("period")
 
+        #calculate the universal time of node
+        self.time_of_node = get_telemetry("universalTime") + self.delta_time_to_burn
         # convert the raw value in seconds to HMS
         delta_time = utils.seconds_to_time(self.delta_time_to_burn)
 
@@ -374,16 +406,19 @@ class Program15(Program):
             int(delta_time["minutes"]),
             delta_time["seconds"]))
 
-        # calculate the Δt from now of TIG for both burns
-        self.time_of_ignition_first_burn = get_telemetry("missionTime") + self.delta_time_to_burn
+        self.duration_of_burn = self.burn_time()
+        self.time_of_ignition = self.time_of_node - (self.duration_of_burn / 2)
+        
 
         # create a Burn object for the outbound burn
         self.first_burn = Burn(delta_v=self.delta_v_first_burn,
                                direction="prograde",
-                               time_of_ignition=self.time_of_ignition_first_burn,
+                               time_of_ignition=self.time_of_ignition,
+                               time_of_node=self.time_of_node,
                                calling_program=self)
 
 
+        
         # load the Burn object into computer
         self.computer.add_burn_to_queue(self.first_burn, execute=False)
 
@@ -391,6 +426,27 @@ class Program15(Program):
         self.computer.execute_verb(verb="06", noun="95")
         self.computer.go_to_poo()
 
+    def burn_time(self):
+        initial_mass_str = self.computer.noun_data["25"][0] + "." + self.computer.noun_data["25"][1]
+        initial_mass = float(initial_mass_str)
+        thrust_string = self.computer.noun_data["31"][0] + "." + self.computer.noun_data["31"][1]
+        thrust = float(thrust_string)
+        specific_impulse = float(self.computer.noun_data["38"][0])
+        exhaust_velocity = specific_impulse * 9.81
+        delta_v = self.delta_v_first_burn
+        burn_duration = (initial_mass * exhaust_velocity / thrust) * (1 - math.exp(-delta_v / exhaust_velocity))
+        utils.log(log_level="info")
+        utils.log("-" * 40, log_level="info")
+        utils.log("Burn duration calculations:", log_level="info")
+        utils.log("Initial mass: {} tonnes".format(initial_mass), log_level="info")
+        utils.log("Thrust: {} kN".format(thrust), log_level="info")
+        utils.log("Specific Impulse: {} seconds".format(specific_impulse), log_level="info")
+        utils.log("Exhaust Velocity: {:.2f} kg/s".format(exhaust_velocity), log_level="info")
+        utils.log("Burn Duration: {:.1f} seconds".format(burn_duration), log_level="info")
+        utils.log("-" * 40, log_level="info")
+        return burn_duration
+        
+    
     def recalculate_phase_angles(self):
     
         """ This function is to be placed in the GC main loop to recalculate maneuver parameters.
@@ -406,8 +462,8 @@ class Program15(Program):
         phase_angle_difference = current_phase_angle - self.phase_angle_required
         if phase_angle_difference < 0:
             phase_angle_difference = 180 + abs(phase_angle_difference)
-        self.delta_time_to_burn = phase_angle_difference / ((360 / self.orbital_period) - (360 /
-                                                                                    self.departure_body_orbital_period))
+        self.delta_time_to_burn = phase_angle_difference / ((360 / self.orbital_period) - (360 / self.departure_body_orbital_period))
+
         # delta_time = utils.seconds_to_time(self.delta_time_to_burn)
         # velocity_at_cutoff = get_telemetry("orbitalVelocity") + self.delta_v_first_burn
 
@@ -418,12 +474,12 @@ class Program15(Program):
         """
 
         # check if orbit is circular
-        if get_telemetry("eccentricity") > 0.001:
+        if get_telemetry("eccentricity") > 0.003:
             self.computer.poodoo_abort(224)
             return False
 
         # check if orbit is excessively inclined
-        target_inclination = float(get_telemetry("target_inclination"))
+        target_inclination = get_telemetry("target_inclination")
         vessel_inclination = get_telemetry("inclination")
         if (vessel_inclination > (target_inclination - 0.5)) and (vessel_inclination > (target_inclination + 0.5)):
             self.computer.poodoo_abort(225)

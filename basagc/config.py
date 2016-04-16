@@ -8,7 +8,7 @@ from collections import OrderedDict
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 PROGRAM_NAME = "basaGC"
-VERSION = "2.1.0"
+VERSION = "2.1.3"
 LICENCE_FILE = BASE_DIR + "/licence"
 
 IMAGES_DIR = BASE_DIR + "/images/"
@@ -17,7 +17,7 @@ PORT = "8085"
 URL = "http://" + IP + ":" + PORT + "/telemachus/datalink?"
 DISPLAY_UPDATE_INTERVAL = 500
 COMP_ACTY_FLASH_DURATION = 100
-LOOP_TIMER_INTERVAL = 100
+LOOP_TIMER_INTERVAL = 50
 SLOW_LOOP_TIMER_INTERVAL = 2000
 ENABLE_COMP_ACTY_FLASH = True
 

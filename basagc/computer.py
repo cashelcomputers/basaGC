@@ -13,6 +13,7 @@ from basagc import telemachus
 from basagc import utils
 from basagc import verbs
 from basagc import imu
+from basagc import maneuver
 
 
 class Computer:
@@ -33,6 +34,7 @@ class Computer:
         verbs.Verb.computer = self
         programs.Program.computer = self
         nouns.computer = self
+        maneuver.computer = self
 
         self.ui = ui
         self.dsky = dsky.DSKY(self, self.ui)
@@ -75,6 +77,9 @@ class Computer:
         self.running_programs = []
         self.noun_data = {
             "30": ["00002"],
+            "25": ["00000", "00000", ""],
+            "31": ["00000", "00000"],
+            "38": ["00000", "", ""],
         }
         self.next_burn = None
         self._burn_queue = []
@@ -256,7 +261,7 @@ class Computer:
         poo = self.programs["00"]()
         poo.execute()
 
-    def execute_verb(self, verb=None, noun=None):
+    def execute_verb(self, verb=None, noun=None, **kwargs):
 
         """ Executes the verb as stored in self.keyboard_state
         :return: None
@@ -270,16 +275,15 @@ class Computer:
             try:
                 # if there is a noun entered by user, pass it to verb
                 if self.keyboard_state["requested_noun"] == "":
-                    verb_to_execute = self.verbs[verb]()
+                    verb_to_execute = self.verbs[verb](**kwargs)
                 else:
-                    verb_to_execute = self.verbs[verb](self.keyboard_state["requested_noun"])
+                    verb_to_execute = self.verbs[verb](self.keyboard_state["requested_noun"], **kwargs)
             except KeyError:
                 self.operator_error("Verb {} does not exist :(".format(verb))
                 return
         else:
-            verb_to_execute = self.verbs[verb](noun)
-        # self.keyboard_state["requested_noun"] = ""  # reset noun state for next time    
-        # self.add_job(verb_to_execute)
+            verb_to_execute = self.verbs[verb](noun, **kwargs)
+
         self.flash_comp_acty(200)
         verb_to_execute.execute()
 

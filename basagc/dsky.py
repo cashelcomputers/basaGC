@@ -8,7 +8,6 @@ from basagc import utils
 # from pudb import set_trace  # lint:ok
 
 
-
 class DSKY:
     """ This class models the DSKY.
     """
@@ -71,6 +70,10 @@ class DSKY:
             },
         }
 
+
+    def blank_all_registers(self):
+        for register in ["verb", "noun", "program", "data_1", "data_2", "data_3"]:
+                self.blank_register(register)
 
     def blink_register(self, register):
 
@@ -164,6 +167,7 @@ class DSKY:
             else:
                 # otherwise, check for value being length 1 to 6
                 if not 1 <= len(value) <= 6:
+                    # set_trace()
                     utils.log("Must have between 1 and 6 values to display in data register, got {}".format(len(value)))
                     return False
                 # also check that the first digit is either a "+", "-" or "b" (for blank)

@@ -1,6 +1,12 @@
 Installation:
 ====
 
+All OS:
+----
+- NEW: basaGC now requires [Intrepid mod](https://github.com/tcannonfodder/Telemachus/releases) which is a fork of
+[Telemachus mod](https://github.com/richardbunt/Telemachus). Install as per usual in <KSP FOLDER>/GameData
+- Install [MechJeb](http://mods.curse.com/ksp-mods/kerbal/220221-mechjeb) as per usual
+
 Linux:
 ----
 
