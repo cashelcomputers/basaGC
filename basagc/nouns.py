@@ -267,7 +267,7 @@ class Noun38(Noun):
     
     def __init__(self):
         
-        super().__init__("Stage Specific Impulse", number="38")
+        super().__init__("Specific Impulse", number="38")
 
     def return_data(self):
 
@@ -386,39 +386,39 @@ class Noun44(Noun):
         return data
 
 
-class Noun49(Noun):
-    def __init__(self):
-        super().__init__("Phase angles for automaneuver", number="49")
-    
-    def return_data(self):
-        # check that the maneuver has phase angles loaded
-        try:
-            if not computer.next_burn.calling_program and not computer.next_burn.calling_program.phase_angle_required:
-                computer.program_alarm(120)
-                return False
-        except AttributeError:
-            computer.program_alarm(120)
-            return False
-        
-        phase_angle_required = computer.next_burn.calling_program.phase_angle_required
-        telemachus_target_id = config.TELEMACHUS_BODY_IDS[computer.next_burn.calling_program.target_name]
-        current_phase_angle = get_telemetry("body_phaseAngle", body_number=telemachus_target_id)
-        phase_angle_difference = str(round(current_phase_angle - phase_angle_required, 1)).replace(".", "")
-        current_phase_angle = str(round(current_phase_angle, 1)).replace(".", "")
-        phase_angle_required = str(round(phase_angle_required, 1)).replace(".", "")
-        
-        data = {
-            1: phase_angle_required,
-            2: current_phase_angle,
-            3: phase_angle_difference,
-            "tooltips": [
-                "Phase Angle Required (0xxx.x °)",
-                "Current Phase Angle (0xxx.x °)",
-                "Phase Angle Difference (0xxx.x °)",
-            ],
-            "is_octal": False,
-        }
-        return data
+#class Noun49(Noun):
+    #def __init__(self):
+        #super().__init__("Phase angles for automaneuver", number="49")
+    #
+    #def return_data(self):
+        ## check that the maneuver has phase angles loaded
+        #try:
+            #if not computer.next_burn.calling_program and not computer.next_burn.calling_program.phase_angle_required:
+                #computer.program_alarm(120)
+                #return False
+        #except AttributeError:
+            #computer.program_alarm(120)
+            #return False
+        #
+        #phase_angle_required = computer.next_burn.calling_program.phase_angle_required
+        #telemachus_target_id = config.TELEMACHUS_BODY_IDS[computer.next_burn.calling_program.target_name]
+        #current_phase_angle = get_telemetry("body_phaseAngle", body_number=telemachus_target_id)
+        #phase_angle_difference = str(round(current_phase_angle - phase_angle_required, 1)).replace(".", "")
+        #current_phase_angle = str(round(current_phase_angle, 1)).replace(".", "")
+        #phase_angle_required = str(round(phase_angle_required, 1)).replace(".", "")
+        #
+        #data = {
+            #1: phase_angle_required,
+            #2: current_phase_angle,
+            #3: phase_angle_difference,
+            #"tooltips": [
+                #"Phase Angle Required (0xxx.x °)",
+                #"Current Phase Angle (0xxx.x °)",
+                #"Phase Angle Difference (0xxx.x °)",
+            #],
+            #"is_octal": False,
+        #}
+        #return data
         
 
 class Noun50(Noun):
@@ -474,7 +474,7 @@ class Noun62(Noun):
 class Noun95(Noun):
     
     def __init__(self):
-        super().__init__(description="Hohmann Transfer Data Display", number="95")
+        super().__init__(description="TMI Burn Data Display", number="95")
 
     def return_data(self):
 

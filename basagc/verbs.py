@@ -721,48 +721,48 @@ class Verb23(LoadVerb):
         Verb.computer.dsky.request_data(self.accept_input, display_location="data_3")
 
 
-class Verb24(LoadVerb):
+#class Verb24(LoadVerb):
 
-    """ Loads component 1, 2 into R1, R2
-    """
+    #""" Loads component 1, 2 into R1, R2
+    #"""
 
-    def __init__(self, noun):
+    #def __init__(self, noun):
 
-        """ Class constructor
-        :return: None
-        """
+        #""" Class constructor
+        #:return: None
+        #"""
 
-        super().__init__(name="Load component 1, 2 into R1, R2", verb_number="24", noun=noun)
+        #super().__init__(name="Load component 1, 2 into R1, R2", verb_number="24", noun=noun)
 
-    def execute(self):
+    #def execute(self):
 
-        """ Executes the verb.
-        :return: None
-        """
+        #""" Executes the verb.
+        #:return: None
+        #"""
 
-        pass
+        #pass
 
 
-class Verb25(LoadVerb):
+#class Verb25(LoadVerb):
 
-    """ Loads component 1, 2, 3 into R1, R2, R3
-    """
+    #""" Loads component 1, 2, 3 into R1, R2, R3
+    #"""
 
-    def __init__(self, noun):
+    #def __init__(self, noun):
 
-        """ Class constructor
-        :return: None
-        """
+        #""" Class constructor
+        #:return: None
+        #"""
 
-        super().__init__(name="Load component 1, 2, 3 into R1, R2, R3", verb_number="25", noun=noun)
+        #super().__init__(name="Load component 1, 2, 3 into R1, R2, R3", verb_number="25", noun=noun)
 
-    def execute(self):
+    #def execute(self):
 
-        """ Executes the verb.
-        :return: None
-        """
+        #""" Executes the verb.
+        #:return: None
+        #"""
 
-        pass
+        #pass
 
 # no verb 26
 
@@ -770,88 +770,88 @@ class Verb25(LoadVerb):
 
 # no verb 29
 
-class Verb32(Verb):
+#class Verb32(Verb):
 
-    """ Recycle program
-    """
+    #""" Recycle program
+    #"""
 
-    def __init__(self, noun):
+    #def __init__(self, noun):
 
-        """ Class constructor
-        :return: None
-        """
+        #""" Class constructor
+        #:return: None
+        #"""
 
-        super().__init__(name="Recycle program", verb_number="32", noun=noun)
+        #super().__init__(name="Recycle program", verb_number="32", noun=noun)
 
-    def execute(self):
+    #def execute(self):
 
-        """ Executes the verb.
-        :return: None
-        """
+        #""" Executes the verb.
+        #:return: None
+        #"""
 
-        if isinstance(Verb.computer.keyboard_state["backgrounded_update"], MonitorVerb):
-            Verb.computer.keyboard_state["backgrounded_update"].terminate()  # TODO
-        else:
-            utils.log("V32 called, but nothing to recycle!")
-
-
-class Verb33(Verb):
-
-    """ Proceed without DSKY inputs
-    """
-
-    def __init__(self, noun):
-
-        """ Class constructor
-            :return: None
-            """
-
-        super().__init__(name="Proceed without DSKY inputs", verb_number="33", noun=noun)
-
-    def execute(self):
-
-        """ Executes the verb.
-        :return: None
-        """
-
-        if isinstance(Verb.computer.keyboard_state["backgrounded_update"], MonitorVerb):
-            Verb.computer.keyboard_state["backgrounded_update"].terminate()
-        else:
-            utils.log("V33 called, but nothing to proceed with!")
+        #if isinstance(Verb.computer.keyboard_state["backgrounded_update"], MonitorVerb):
+            #Verb.computer.keyboard_state["backgrounded_update"].terminate()  # TODO
+        #else:
+            #utils.log("V32 called, but nothing to recycle!")
 
 
-class Verb34(Verb):
+#class Verb33(Verb):
 
-    """ Terminate function
-    """
+    #""" Proceed without DSKY inputs
+    #"""
 
-    def __init__(self, noun):
+    #def __init__(self, noun):
 
-        """ Class constructor
-        :return: None
-        """
+        #""" Class constructor
+            #:return: None
+            #"""
 
-        super().__init__(name="Terminate function", verb_number="34", noun=noun)
+        #super().__init__(name="Proceed without DSKY inputs", verb_number="33", noun=noun)
 
-    def execute(self):
+    #def execute(self):
 
-        """ Executes the verb.
-        :return: None
-        """
+        #""" Executes the verb.
+        #:return: None
+        #"""
 
-        if Verb.computer.keyboard_state["backgrounded_update"]:
-            utils.log("Terminating backgrounded update")
-            Verb.computer.keyboard_state["backgrounded_update"].terminate()
-            Verb.computer.dsky.stop_annunciator_blink("key_rel")
-        if Verb.computer.running_program:
-            utils.log("Terminating active program {}".format(Verb.computer.running_program.number))
-            # have to use try block to catch and ignore expected ProgramTerminated exception
-            try:
-                Verb.computer.running_program.terminate()
-            except programs.ProgramTerminated:
-                pass
-        else:
-            utils.log("V34 called, but nothing to terminate!")
+        #if isinstance(Verb.computer.keyboard_state["backgrounded_update"], MonitorVerb):
+            #Verb.computer.keyboard_state["backgrounded_update"].terminate()
+        #else:
+            #utils.log("V33 called, but nothing to proceed with!")
+
+
+#class Verb34(Verb):
+
+    #""" Terminate function
+    #"""
+
+    #def __init__(self, noun):
+
+        #""" Class constructor
+        #:return: None
+        #"""
+
+        #super().__init__(name="Terminate function", verb_number="34", noun=noun)
+
+    #def execute(self):
+
+        #""" Executes the verb.
+        #:return: None
+        #"""
+
+        #if Verb.computer.keyboard_state["backgrounded_update"]:
+            #utils.log("Terminating backgrounded update")
+            #Verb.computer.keyboard_state["backgrounded_update"].terminate()
+            #Verb.computer.dsky.stop_annunciator_blink("key_rel")
+        #if Verb.computer.running_program:
+            #utils.log("Terminating active program {}".format(Verb.computer.running_program.number))
+            ## have to use try block to catch and ignore expected ProgramTerminated exception
+            #try:
+                #Verb.computer.running_program.terminate()
+            #except programs.ProgramTerminated:
+                #pass
+        #else:
+            #utils.log("V34 called, but nothing to terminate!")
 
 
 class Verb35(Verb):
@@ -926,7 +926,7 @@ class Verb36(Verb):
         :return: None
         """
 
-        Verb.computerfresh_start()
+        Verb.computer.fresh_start()
 
 
 class Verb37(Verb):
