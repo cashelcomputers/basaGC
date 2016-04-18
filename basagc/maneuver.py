@@ -110,6 +110,9 @@ class Burn:
         self.add_maneuver_node()
 
     def add_maneuver_node(self):
+
+        if self.direction == "retrograde":
+            self.delta_v_required = -self.delta_v_required
         ut = self.time_of_node
         self.maneuver_node = telemachus.add_maneuver_node(
             ut=ut,
@@ -197,8 +200,6 @@ class Burn:
             self.terminate()
             computer.go_to_poo()
 
-        # utils.log("Accumulated Δv: {}, Δv to go: {}".format(accumulated_speed[0], delta_v_required -
-        #                                                     accumulated_speed[0]))
 
     def _calculate_velocity_at_cutoff(self):
         return get_telemetry("orbitalVelocity") + self.delta_v_required
@@ -231,3 +232,29 @@ class Burn:
         telemachus.set_mechjeb_smartass("node")
         utils.log("Directional autopilot enabled", log_level="INFO")
         return True
+
+def calc_burn_duration(initial_mass, thrust, specific_impulse, delta_v):
+    '''
+    Calculates the duration of a burn in seconds.
+    :param initial_mass: initial mass of spacecraft
+    :type initial_mass: float
+    :param thrust: total thrust of the spacecraft
+    :type thrust: float
+    :param specific_impulse: Isp
+    :type specific_impulse: int or float
+    :param delta_v: delta_v for burn
+    :type delta_v: float
+    :returns: float time of burn in seconds
+    '''
+    exhaust_velocity = specific_impulse * 9.81
+    burn_duration = (initial_mass * exhaust_velocity / thrust) * (1 - math.exp(-delta_v / exhaust_velocity))
+    utils.log(log_level="info")
+    utils.log("-" * 40, log_level="info")
+    utils.log("Burn duration calculations:", log_level="info")
+    utils.log("Initial mass: {} tonnes".format(initial_mass), log_level="info")
+    utils.log("Thrust: {} kN".format(thrust), log_level="info")
+    utils.log("Specific Impulse: {} seconds".format(specific_impulse), log_level="info")
+    utils.log("Exhaust Velocity: {:.2f} kg/s".format(exhaust_velocity), log_level="info")
+    utils.log("Burn Duration: {:.1f} seconds".format(burn_duration), log_level="info")
+    utils.log("-" * 40, log_level="info")
+    return burn_duration

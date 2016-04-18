@@ -53,7 +53,7 @@ Currently implemented nouns:
 
 - Noun 09: Alarm codes
 - Noun 14: Burn error display
-- Noun 17: Spacecraft altitude
+- Noun 17: Spacecraft attitude
 - Noun 25: Spacecraft mass
 - Noun 30: Target ID
 - Noun 31: Max thrust
@@ -74,6 +74,7 @@ Currently implemented programs (major modes):
 - Program 02: Prelaunch or service - Gyrocompassing program
 - Program 11: Earth orbit insertion monitor
 - Program 15: TMI calculate
+- Program 31: MOI burn calc
 - Program 40: TMI execute
 
 How to set up basaGC for launch:

@@ -1058,7 +1058,7 @@ class Verb98(ExtendedVerb):
         '''
         
         super().execute()
-        telemachus.print_all_telemetry()
+        print(Verb.computer.moi_burn_delta_v)
         
 
 class Verb99(ExtendedVerb):

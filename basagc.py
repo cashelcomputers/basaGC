@@ -15,5 +15,6 @@ if __name__ == "__main__":
     computer = computer.Computer(ui)
     main_window.setWindowTitle('basaGC');
     main_window.show()
-    
+
     sys.exit(app.exec_())
+

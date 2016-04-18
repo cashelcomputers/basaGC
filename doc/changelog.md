@@ -3,6 +3,12 @@ basaGC changelog
 
 Please note that this file only contains changes from version 0.5.0 onwards. All dates are in dd/mm/yy format.
 
+17/04/16: version 2.2.0:
+- Fixed programs 15 and 40
+- Added correct calculation for burn start time
+- Nouns and verbs added
+- Bugfixes
+
 14/04/16: version 2.1.0:
 - bug fixes
 - Added Programs 01 and 02

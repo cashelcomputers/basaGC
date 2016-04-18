@@ -12,7 +12,7 @@ from PyQt5.QtCore import QTimer
 import basagc.maneuver
 from basagc import config
 
-from basagc import utils
+from basagc import utils, maneuver
 
 from basagc.maneuver import Burn
 from basagc.telemachus import get_telemetry, KSPNotConnected, check_connection
@@ -230,7 +230,7 @@ class Program15(Program):
         # TODO: request twr from user
 
         super().__init__(description="TMI Calculate", number="15")
-        self.delta_v_first_burn = 0.0
+        self.delta_v = 0.0
         self.time_to_transfer = 0.0
         self.orbiting_body = None
         self.phase_angle_required = 0.0
@@ -288,28 +288,6 @@ class Program15(Program):
         #self.computer.remove_burn(self.second_burn)
         #super().terminate()
 
-    #def _accept_target_input(self, target):
-
-        #""" Called by P15 after user as entered target choice.
-        #:param target: string of octal target code
-        #:return: None
-        #"""
-
-        #if target == "proceed":
-            #self.target_name = self.target_name.lstrip("0")
-        #elif target[0] == ("+" or "-"):
-            #self.computer.operator_error("Expected octal input, decimal input provided")
-            #self.execute()
-            #return
-        ##elif target not in list(config.OCTAL_BODY_IDS.values()):
-            ##utils.log("{} {} is not a valid target".format(target, type(target)))
-            ##self.computer.poodoo_abort(223, message="Target not valid")
-            ##return TODO: add this back in
-        #else:
-            #self.target_name = config.OCTAL_BODY_IDS[target.lstrip("0")]
-        #self.computer.execute_verb(verb="21", noun="25")
-        #self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_whole_part, display_location="data_1")
-
     def _accept_initial_mass_whole_part(self, mass):
         Program.computer.noun_data["25"][0] = mass
         self.computer.execute_verb(verb="22", noun="25")
@@ -358,7 +336,7 @@ class Program15(Program):
         current_phase_angle = get_telemetry("body_phaseAngle", body_number=telemachus_target_id)
 
         # calculate the first and second burn Δv parameters
-        self.delta_v_first_burn, self.computer.moi_burn_delta_v = basagc.maneuver.calculate_delta_v_hohmann(self.departure_altitude,
+        self.delta_v, self.computer.moi_burn_delta_v = basagc.maneuver.calculate_delta_v_hohmann(self.departure_altitude,
                                                                                                  self.destination_altitude)
 
         # calculate the time to complete the Hohmann transfer
@@ -396,7 +374,7 @@ class Program15(Program):
         utils.log("P15 calculations:")
         utils.log("Phase angle required: {}, Δv for burn: {} m/s, time to transfer: {}".format(
             round(self.phase_angle_required, 2),
-            int(self.delta_v_first_burn),
+            int(self.delta_v),
             utils.seconds_to_time(self.time_to_transfer)))
         utils.log("Current Phase Angle: {:.2f}, difference: {:.2f}".format(
             current_phase_angle,
@@ -406,19 +384,22 @@ class Program15(Program):
             int(delta_time["minutes"]),
             delta_time["seconds"]))
 
-        self.duration_of_burn = self.burn_time()
+        # calculate burn duration
+        initial_mass = float(self.computer.noun_data["25"][0] + "." + self.computer.noun_data["25"][1])
+        thrust = float(self.computer.noun_data["31"][0] + "." + self.computer.noun_data["31"][1])
+        specific_impulse = float(self.computer.noun_data["38"][0])
+        self.duration_of_burn = maneuver.calc_burn_duration(initial_mass, thrust, specific_impulse, self.delta_v)
+
+        # divide burn duration by 2 to get TIG
         self.time_of_ignition = self.time_of_node - (self.duration_of_burn / 2)
         
-
         # create a Burn object for the outbound burn
-        self.first_burn = Burn(delta_v=self.delta_v_first_burn,
-                               direction="prograde",
+        self.first_burn = Burn(delta_v=self.delta_v,
+                               direction="node",
                                time_of_ignition=self.time_of_ignition,
                                time_of_node=self.time_of_node,
                                calling_program=self)
 
-
-        
         # load the Burn object into computer
         self.computer.add_burn_to_queue(self.first_burn, execute=False)
 
@@ -426,25 +407,25 @@ class Program15(Program):
         self.computer.execute_verb(verb="06", noun="95")
         self.computer.go_to_poo()
 
-    def burn_time(self):
-        initial_mass_str = self.computer.noun_data["25"][0] + "." + self.computer.noun_data["25"][1]
-        initial_mass = float(initial_mass_str)
-        thrust_string = self.computer.noun_data["31"][0] + "." + self.computer.noun_data["31"][1]
-        thrust = float(thrust_string)
-        specific_impulse = float(self.computer.noun_data["38"][0])
-        exhaust_velocity = specific_impulse * 9.81
-        delta_v = self.delta_v_first_burn
-        burn_duration = (initial_mass * exhaust_velocity / thrust) * (1 - math.exp(-delta_v / exhaust_velocity))
-        utils.log(log_level="info")
-        utils.log("-" * 40, log_level="info")
-        utils.log("Burn duration calculations:", log_level="info")
-        utils.log("Initial mass: {} tonnes".format(initial_mass), log_level="info")
-        utils.log("Thrust: {} kN".format(thrust), log_level="info")
-        utils.log("Specific Impulse: {} seconds".format(specific_impulse), log_level="info")
-        utils.log("Exhaust Velocity: {:.2f} kg/s".format(exhaust_velocity), log_level="info")
-        utils.log("Burn Duration: {:.1f} seconds".format(burn_duration), log_level="info")
-        utils.log("-" * 40, log_level="info")
-        return burn_duration
+    #def burn_time(self):
+        #initial_mass_str = self.computer.noun_data["25"][0] + "." + self.computer.noun_data["25"][1]
+        #initial_mass = float(initial_mass_str)
+        #thrust_string = self.computer.noun_data["31"][0] + "." + self.computer.noun_data["31"][1]
+        #thrust = float(thrust_string)
+        #specific_impulse = float(self.computer.noun_data["38"][0])
+        #exhaust_velocity = specific_impulse * 9.81
+        #delta_v = self.delta_v
+        #burn_duration = (initial_mass * exhaust_velocity / thrust) * (1 - math.exp(-delta_v / exhaust_velocity))
+        #utils.log(log_level="info")
+        #utils.log("-" * 40, log_level="info")
+        #utils.log("Burn duration calculations:", log_level="info")
+        #utils.log("Initial mass: {} tonnes".format(initial_mass), log_level="info")
+        #utils.log("Thrust: {} kN".format(thrust), log_level="info")
+        #utils.log("Specific Impulse: {} seconds".format(specific_impulse), log_level="info")
+        #utils.log("Exhaust Velocity: {:.2f} kg/s".format(exhaust_velocity), log_level="info")
+        #utils.log("Burn Duration: {:.1f} seconds".format(burn_duration), log_level="info")
+        #utils.log("-" * 40, log_level="info")
+        #return burn_duration
         
     
     def recalculate_phase_angles(self):
@@ -464,8 +445,6 @@ class Program15(Program):
             phase_angle_difference = 180 + abs(phase_angle_difference)
         self.delta_time_to_burn = phase_angle_difference / ((360 / self.orbital_period) - (360 / self.departure_body_orbital_period))
 
-        # delta_time = utils.seconds_to_time(self.delta_time_to_burn)
-        # velocity_at_cutoff = get_telemetry("orbitalVelocity") + self.delta_v_first_burn
 
     def _check_orbital_parameters(self):
 
@@ -474,14 +453,14 @@ class Program15(Program):
         """
 
         # check if orbit is circular
-        if get_telemetry("eccentricity") > 0.003:
+        if get_telemetry("eccentricity") > 0.005:
             self.computer.poodoo_abort(224)
             return False
 
         # check if orbit is excessively inclined
         target_inclination = get_telemetry("target_inclination")
         vessel_inclination = get_telemetry("inclination")
-        if (vessel_inclination > (target_inclination - 0.5)) and (vessel_inclination > (target_inclination + 0.5)):
+        if (vessel_inclination > (target_inclination - 1)) and (vessel_inclination > (target_inclination + 1)):
             self.computer.poodoo_abort(225)
             return False
         else:
@@ -500,6 +479,75 @@ class Program15(Program):
             return "Mun"
         else:
             return get_telemetry("target_name")
+
+class Program31(Program):
+    '''
+    Mun Orbital Insertion (MOI) burn calculator
+    '''
+    def __init__(self):
+        
+        """ Class constructor.
+        :return: None
+        """
+        super().__init__(description="MOI Burn Calculator", number="31")
+        self.delta_v = Program.computer.moi_burn_delta_v
+        self.time_of_node = get_telemetry("timeOfPeriapsisPassage")
+        self.time_of_ignition = None
+
+    def update_parameters(self):
+        
+        self.delta_v = Program.computer.moi_burn_delta_v
+        self.time_of_node = get_telemetry("timeOfPeriapsisPassage")
+
+        initial_mass = float(self.computer.noun_data["25"][0] + "." + self.computer.noun_data["25"][1])
+        thrust = float(self.computer.noun_data["31"][0] + "." + self.computer.noun_data["31"][1])
+        specific_impulse = float(self.computer.noun_data["38"][0])
+        self.duration_of_burn = maneuver.calc_burn_duration(initial_mass, thrust, specific_impulse, self.delta_v)
+        self.time_of_ignition = self.time_of_node - (self.duration_of_burn / 2)
+        
+    def execute(self):  # FIXME: this needs to be refactored into something better, just trying to get it working now
+        
+        self.computer.execute_verb(verb="21", noun="25")
+        self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_whole_part, display_location="data_1")
+        
+    def _accept_initial_mass_whole_part(self, mass):
+        Program.computer.noun_data["25"][0] = mass
+        self.computer.execute_verb(verb="22", noun="25")
+        self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_fractional_part, display_location="data_2")
+        
+    def _accept_initial_mass_fractional_part(self, mass):
+        Program.computer.noun_data["25"][1] = mass
+        self.computer.execute_verb(verb="21", noun="31")
+        self.computer.dsky.request_data(requesting_object=self._accept_thrust_whole_part, display_location="data_1")
+
+    def _accept_thrust_whole_part(self, thrust):
+        Program.computer.noun_data["31"][0] = thrust
+        self.computer.execute_verb(verb="22", noun="31")
+        self.computer.dsky.request_data(requesting_object=self._accept_thrust_fractional_part, display_location="data_2")
+
+    def _accept_thrust_fractional_part(self, thrust):
+        Program.computer.noun_data["31"][1] = thrust
+        self.computer.execute_verb(verb="21", noun="38")
+        self.computer.dsky.request_data(requesting_object=self._accept_isp, display_location="data_1")
+
+    def _accept_isp(self, isp):
+        Program.computer.noun_data["38"][0] = isp
+        self.calculate_maneuver()
+
+    def calculate_maneuver(self):
+        self.updateate_parameters()
+        self.burn = Burn(delta_v=self.delta_v,
+                         direction="retrograde",
+                         time_of_ignition=self.time_of_of_ignition,
+                         time_of_node=self.time_of_node,
+                         calling_program=self)
+
+        # load the Burn object into computer
+        self.computer.add_burn_to_queue(self.burn, execute=False)
+
+        ## display burn parameters and go to poo
+        self.computer.execute_verb(verb="06", noun="95")
+        self.computer.go_to_poo()
 
 class Program40(Program):
     
