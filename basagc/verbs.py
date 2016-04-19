@@ -1057,6 +1057,7 @@ class Verb98(ExtendedVerb):
         '''
         
         super().execute()
+        Verb.computer.accept_uplink()
         
 
 class Verb99(ExtendedVerb):

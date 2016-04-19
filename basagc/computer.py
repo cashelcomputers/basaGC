@@ -70,7 +70,8 @@ class Computer:
 
         self.comp_acty_timer = QTimer()
         self.comp_acty_timer.timeout.connect(self._comp_acty_off)
-        
+
+        self.uplink_queue = []
         self.is_powered_on = False
         self.main_loop_table = []
         self.alarm_codes = [0, 0, 0]
@@ -105,6 +106,20 @@ class Computer:
 
         self.on()
 
+    def accept_uplink(self):
+        try:
+            uplink_file = open("uplink.txt", "r")
+        except FileNotFoundError:  # lint:ok
+            self.program_alarm(501)
+            return
+        self.dsky.set_annunciator("uplink_acty")
+        uplink_data = uplink_file.read().strip()
+        uplink_file.close()
+        for char in uplink_data:
+            if char == "\n":
+                continue
+            self.uplink_queue.append(char)
+    
     def charin(self, keypress):
         '''
         Receives a keypress event and passes it on to routines.charin
@@ -113,6 +128,17 @@ class Computer:
         :returns: None
         '''
         routines.charin(keypress, self.keyboard_state, self.dsky, self)
+
+    def process_uplink_data(self):
+        
+        # check if any data ready to be uplinked
+        if len(self.uplink_queue) > 0:
+            char = self.uplink_queue.pop(0)
+            self.charin(char)
+            return True
+        else:
+            self.dsky.set_annunciator("uplink_acty", False)
+            return False
 
     def add_to_mainloop(self, func):
         self.main_loop_table.append(func)
@@ -223,6 +249,9 @@ class Computer:
         # register key handler with qt ui
         self.register_charin()
 
+        # add uplink funcion to main loop
+        self.add_to_mainloop(self.process_uplink_data)
+        
         self.main_loop_timer.start(config.LOOP_TIMER_INTERVAL)
         self.slow_loop_timer.start(config.SLOW_LOOP_TIMER_INTERVAL)
         self.is_powered_on = True

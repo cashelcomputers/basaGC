@@ -73,6 +73,7 @@ _UNSORTED_ALARM_CODES = {
     226: "Time of ignition less than 2 minutes in the future",
     310: "Program hasn't been finished yet, watch this space :)",
     410: "Autopilot error",
+    501: "Uplink file does not exist, aborting uplink",
 }
 
 ALARM_CODES = OrderedDict(sorted(_UNSORTED_ALARM_CODES.items()))
