@@ -3,5 +3,5 @@
 - inclination change maneuver
 - Orbit height maneuver change maneuver (shouldn't be too hard)
 
-- move images folder to "assets" folder
-- use os.path in config file rather than string cat
+- move images folder to "assets" folder - DONE
+- use os.path in config file rather than string cat - DONE

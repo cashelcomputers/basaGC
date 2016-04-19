@@ -9,9 +9,10 @@ from collections import OrderedDict
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 PROGRAM_NAME = "basaGC"
 VERSION = "2.2.0"
-LICENCE_FILE = BASE_DIR + "/licence"
+LICENCE_FILE = os.path.join(BASE_DIR, "licence")
 
-IMAGES_DIR = BASE_DIR + "/images/"
+
+IMAGES_DIR = os.path.join(BASE_DIR, "assets/")
 IP = "127.0.0.1"
 PORT = "8085"
 URL = "http://" + IP + ":" + PORT + "/telemachus/datalink?"
@@ -105,7 +106,7 @@ SHORT_LICENCE = "basaGC is free software; you can redistribute it and/or modify 
 COPYRIGHT = "(C) 2014-2016 Tim Buchanan (cashelcomputers@gmail.com)"
 WEBSITE = "https://github.com/cashelcomputers/basaGC/"
 DEVELOPERS = "Tim Buchanan"
-ICON = IMAGES_DIR + "icon.png"
+ICON = os.path.join(BASE_DIR, "icon.png")
 
 
 
