@@ -1057,8 +1057,30 @@ class Verb98(ExtendedVerb):
         '''
         
         super().execute()
-        Verb.computer.accept_uplink()
-        
+        self.dsky.request_data(requesting_object=self.receive_data, display_location="noun")
+
+    def receive_data(self, data):
+        print(data)
+        if data == "01":
+            Verb.computer.accept_uplink()
+        elif data == "02":
+            data = telemachus.get_telemetry("maneuverNodes")
+            data = data[0]
+            for key, value in sorted(data.items()):
+                if key == "orbitPatches":
+                    print("-" * 40)
+                    print("Orbit patches:")
+                    print()
+                    for index in range(len(value)):
+                        print("Patch {}:".format(index))
+                        for a, b in sorted(value[index].items()):
+                            print("{}: {}".format(a, b))
+                        print()
+                    #for a, b in data[key].items():
+                        #print("{}: {}".format(a, b))
+                    print("-" * 40)
+                else:
+                    print("{}: {}".format(key, value))
 
 class Verb99(ExtendedVerb):
 

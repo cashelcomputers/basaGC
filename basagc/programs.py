@@ -321,7 +321,7 @@ class Program15(Program):
         # load target
         telemachus_target_id = config.TELEMACHUS_BODY_IDS[self.target_name]
         target_apoapsis = float(get_telemetry("body_ApA", body_number=telemachus_target_id))
-
+        print(target_apoapsis)
         # set destination altitude
         # self.destination_altitude = 11400000  # for impact
         self.destination_altitude = 15000000
