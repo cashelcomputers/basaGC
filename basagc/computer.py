@@ -83,7 +83,7 @@ class Computer:
             "38": ["00000", "", ""],
         }
         self.next_burn = None
-        self._burn_queue = []
+        #self._burn_queue = []
         self.is_ksp_connected = False
         self.ksp_paused_state = None
         self.is_direction_autopilot_engaged = False
@@ -167,7 +167,7 @@ class Computer:
         '''
         self.keyboard_state[state_name] = new_value
 
-    def add_burn_to_queue(self, burn_object, execute=True):
+    def add_burn(self, burn_object):
 
         """ Adds a Burn object to the computer burn queue. If no burn is
         assigned to next_burn, load new burn to next_burn
@@ -175,35 +175,28 @@ class Computer:
         :param execute: if true, execute the added burn
         :return: None
         """
+        self.next_burn = burn_object
+        self.add_to_mainloop(burn_object._coarse_start_time_monitor)
 
-        self._burn_queue.append(burn_object)
-        if not self.next_burn:
-            self.next_burn = self._burn_queue.pop()
-        if execute:
-            self.next_burn.execute()
-
-    def remove_burn(self, this_burn):
+    def remove_burn(self):
 
         """ Removes a given Burn object from the computers burn queue
         :param this_burn: the Burn object to remove
         :return: None
         """
-
-        if this_burn == self.next_burn:
-            self.next_burn = None
-        if this_burn in self._burn_queue:
-            self._burn_queue.remove(this_burn)
-
-    def burn_complete(self):
-
-        """ Removes a completed burn and loads next queued burn if available.
-        :return: None
-        """
-        utils.log("Removing {} from burn queue".format(self.next_burn))
         self.next_burn = None
-        if self._burn_queue:
-            utils.log("Adding {} as next burn".format(self._burn_queue[0]))
-            self.next_burn = self._burn_queue.pop()
+
+
+    #def burn_complete(self):
+
+        #""" Removes a completed burn and loads next queued burn if available.
+        #:return: None
+        #"""
+        #utils.log("Removing {} from burn queue".format(self.next_burn))
+        #self.next_burn = None
+        #if self._burn_queue:
+            #utils.log("Adding {} as next burn".format(self._burn_queue[0]))
+            #self.next_burn = self._burn_queue.pop()
 
     def disable_direction_autopilot(self):
 

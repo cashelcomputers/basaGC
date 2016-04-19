@@ -122,6 +122,7 @@ def cut_throttle():
     send_command_to_ksp(command_string)
 
 def send_command_to_ksp(command_string):
+    
     try:
         urllib.request.urlopen(config.URL + command_string)
     except urllib.error.URLError:
@@ -144,9 +145,14 @@ def add_maneuver_node(ut, delta_v):
     delta_v_x = str(round(delta_v[0], 2))
     delta_v_y = str(round(delta_v[1], 2))
     delta_v_z = str(round(delta_v[2], 2))
-    
-    print("UT: " + str(get_telemetry("universalTime")))
-    
     command_string = "command=" + telemetry["addManeuverNode"] + "[" + str(ut) + "," + delta_v_x  + "," + delta_v_y  + "," + delta_v_z + "]"
+    send_command_to_ksp(command_string)
+
+def update_maneuver_node(ut, delta_v):
+    ut = str(round(ut, 2))
+    delta_v_x = str(round(delta_v[0], 2))
+    delta_v_y = str(round(delta_v[1], 2))
+    delta_v_z = str(round(delta_v[2], 2))
+    command_string = "command=" + telemetry["updateManeuverNode"] + "[0," + str(ut) + "," + delta_v_x  + "," + delta_v_y  + "," + delta_v_z + "]"
     print(command_string)
     send_command_to_ksp(command_string)
