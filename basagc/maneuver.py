@@ -101,6 +101,7 @@ class Burn:
         """
 
         # check if direction is valid
+        print(self.direction, config.DIRECTIONS)
         if self.direction not in config.DIRECTIONS:
             computer.program_alarm(410)
             return
@@ -118,7 +119,6 @@ class Burn:
             ut=ut,
             delta_v=(0.0, 0.0, self.delta_v_required)
             )
-        print(self.maneuver_node)
 
     def terminate(self):
 

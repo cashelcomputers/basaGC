@@ -437,7 +437,6 @@ class Verb03(DisplayVerb):
             # No data returned from noun, noun should have raised a program alarm, all we need to do it quit here
             return
         output = self._format_output_data(noun_data)
-        print(output)
         Verb.computer.dsky.set_register(output[2], "data_3")
 
 class Verb04(DisplayVerb):
@@ -1058,7 +1057,6 @@ class Verb98(ExtendedVerb):
         '''
         
         super().execute()
-        print(Verb.computer.moi_burn_delta_v)
         
 
 class Verb99(ExtendedVerb):

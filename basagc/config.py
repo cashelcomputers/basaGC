@@ -39,6 +39,7 @@ DIRECTIONS = [
     "normalminus",
     "radialplus",
     "radialminus",
+    "node",
 ]
 
 TELEMACHUS_BODY_IDS = {
