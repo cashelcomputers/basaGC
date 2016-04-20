@@ -103,8 +103,9 @@ class Computer:
             "00007": "",
             "00024": "",
         }
-
-        self.on()
+        # register key handler with qt ui
+        self.register_charin()
+        # self.on()
 
     def accept_uplink(self):
         try:
@@ -239,12 +240,9 @@ class Computer:
         else:
             utils.log("Retrieved telemetry listing", log_level="INFO")
 
-        # register key handler with qt ui
-        self.register_charin()
-
-        # add uplink funcion to main loop
+        # add uplink function to main loop
         self.add_to_mainloop(self.process_uplink_data)
-        
+
         self.main_loop_timer.start(config.LOOP_TIMER_INTERVAL)
         self.slow_loop_timer.start(config.SLOW_LOOP_TIMER_INTERVAL)
         self.is_powered_on = True

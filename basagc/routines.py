@@ -233,7 +233,7 @@ def charin(keypress, state, dsky, computer):
             backgrounded_update = state["backgrounded_update"].resume
             if state["display_lock"]:
                 state["display_lock"].terminate()
-            dsky.annunciators["key_rel"].stop_blink()
+            dsky.stop_annunciator_blink("key_rel")
             backgrounded_update()
             state["backgrounded_update"] = None
             state["is_verb_being_loaded"] = False
@@ -245,13 +245,13 @@ def charin(keypress, state, dsky, computer):
             state["requested_noun"] = ""
             return
     
-        # if the computer is off, we only want to accept the PRO key input,
-        # all other keys are ignored
-        if computer.is_powered_on is False:
-            if keypress == "P":
-                computer.on()
-            else:
-                utils.log("Key {} ignored because gc is off".format(keypress))
+    # if the computer is off, we only want to accept the PRO key input,
+    # all other keys are ignored
+    if computer.is_powered_on is False:
+        if keypress == "P":
+            computer.on()
+        else:
+            utils.log("Key {} ignored because gc is off".format(keypress))
 
 
     
