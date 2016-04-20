@@ -89,6 +89,7 @@ class HohmannTransfer:
                                time_of_ignition=self.time_of_ignition_first_burn,
                                time_of_node=self.time_of_node,
                                recalc_function=self.update_parameters,
+                               burn_duration=self.duration_of_burn,
                                )
         if config.current_log_level == "DEBUG":
             self.print_maneuver_data()
@@ -198,7 +199,7 @@ class Burn:
 
     """ This object models a burn maneuver """
 
-    def __init__(self, delta_v, direction, time_of_ignition, time_of_node, recalc_function=None):
+    def __init__(self, delta_v, direction, time_of_ignition, time_of_node, burn_duration, recalc_function=None):
 
         """ Class constructor
 
@@ -210,7 +211,7 @@ class Burn:
         :type time_of_ignition: float
         :return: None
         """
-
+        self.burn_duration = burn_duration
         self.recalc_function = recalc_function
         self.delta_v_required = delta_v
         self.direction = direction
@@ -229,6 +230,7 @@ class Burn:
         self.initial_speed = 0.0
         self.accumulated_delta_v = 0.0
         self._is_thrust_reduced = False
+        self.current_velocity = 0.0
 
     def recalculate(self):
         self.recalc_function()
@@ -295,7 +297,7 @@ class Burn:
     def _fine_start_time_monitor(self):
 
         self.time_until_ignition = self.calculate_time_to_ignition()
-        if float(self.time_until_ignition) < 0.1:
+        if float(self.time_until_ignition) < 1.1:  # ADJUSTED FROM 0.1 to 1.1 to dry fix start delay of approx 1 second
             utils.log("Engine Ignition", log_level="INFO")
             self._begin_burn()
             computer.main_loop_table.remove(self._fine_start_time_monitor)
@@ -303,24 +305,55 @@ class Burn:
     def _begin_burn(self):
 
         self.initial_speed = get_telemetry("orbitalVelocity")
+        #self.velocity_at_cutoff = self._calculate_velocity_at_cutoff()
 
         # start thrusting
+        # set actual TIG
+        
+        self.actual_time_of_ignition = get_telemetry("universalTime")
+        #self.time_of_cutoff = self.actual_time_of_ignition + self.burn_duration
         telemachus.set_throttle(100)
         computer.main_loop_table.append(self._thrust_monitor)
 
+    def _burn_time_monitor(self):
+        burn_duration_so_far = get_telemetry("universalTime") - self.actual_time_of_ignition
+        time_from_cutoff = self.burn_duration - burn_duration_so_far
+        print("T+{:.2f}s, Time to cutoff: {:.2f} seconds".format(burn_duration_so_far, time_from_cutoff))
+        if time_from_cutoff < 0.2:
+            #shutdown
+            telemachus.cut_throttle()
+            utils.log("Closing throttle, burn complete!", log_level="INFO")
+            utils.log("Calculated burn duration: {:.2f} seconds, actual duration: {:.2f} seconds".format(self.burn_duration,
+                burn_duration_so_far))
+            utils.log("Error: {:.2f} seconds".format(self.burn_duration - burn_duration_so_far))
+            computer.dsky.current_verb.terminate()
+            computer.execute_verb(verb="06", noun="14")
+            computer.main_loop_table.remove(self._burn_time_monitor)
+            #computer.burn_complete()
+            self.terminate()
+            computer.go_to_poo()
+        
+    
     def _thrust_monitor(self):
 
         # recalculate accumulated delta-v so far
         self.accumulated_delta_v = self._calculate_accumulated_delta_v()
+        current_velocity = get_telemetry("orbitalVelocity")
+        #print("Accumulated dV: {:.2f}".format(self.accumulated_delta_v))
+        print("dV required: {:.2f}".format(self.delta_v_required))
+        print("Velocity at start: {:.2f}".format(self.initial_speed))
+        print("Current Velocity: {:.2f}".format(current_velocity))
+        print("Expected dV at cutoff: {}".format(self.velocity_at_cutoff))
 
-        if self.accumulated_delta_v > (self.delta_v_required - 10) and not self._is_thrust_reduced:
-            utils.log("Throttling back to 5%", log_level="DEBUG")
-            telemachus.set_throttle(5)
+
+        if current_velocity > (self.velocity_at_cutoff - 13.5) and not self._is_thrust_reduced:
+            utils.log("Throttling back to 10%", log_level="DEBUG")
+            telemachus.set_throttle(10)
             self._is_thrust_reduced = True
             telemachus.disable_smartass()
             telemachus.send_command_to_ksp("command=f.sas")
 
-        if self.accumulated_delta_v > (self.delta_v_required - 0.2):
+        if current_velocity > (self.velocity_at_cutoff - 3.5):  # the 3.5 a hack otherwise it overshoots, FIXME!
             telemachus.cut_throttle()
             utils.log("Closing throttle, burn complete!", log_level="DEBUG")
             computer.dsky.current_verb.terminate()

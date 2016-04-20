@@ -286,7 +286,7 @@ class Noun38(Noun):
 class Noun40(Noun):
 
     def __init__(self):
-        super().__init__("Burn Data (Time from ignition, Δv to be gained, accumulated Δv", number="40")
+        super().__init__("Burn Data (Time from ignition, orbital velocity, accumulated Δv", number="40")
 
     def return_data(self):
         if not computer.next_burn:
@@ -296,17 +296,17 @@ class Noun40(Noun):
         time_to_ignition = utils.seconds_to_time(burn.time_until_ignition)
         minutes_to_ignition = str(int(time_to_ignition["minutes"])).zfill(2)
         seconds_to_ignition = str(int(time_to_ignition["seconds"])).zfill(2)
-        delta_v_gain = str(int(burn.delta_v_required)).replace(".", "")
+        velocity = str(int(get_telemetry("orbitalVelocity"))).replace(".", "")
         accumulated_delta_v = str(int(burn.accumulated_delta_v)).replace(".", "")
 
         data = {
             1: "-" + minutes_to_ignition + "b" + seconds_to_ignition,
-            2: delta_v_gain,
+            2: velocity,
             3: accumulated_delta_v,
             "is_octal": False,
             "tooltips": [
                 "Time From Ignition (mmbss minutes, seconds)",
-                "Δv (xxxxx m/s)",
+                "Orbital Velocity (xxxxx m/s)",
                 "Accumulated Δv (xxxxx m/s)",
             ],
         }
