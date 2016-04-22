@@ -4,9 +4,11 @@
 import os
 
 from PyQt5.QtCore import QTimer
-# from pudb import set_trace  # lint:ok
+
 
 from basagc import config
+if config.DEBUG:
+    from pudb import set_trace
 from basagc import dsky
 from basagc import nouns
 from basagc import programs

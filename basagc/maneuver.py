@@ -8,7 +8,7 @@ from basagc.config import TELEMACHUS_BODY_IDS
 from basagc.telemachus import get_telemetry
 
 if config.DEBUG:
-    from pudb import set_trace
+    from pudb import set_trace  # lint:ok
 
 computer = None
 
