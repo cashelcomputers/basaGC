@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """This module contains internal routines used by the guidance computer."""
 
-# from pudb import set_trace
 
-from basagc import utils
-
+from basagc import utils, config
+if config.DEBUG:
+    from pudb import set_trace  # lint:ok
+    
 def charin(keypress, state, dsky, computer):
     '''
     This function is called whenever a keypress is sent from the UI. 
@@ -46,6 +47,9 @@ def charin(keypress, state, dsky, computer):
         """ Handles data register loading
         :return: None
         """
+        if keypress.isdigit() == False:
+            utils.log("Expecting a digit for data load, got {}".format(keypress), log_level="ERROR")
+            return
         display_register = state["display_location_to_load"]
         if state["register_index"] == 0:
             if keypress == "+":
@@ -247,13 +251,12 @@ def charin(keypress, state, dsky, computer):
     
     # if the computer is off, we only want to accept the PRO key input,
     # all other keys are ignored
-    if computer.is_powered_on is False:
+    if computer.is_powered_on == False:
         if keypress == "P":
             computer.on()
         else:
             utils.log("Key {} ignored because gc is off".format(keypress))
-
-
+            return
     
     if state["is_expecting_data"]:
         handle_expected_data()

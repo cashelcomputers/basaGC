@@ -4,8 +4,9 @@ This module contains code for the DSKY (the guidance computer/user interface). I
 interface between the computer and the gui toolkit.
 """
 
-from basagc import utils
-# from pudb import set_trace  # lint:ok
+from basagc import utils, config
+if config.DEBUG:
+    from pudb import set_trace  # lint:ok
 
 
 class DSKY:

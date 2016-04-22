@@ -1,10 +1,14 @@
 import math
 
-# from pudb import set_trace
+
+from pudb import set_trace
 
 from basagc import config, telemachus, utils
 from basagc.config import TELEMACHUS_BODY_IDS
 from basagc.telemachus import get_telemetry
+
+if config.DEBUG:
+    from pudb import set_trace
 
 computer = None
 
@@ -14,14 +18,18 @@ class HohmannTransfer:
         self.delta_v_1 = 0.0
         self.delta_v_2 = 0.0
         self.orbiting_body = get_telemetry("body")
+        self.radius = get_telemetry("body_radius", body_number=config.TELEMACHUS_BODY_IDS[self.orbiting_body])
+        
         self.phase_angle_required = 0.0
         self.time_of_ignition_first_burn = 0.0
         self.target_name = "Mun"
         self.departure_body = get_telemetry("body")
-        self.departure_altitude = (get_telemetry("ApA") + get_telemetry("PeA")) / 2  # ave alt
-        self.destination_altitude = 13500000
+        self.departure_altitude = get_telemetry("sma")
+        self.radius = get_telemetry("body_radius", body_number=config.TELEMACHUS_BODY_IDS[self.orbiting_body])
+        self.destination_altitude = 13500000 + self.radius
         self.grav_param = get_telemetry("body_gravParameter",
                                          body_number=config.TELEMACHUS_BODY_IDS[self.orbiting_body])
+        
         self.orbital_period = get_telemetry("period")
         self.departure_body_period = get_telemetry("body_period",
                                                     body_number=config.TELEMACHUS_BODY_IDS["Kerbin"])
@@ -33,6 +41,54 @@ class HohmannTransfer:
         #self.time_of_second_node = 0.0
         self.duration_of_burn = 0
 
+    def calculate_sma_transfer_ellipse(self):
+        
+        radius_departure_orbit = self.departure_altitude
+        radius_arrival_orbit = self.destination_altitude
+        sma = (radius_departure_orbit + radius_arrival_orbit) / 2
+        return sma
+
+    def calculate_velocity_initial(self):
+        
+        radius_departure_orbit = self.departure_altitude
+        vi = math.sqrt(self.grav_param / radius_departure_orbit)
+        return vi
+
+    def calculate_velocity_final(self):
+        radius_arrival_orbit = self.destination_altitude
+        vf = math.sqrt(self.grav_param / radius_arrival_orbit)
+        return vf
+
+    def calculate_velocity_initial_on_transfer_orbit(self):
+        radius_departure_orbit = self.departure_altitude
+        vtxi = math.sqrt(self.grav_param * ((2 / radius_departure_orbit) - (1 / self.calculate_sma_transfer_ellipse())))
+        return vtxi
+
+    def calculate_velocity_final_on_transfer_orbit(self):
+        radius_arrival_orbit = self.destination_altitude
+        vtxf = math.sqrt(self.grav_param * ((2 / radius_arrival_orbit) - (1 / self.calculate_sma_transfer_ellipse())))
+        return vtxf
+
+    def calculate_initial_delta_v(self):
+        return self.calculate_velocity_initial_on_transfer_orbit() - self.calculate_velocity_initial()
+
+    def calculate_final_delta_v(self):
+        return self.calculate_velocity_final() - self.calculate_velocity_final_on_transfer_orbit()
+
+    def calculate_total_delta_v(self):
+        return self.calculate_initial_delta_v() + self.calculate_final_delta_v()
+        
+    def calculate_other_parameters(self):
+        utils.log("Semi-major axis of transfer ellipse: {:.2f} m".format(self.calculate_sma_transfer_ellipse()))
+        utils.log("Initial velocity at start of transfer: {:.2f} m/s".format(self.calculate_velocity_initial()))
+        utils.log("Final velocity at end of transfer: {:.2f} m/s".format(self.calculate_velocity_final()))
+        utils.log("Velocity on transfer orbit at initial orbit: {:.2f} m/s".format(self.calculate_velocity_initial_on_transfer_orbit()))
+        utils.log("Velocity on transfer orbit at final orbit: {:.2f} m/s".format(self.calculate_velocity_final_on_transfer_orbit()))
+        utils.log("Initial velocity change (delta-v): {:.2f} m/s".format(self.calculate_initial_delta_v()))
+        utils.log("Final velocity change (delta-v): {:.2f} m/s".format(self.calculate_final_delta_v()))
+        utils.log("Total chance in velocity (delta-v): {:.2f} m/s".format(self.calculate_total_delta_v()))
+        utils.log()
+        
     def add_maneuver_node(self):
 
         telemachus.add_maneuver_node(ut=self.time_of_node, delta_v=(0.0, 0.0, self.delta_v_1))
@@ -66,7 +122,9 @@ class HohmannTransfer:
             self.print_maneuver_data()
 
     def print_maneuver_data(self):
+        self.calculate_other_parameters()
         utils.log("-" * 40)
+        utils.log("Wrong velocity at point A: {:.2f} m/s".format(get_telemetry("orbitalVelocity") + self.delta_v_1))
         utils.log("Hohmann Transfer Data:")
         utils.log("Delta-V required: {:.2f}".format(self.delta_v_1))
         utils.log("Phase angle required: {:.2f}".format(self.phase_angle_required))
@@ -76,6 +134,7 @@ class HohmannTransfer:
         utils.log("-" * 40)
 
     def execute(self):
+
         self.calculate()
         time_to_node = HohmannTransfer.get_time_to_node(self.phase_angle_difference(),
                                                                      self.orbital_period,
@@ -88,7 +147,6 @@ class HohmannTransfer:
                                direction="node",
                                time_of_ignition=self.time_of_ignition_first_burn,
                                time_of_node=self.time_of_node,
-                               recalc_function=self.update_parameters,
                                burn_duration=self.duration_of_burn,
                                )
         if config.current_log_level == "DEBUG":
@@ -97,7 +155,7 @@ class HohmannTransfer:
         self.first_burn.execute()
 
     def phase_angle_difference(self):
-        
+        #set_trace()
         current_phase_angle = get_telemetry("body_phaseAngle", body_number=self.target_id)
         phase_angle_difference = current_phase_angle - self.phase_angle_required
         if phase_angle_difference < 0:
@@ -160,9 +218,9 @@ class HohmannTransfer:
         :param grav_param: orbiting body gravitational parameter
         :return: the required phase angle
         """
-        departure_planet_radius = get_telemetry("body_radius", body_number=TELEMACHUS_BODY_IDS["Kerbin"])
-        departure_orbit += departure_planet_radius
-        destination_orbit += departure_planet_radius
+        #departure_planet_radius = get_telemetry("body_radius", body_number=TELEMACHUS_BODY_IDS["Kerbin"])
+        #departure_orbit += departure_planet_radius
+        #destination_orbit += departure_planet_radius
         tH = HohmannTransfer.time_to_transfer(departure_orbit, destination_orbit, grav_param)
         required_phase_angle = 180 - math.sqrt(grav_param / destination_orbit) * (tH / destination_orbit) * 180 / math.pi
         return required_phase_angle
@@ -181,10 +239,9 @@ class HohmannTransfer:
         :param departure_altitude: departure orbit altitude
         :param destination_altitude: destination orbit altitude
         """
-    
-        departure_planet_radius = get_telemetry("body_radius", body_number=TELEMACHUS_BODY_IDS[departure_body])
-        r1 = departure_altitude + departure_planet_radius
-        r2 = destination_altitude + departure_planet_radius
+        #departure_planet_radius = get_telemetry("body_radius", body_number=TELEMACHUS_BODY_IDS[departure_body])
+        r1 = departure_altitude
+        r2 = destination_altitude
         mu = float(get_telemetry("body_gravParameter", body_number=TELEMACHUS_BODY_IDS[departure_body]))
         sqrt_r1 = math.sqrt(r1)
         sqrt_r2 = math.sqrt(r2)
@@ -218,7 +275,6 @@ class Burn:
         self.time_of_ignition = time_of_ignition
         self.time_of_node = time_of_node
         self.time_until_ignition = self.calculate_time_to_ignition()
-        self.velocity_at_cutoff = self._calculate_velocity_at_cutoff()
         
         self.is_display_blanked = False
         self.is_verb_99_executed = False
@@ -267,7 +323,7 @@ class Burn:
         # ensure we only blank display first time through the loop
         if int(self.time_until_ignition) == 105 and not self.is_display_blanked:
             # also recalculate burn parameters
-            self.recalculate()
+            #self.recalculate()
             computer.dsky.current_verb.terminate()
             for register in ["verb", "noun", "program", "data_1", "data_2", "data_3"]:
                 computer.dsky.blank_register(register)
@@ -305,33 +361,33 @@ class Burn:
     def _begin_burn(self):
 
         self.initial_speed = get_telemetry("orbitalVelocity")
-        #self.velocity_at_cutoff = self._calculate_velocity_at_cutoff()
+        self.velocity_at_cutoff = self._calculate_velocity_at_cutoff()
 
         # start thrusting
         # set actual TIG
         
-        self.actual_time_of_ignition = get_telemetry("universalTime")
+        #self.actual_time_of_ignition = get_telemetry("universalTime")
         #self.time_of_cutoff = self.actual_time_of_ignition + self.burn_duration
         telemachus.set_throttle(100)
         computer.main_loop_table.append(self._thrust_monitor)
 
-    def _burn_time_monitor(self):
-        burn_duration_so_far = get_telemetry("universalTime") - self.actual_time_of_ignition
-        time_from_cutoff = self.burn_duration - burn_duration_so_far
-        print("T+{:.2f}s, Time to cutoff: {:.2f} seconds".format(burn_duration_so_far, time_from_cutoff))
-        if time_from_cutoff < 0.2:
-            #shutdown
-            telemachus.cut_throttle()
-            utils.log("Closing throttle, burn complete!", log_level="INFO")
-            utils.log("Calculated burn duration: {:.2f} seconds, actual duration: {:.2f} seconds".format(self.burn_duration,
-                burn_duration_so_far))
-            utils.log("Error: {:.2f} seconds".format(self.burn_duration - burn_duration_so_far))
-            computer.dsky.current_verb.terminate()
-            computer.execute_verb(verb="06", noun="14")
-            computer.main_loop_table.remove(self._burn_time_monitor)
-            #computer.burn_complete()
-            self.terminate()
-            computer.go_to_poo()
+    #def _burn_time_monitor(self):
+        #burn_duration_so_far = get_telemetry("universalTime") - self.actual_time_of_ignition
+        #time_from_cutoff = self.burn_duration - burn_duration_so_far
+        #print("T+{:.2f}s, Time to cutoff: {:.2f} seconds".format(burn_duration_so_far, time_from_cutoff))
+        #if time_from_cutoff < 0.2:
+            ##shutdown
+            #telemachus.cut_throttle()
+            #utils.log("Closing throttle, burn complete!", log_level="INFO")
+            #utils.log("Calculated burn duration: {:.2f} seconds, actual duration: {:.2f} seconds".format(self.burn_duration,
+                #burn_duration_so_far))
+            #utils.log("Error: {:.2f} seconds".format(self.burn_duration - burn_duration_so_far))
+            #computer.dsky.current_verb.terminate()
+            #computer.execute_verb(verb="06", noun="14")
+            #computer.main_loop_table.remove(self._burn_time_monitor)
+            ##computer.burn_complete()
+            #self.terminate()
+            #computer.go_to_poo()
         
     
     def _thrust_monitor(self):
@@ -365,7 +421,7 @@ class Burn:
 
 
     def _calculate_velocity_at_cutoff(self):
-        return get_telemetry("orbitalVelocity") + self.delta_v_required
+        return self.initial_speed + self.delta_v_required
 
     def calculate_time_to_ignition(self):
 

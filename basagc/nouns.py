@@ -5,11 +5,11 @@ import inspect
 import sys
 from collections import OrderedDict
 
-# from pudb import set_trace
-
-from . import config
-from . import utils
-from .telemachus import get_telemetry, TelemetryNotAvailable
+from basagc import config
+if config.DEBUG:
+    from pudb import set_trace  # lint:ok
+from basagc import utils
+from basagc.telemachus import get_telemetry, TelemetryNotAvailable
 
 computer = None
 

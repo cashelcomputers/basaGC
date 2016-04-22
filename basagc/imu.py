@@ -2,7 +2,9 @@
 """This module contains a class to model the IMU found on Apollo spacecraft."""
 
 from basagc.telemachus import check_connection, get_telemetry
-from basagc import utils
+from basagc import utils, config
+if config.DEBUG:
+    from pudb import set_trace  # lint:ok
 
 class IMU:
     '''
@@ -90,10 +92,11 @@ class IMU:
         # if no connection to KSP, stop fine align and go back to coarse align
         if check_connection() == False:
             utils.log("IMU: cannot complete fine align, no connection to KSP", log_level="ERROR")
+            return
         self.is_fine_aligned = True
         self.is_course_aligned = False
         self.computer.dsky.set_annunciator("gimbal_lock", False)
         self.computer.dsky.set_annunciator("no_att", False)
-        self.computer.main_loop_table.append(self.update_gyro_angles)
-        self.computer.main_loop_table.append(self.check_for_gimbal_lock)
+        #self.computer.main_loop_table.append(self.update_gyro_angles)
+        #self.computer.main_loop_table.append(self.check_for_gimbal_lock)
         utils.log("IMU fine align set")

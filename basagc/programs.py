@@ -6,11 +6,12 @@ import sys
 import math
 from collections import OrderedDict
 
-# from pudb import set_trace  # lint:ok
+
 from PyQt5.QtCore import QTimer
 
-import basagc.maneuver
 from basagc import config
+if config.DEBUG:
+    from pudb import set_trace  # lint:ok
 
 from basagc import utils, maneuver
 
@@ -114,6 +115,7 @@ class Program01(Program):
         called when timer hits 0
         :returns: None
         '''
+
         Program.computer.imu.set_fine_align()
         Program.computer.execute_program("02")
 

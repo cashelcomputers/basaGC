@@ -6,9 +6,11 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from . import config
-from . import utils
-
+from basagc import config
+from basagc import utils
+if config.DEBUG:
+    from pudb import set_trace  # lint:ok
+    
 telemetry = {}
 commands = {}
 

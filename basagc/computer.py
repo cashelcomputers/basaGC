@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """This file contains the guts of the guidance computer"""
 
+import os
+
 from PyQt5.QtCore import QTimer
 # from pudb import set_trace  # lint:ok
 
@@ -109,7 +111,7 @@ class Computer:
 
     def accept_uplink(self):
         try:
-            uplink_file = open("uplink.txt", "r")
+            uplink_file = open(os.path.join(config.BASE_DIR, "basagc/", "uplink.txt"), "r")
         except FileNotFoundError:  # lint:ok
             self.program_alarm(501)
             return
@@ -315,7 +317,12 @@ class Computer:
         :returns: 
         '''
         utils.log("Executing P{}".format(program_number))
-        program = self.programs[program_number]()
+        try:
+            program = self.programs[program_number]()
+        except KeyError:
+            self.program_alarm(116)
+            self.go_to_poo()
+            return
         program.execute()
         
     

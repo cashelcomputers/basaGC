@@ -6,6 +6,8 @@ import os
 
 from collections import OrderedDict
 
+DEBUG = False
+
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 PROGRAM_NAME = "basaGC"
 VERSION = "2.2.0"
@@ -30,7 +32,7 @@ LOG_LEVELS = [
     "CRITICAL",
 ]
 
-current_log_level = "DEBUG"
+current_log_level = "INFO"
 
 DIRECTIONS = [
     "prograde",
@@ -66,6 +68,7 @@ _UNSORTED_ALARM_CODES = {
     110: "Error contacting KSP",
     111: "Telemetry not available",
     115: "No burn data loaded",
+    116: "Program doesn't exist",
     120: "No phase angle data available",
     223: "Invalid target selected",
     224: "Orbit not circular",

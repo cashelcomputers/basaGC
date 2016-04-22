@@ -6,12 +6,12 @@ import logging
 import sys
 from collections import OrderedDict
 
-# from pudb import set_trace  # lint:ok
-
 from PyQt5.QtCore import QTimer
-from basagc import config, nouns, programs, utils, dsky
+from basagc import config, nouns, utils, dsky
 from basagc.telemachus import KSPNotConnected, TelemetryNotAvailable
 from basagc import telemachus
+if config.DEBUG:
+    from pudb import set_trace  # lint:ok
 
 log = logging.getLogger("Verbs")
 
@@ -1060,7 +1060,7 @@ class Verb98(ExtendedVerb):
         self.dsky.request_data(requesting_object=self.receive_data, display_location="noun")
 
     def receive_data(self, data):
-        print(data)
+
         if data == "01":
             Verb.computer.accept_uplink()
         elif data == "02":
