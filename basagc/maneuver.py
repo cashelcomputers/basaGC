@@ -79,19 +79,13 @@ class HohmannTransfer:
         return self.calculate_initial_delta_v() + self.calculate_final_delta_v()
         
     def calculate_other_parameters(self):
-        utils.log("Semi-major axis of transfer ellipse: {:.2f} m".format(self.calculate_sma_transfer_ellipse()))
         utils.log("Initial velocity at start of transfer: {:.2f} m/s".format(self.calculate_velocity_initial()))
-        utils.log("Final velocity at end of transfer: {:.2f} m/s".format(self.calculate_velocity_final()))
         utils.log("Velocity on transfer orbit at initial orbit: {:.2f} m/s".format(self.calculate_velocity_initial_on_transfer_orbit()))
         utils.log("Velocity on transfer orbit at final orbit: {:.2f} m/s".format(self.calculate_velocity_final_on_transfer_orbit()))
         utils.log("Initial velocity change (delta-v): {:.2f} m/s".format(self.calculate_initial_delta_v()))
         utils.log("Final velocity change (delta-v): {:.2f} m/s".format(self.calculate_final_delta_v()))
         utils.log("Total chance in velocity (delta-v): {:.2f} m/s".format(self.calculate_total_delta_v()))
         utils.log()
-        
-    def add_maneuver_node(self):
-
-        telemachus.add_maneuver_node(ut=self.time_of_node, delta_v=(0.0, 0.0, self.delta_v_1))
             
     @staticmethod
     def check_orbital_parameters():
@@ -124,13 +118,10 @@ class HohmannTransfer:
     def print_maneuver_data(self):
         self.calculate_other_parameters()
         utils.log("-" * 40)
-        utils.log("Wrong velocity at point A: {:.2f} m/s".format(get_telemetry("orbitalVelocity") + self.delta_v_1))
         utils.log("Hohmann Transfer Data:")
         utils.log("Delta-V required: {:.2f}".format(self.delta_v_1))
         utils.log("Phase angle required: {:.2f}".format(self.phase_angle_required))
-        utils.log("UT of node: {:.0f}".format(self.time_of_node))
         utils.log("Burn duration: {:.2f} seconds".format(self.duration_of_burn))
-        utils.log("UT of ignition: {:.0f}".format(self.time_of_ignition_first_burn))
         utils.log("-" * 40)
 
     def execute(self):
@@ -151,15 +142,21 @@ class HohmannTransfer:
                                )
         if config.current_log_level == "DEBUG":
             self.print_maneuver_data()
-        self.add_maneuver_node()
-        self.first_burn.execute()
+        computer.add_burn(self.first_burn)
+        #self.add_maneuver_node()
+        #self.first_burn.execute()
 
     def phase_angle_difference(self):
         #set_trace()
         current_phase_angle = get_telemetry("body_phaseAngle", body_number=self.target_id)
         phase_angle_difference = current_phase_angle - self.phase_angle_required
-        if phase_angle_difference < 0:
-            phase_angle_difference = 180 + abs(phase_angle_difference)
+        #if phase_angle_difference < 0:
+            #phase_angle_difference = 180 + abs(phase_angle_difference)
+            #utils.log("Adding 180 degrees to phase angle difference")
+        utils.log()
+        utils.log("Current Phase Angle: {} degrees".format(current_phase_angle))
+        utils.log("Phase Angle Required: {} degrees".format(self.phase_angle_required))
+        utils.log("Phase Angle Difference: {} degrees".format(phase_angle_difference))
         return phase_angle_difference
         
     def calculate(self):
@@ -186,6 +183,7 @@ class HohmannTransfer:
         time_to_node = HohmannTransfer.get_time_to_node(self.phase_angle_difference(),
                                                                      self.orbital_period,
                                                                      self.departure_body_period)
+
         self.time_of_node = get_telemetry("universalTime") + time_to_node
         initial_mass = float(computer.noun_data["25"][0] + "." + computer.noun_data["25"][1])
         thrust = float(computer.noun_data["31"][0] + "." + computer.noun_data["31"][1])
@@ -196,6 +194,9 @@ class HohmannTransfer:
     @staticmethod
     def get_time_to_node(phase_angle_difference, orbital_period, departure_orbital_period):
         tig = phase_angle_difference / ((360 / orbital_period) - (360 / departure_orbital_period))
+        if tig < 0:
+            utils.log("Setting node at next orbit")
+            tig += orbital_period
         return tig
         
     @staticmethod
@@ -300,10 +301,14 @@ class Burn:
         """
         
         # load the course start time monitor into the computers main loop
-        computer.add_burn(self)
+        self.add_maneuver_node()
+        computer.main_loop_table.append(self._coarse_start_time_monitor)
         computer.execute_verb(verb="16", noun="40")
         
+    def add_maneuver_node(self):
 
+        telemachus.add_maneuver_node(ut=self.time_of_node, delta_v=(0.0, 0.0, self.delta_v_required))
+        
     def terminate(self):
 
         """ Terminates the burn, disabling autopilot if running
@@ -396,10 +401,10 @@ class Burn:
         self.accumulated_delta_v = self._calculate_accumulated_delta_v()
         current_velocity = get_telemetry("orbitalVelocity")
         #print("Accumulated dV: {:.2f}".format(self.accumulated_delta_v))
-        print("dV required: {:.2f}".format(self.delta_v_required))
-        print("Velocity at start: {:.2f}".format(self.initial_speed))
-        print("Current Velocity: {:.2f}".format(current_velocity))
-        print("Expected dV at cutoff: {}".format(self.velocity_at_cutoff))
+        #print("dV required: {:.2f}".format(self.delta_v_required))
+        #print("Velocity at start: {:.2f}".format(self.initial_speed))
+        #print("Current Velocity: {:.2f}".format(current_velocity))
+        #print("Expected dV at cutoff: {}".format(self.velocity_at_cutoff))
 
 
         if current_velocity > (self.velocity_at_cutoff - 13.5) and not self._is_thrust_reduced:

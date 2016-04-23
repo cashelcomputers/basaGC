@@ -62,6 +62,9 @@ class Program(object):
 
         self.execute()
 
+    def __str__(self):
+        return "Program {} ({}) ".format(self.number, self.description)
+
 
 class Program00(Program):
 
@@ -289,8 +292,8 @@ class Program15(Program):
         self.maneuver = maneuver.HohmannTransfer()
         self.maneuver.execute()
         # display burn parameters and go to poo
-        #self.computer.execute_verb(verb="06", noun="95")
-        #self.computer.go_to_poo()
+        self.computer.execute_verb(verb="06", noun="95")
+        self.computer.go_to_poo()
 
 class Program31(Program):
     '''
@@ -347,7 +350,7 @@ class Program31(Program):
         self.calculate_maneuver()
 
     def calculate_maneuver(self):
-        self.updateate_parameters()
+        self.update_parameters()
         self.burn = Burn(delta_v=self.delta_v,
                          direction="retrograde",
                          time_of_ignition=self.time_of_of_ignition,
@@ -383,7 +386,7 @@ class Program40(Program):
         super().execute()
         # if TIG < 2 mins away, abort burn
         if utils.seconds_to_time(self.burn.time_until_ignition)["minutes"] < 2:
-            self.computer.remove_burn(self.computer.next_burn)
+            self.computer.remove_burn()
             self.computer.poodoo_abort(226)
             return
         # if time to ignition if further than a hour away, display time to ignition

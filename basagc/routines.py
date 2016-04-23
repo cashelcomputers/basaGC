@@ -75,7 +75,7 @@ def charin(keypress, state, dsky, computer):
         #set_trace()
         if keypress == "P":
             dsky.verb_noun_flash_off()
-            utils.log("Proceeding without input, calling {}(proceed)".format(state["object_requesting_data"]))
+            utils.log("Proceeding without input, calling {}".format(str(state["object_requesting_data"])))
             state["object_requesting_data"]("proceed")
             state["input_data_buffer"] = ""
             state["is_expecting_data"] = False
@@ -89,11 +89,9 @@ def charin(keypress, state, dsky, computer):
             state["input_data_buffer"] = ""
             state["is_expecting_data"] = False
             dsky.verb_noun_flash_off()
-            utils.log("Data load complete, calling {} ({})".format(
-                state["object_requesting_data"],
-                input_data
-            ))
-            state["object_requesting_data"](input_data)
+            data_requester = state["object_requesting_data"]
+            utils.log("Data load complete, calling {}({})".format(data_requester.__self__, data_requester.__name__))
+            data_requester(input_data)
             
             return
         if state["display_location_to_load"] in ["verb", "noun", "program"]:

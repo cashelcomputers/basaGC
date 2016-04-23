@@ -134,6 +134,9 @@ class Verb:
         self.data = data
         self.execute()
 
+    def __str__(self):
+        return "Verb {} ({})".format(self.number, self.name)
+
 
 class ExtendedVerb(Verb):
 

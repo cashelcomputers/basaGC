@@ -486,17 +486,17 @@ class Noun95(Noun):
         minutes_to_ignition = str(int(time_to_ignition["minutes"])).zfill(2)
         seconds_to_ignition = str(int(time_to_ignition["seconds"])).zfill(2)
         delta_v = str(int(computer.next_burn.delta_v_required))
-        velocity_at_cutoff = str(int(computer.next_burn.velocity_at_cutoff))
+        burn_duration = str(int(computer.next_burn.burn_duration))
 
         data = {
             1: "-" + minutes_to_ignition + "b" + seconds_to_ignition,
             2: delta_v,
-            3: velocity_at_cutoff,
+            3: burn_duration,
             "is_octal": False,
             "tooltips": [
                 "Time To Ignition (TIG) (xxbxx mins, seconds)",
                 "Δv (xxxxx m/s)",
-                "Velocity at cutoff (xxxxx m/s)",
+                "Burn duration (xxxxx seconds)",
             ],
         }
         return data

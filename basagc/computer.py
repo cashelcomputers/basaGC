@@ -109,7 +109,7 @@ class Computer:
         }
         # register key handler with qt ui
         self.register_charin()
-        # self.on()
+        self.on()
 
     def accept_uplink(self):
         try:
@@ -181,7 +181,10 @@ class Computer:
         :return: None
         """
         self.next_burn = burn_object
-        self.add_to_mainloop(burn_object._coarse_start_time_monitor)
+        #self.add_to_mainloop(burn_object._coarse_start_time_monitor)
+
+    def enable_burn(self):
+        self.next_burn.execute()
 
     def remove_burn(self):
 
@@ -318,7 +321,6 @@ class Computer:
         :type program_number: str
         :returns: 
         '''
-        utils.log("Executing P{}".format(program_number))
         try:
             program = self.programs[program_number]()
         except KeyError:
