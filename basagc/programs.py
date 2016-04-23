@@ -105,12 +105,10 @@ class Program01(Program):
         
         super().execute()
         if check_connection() == False:
-            Program.computer.program_alarm(111)
+            Program.computer.poodoo_abort(111)
             self.terminate()
             return
         Program.computer.imu.on()
-        
-            
         self.timer.start(10000)
 
     def timeout(self):

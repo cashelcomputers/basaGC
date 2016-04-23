@@ -822,38 +822,34 @@ class Verb23(LoadVerb):
             #utils.log("V33 called, but nothing to proceed with!")
 
 
-#class Verb34(Verb):
+class Verb34(Verb):
 
-    #""" Terminate function
-    #"""
+    """ Terminate program
+    """
 
-    #def __init__(self, noun):
+    def __init__(self):
 
-        #""" Class constructor
-        #:return: None
-        #"""
+        """ Class constructor
+        :return: None
+        """
 
-        #super().__init__(name="Terminate function", verb_number="34", noun=noun)
+        super().__init__(name="Terminate function", verb_number="34")
 
-    #def execute(self):
+    def execute(self):
 
-        #""" Executes the verb.
-        #:return: None
-        #"""
+        """ Executes the verb.
+        :return: None
+        """
 
-        #if Verb.computer.keyboard_state["backgrounded_update"]:
-            #utils.log("Terminating backgrounded update")
-            #Verb.computer.keyboard_state["backgrounded_update"].terminate()
-            #Verb.computer.dsky.stop_annunciator_blink("key_rel")
-        #if Verb.computer.running_program:
-            #utils.log("Terminating active program {}".format(Verb.computer.running_program.number))
-            ## have to use try block to catch and ignore expected ProgramTerminated exception
-            #try:
-                #Verb.computer.running_program.terminate()
-            #except programs.ProgramTerminated:
-                #pass
-        #else:
-            #utils.log("V34 called, but nothing to terminate!")
+        if Verb.computer.keyboard_state["backgrounded_update"]:
+            utils.log("Terminating backgrounded update")
+            Verb.computer.keyboard_state["backgrounded_update"].terminate()
+            Verb.computer.dsky.stop_annunciator_blink("key_rel")
+        if Verb.computer.running_program:
+            utils.log("Terminating active program {}".format(Verb.computer.running_program.number))
+            Verb.computer.running_program.terminate()
+        else:
+            utils.log("V34 called, but nothing to terminate!")
 
 
 class Verb35(Verb):

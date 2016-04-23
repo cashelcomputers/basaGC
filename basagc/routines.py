@@ -192,6 +192,7 @@ def charin(keypress, state, dsky, computer):
         """
     
         computer.execute_verb()
+        state["requested_noun"] = ""
 
     def handle_reset_keypress():
     

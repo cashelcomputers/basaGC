@@ -304,6 +304,7 @@ class Computer:
                 if self.keyboard_state["requested_noun"] == "":
                     verb_to_execute = self.verbs[verb](**kwargs)
                 else:
+                    print(self.keyboard_state["requested_noun"])
                     verb_to_execute = self.verbs[verb](self.keyboard_state["requested_noun"], **kwargs)
             except KeyError:
                 self.operator_error("Verb {} does not exist :(".format(verb))
@@ -404,13 +405,8 @@ class Computer:
         self.alarm_codes[0] = alarm_code
         self.alarm_codes[2] = self.alarm_codes[0]
         self.dsky.annunciators["prog"].on()
-        try:
-            self.running_program.terminate()
-        except programs.ProgramTerminated:
-            # this should happen if the program terminated successfully
-            utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), message), log_level="ERROR")
-        if message:
-            utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), message), log_level="ERROR")
+        self.running_program.terminate()
+        utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), message), log_level="ERROR")
         poo = self.programs["00"]()
         poo.execute()
 

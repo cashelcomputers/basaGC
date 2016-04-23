@@ -83,9 +83,9 @@ def get_telemetry(data, body_number=None):
     #     raise TelemetryNotAvailable
     try:
         query_string = data + "=" + telemetry[data]
-    except KeyError as e:
-        return e
-
+    except KeyError:
+        raise KSPNotConnected
+        return
     if body_number:
         query_string += "[{}]".format(body_number)
 
@@ -156,5 +156,4 @@ def update_maneuver_node(ut, delta_v):
     delta_v_y = str(round(delta_v[1], 2))
     delta_v_z = str(round(delta_v[2], 2))
     command_string = "command=" + telemetry["updateManeuverNode"] + "[0," + str(ut) + "," + delta_v_x  + "," + delta_v_y  + "," + delta_v_z + "]"
-    print(command_string)
     send_command_to_ksp(command_string)
