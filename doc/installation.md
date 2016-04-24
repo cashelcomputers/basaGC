@@ -4,7 +4,6 @@ Installation:
 All OS:
 ----
 
-
 - NEW: basaGC now requires [this fork of Telemachus](https://github.com/tcannonfodder/Telemachus) which is a fork of
 [Telemachus mod](https://github.com/richardbunt/Telemachus). Install as per usual in <KSP FOLDER>/GameData. For KSP 1.0.5,
 use [this release](https://github.com/tcannonfodder/Telemachus/releases/tag/v1.4.32.0), 1.1 users can [use this release]
@@ -29,7 +28,7 @@ Windows:
 and select windows installer
 * Install PyQt5 from [here](https://www.riverbankcomputing.com/software/pyqt/download5) ([direct link](http://sourceforge.net/projects/pyqt/files/PyQt5/PyQt-5.5.1/PyQt5-5.5.1-gpl-Py3.4-Qt5.5.1-x64.exe))
 * Get the latest release of basaGC [here](https://github.com/cashelcomputers/basaGC/releases)
-* Unzip the folder into a location of your choise (doesn't have to be in GameData)
+* Unzip the folder into a location of your choice (doesn't have to be in GameData)
 * Open the filder and double-click on the file "basagc.py"
 * Start navigating :)
 
