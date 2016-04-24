@@ -4,8 +4,9 @@ This module contains code for the DSKY (the guidance computer/user interface). I
 interface between the computer and the gui toolkit.
 """
 
-from basagc import utils
-# from pudb import set_trace  # lint:ok
+from basagc import utils, config
+if config.DEBUG:
+    from pudb import set_trace  # lint:ok
 
 
 class DSKY:
@@ -276,7 +277,7 @@ class DSKY:
         # if is_proceed_available is set True, don't blank display as it should be showing data to proceed with
         if not is_proceed_available:
             self.blank_register(display_location)
-        utils.log("{} requesting data".format(requesting_object))
+        utils.log("{}, method {}() requesting data".format(requesting_object.__self__, requesting_object.__name__))
         self.verb_noun_flash_on()
         self.computer.keyboard_state["object_requesting_data"] = requesting_object
         self.computer.keyboard_state["is_expecting_data"] = True
