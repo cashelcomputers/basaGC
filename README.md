@@ -1,11 +1,8 @@
-basaGC
+basaGC: Apollo Guidance Computer for Kerbal Space Program.
 ======
 
-Apollo Guidance Computer for Kerbal Space Program.
-
-Thanks to Ron Burkey (<info@sandroid.org>) for VirtualAGC!
-
-This is my reimplementation of the Apollo Guidance Computer (AGC) and Display/Keyboard (DSKY) for Kerbal Space Program.
+This is my reimplementation of the [Apollo Guidance Computer](https://en.wikipedia.org/wiki/Apollo_Guidance_Computer)
+(AGC) and Display/Keyboard (DSKY) for Kerbal Space Program.
 
 Screenshots here: http://imgur.com/a/Tj5mJ
 
@@ -13,14 +10,14 @@ Prerequisites:
 ---
 
 - KSP (tested on 1.0.5), should work on any version that Telemachus works on
-- python 3.4
-- PyQt5
-- Intrepid mod (fork of Telemachus mod) for KSP
-- Mechjeb mod
+- [Python 3.4](https://www.python.org/downloads/release/python-344/)
+- [PyQt5](https://www.riverbankcomputing.com/software/pyqt/download5)
+- [Intrepid mod](https://github.com/tcannonfodder/Telemachus/releases/tag/v1.4.32.0) (fork of Telemachus mod) for KSP
+- [Mechjeb mod](https://github.com/MuMech/MechJeb2)
 
 Installation:
 ---
-See doc/installation.md
+See [doc/installation.md](https://github.com/cashelcomputers/basaGC/blob/master/doc/installation.md)
 
 Running basaGC:
 -----
@@ -39,7 +36,7 @@ real life AGC. It should be noted that this is a superficial recreation, not a h
 
 Known issues:
 ------------
-- see doc/known_issues.md
+- see [doc/known_issues.md](https://github.com/cashelcomputers/basaGC/blob/master/doc/known_issues.md)
 
 
 

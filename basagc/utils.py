@@ -4,7 +4,9 @@
 import logging
 import time
 
-from . import config
+from basagc import config
+if config.DEBUG:
+    from pudb import set_trace  # lint:ok
 
 LOG_VIEWER = None
 

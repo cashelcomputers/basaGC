@@ -4,8 +4,8 @@ import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from basagc import config
-# from pudb import set_trace
-#from basagc.computer import Computer
+if config.DEBUG:
+    from pudb import set_trace  # lint:ok
 from basagc import utils
 
 

@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """This module contains internal routines used by the guidance computer."""
 
-# from pudb import set_trace
 
-from basagc import utils
-
+from basagc import utils, config
+if config.DEBUG:
+    from pudb import set_trace  # lint:ok
+    
 def charin(keypress, state, dsky, computer):
     '''
     This function is called whenever a keypress is sent from the UI. 
@@ -46,6 +47,9 @@ def charin(keypress, state, dsky, computer):
         """ Handles data register loading
         :return: None
         """
+        if keypress.isdigit() == False:
+            utils.log("Expecting a digit for data load, got {}".format(keypress), log_level="ERROR")
+            return
         display_register = state["display_location_to_load"]
         if state["register_index"] == 0:
             if keypress == "+":
@@ -71,7 +75,7 @@ def charin(keypress, state, dsky, computer):
         #set_trace()
         if keypress == "P":
             dsky.verb_noun_flash_off()
-            utils.log("Proceeding without input, calling {}(proceed)".format(state["object_requesting_data"]))
+            utils.log("Proceeding without input, calling {}".format(str(state["object_requesting_data"])))
             state["object_requesting_data"]("proceed")
             state["input_data_buffer"] = ""
             state["is_expecting_data"] = False
@@ -85,11 +89,9 @@ def charin(keypress, state, dsky, computer):
             state["input_data_buffer"] = ""
             state["is_expecting_data"] = False
             dsky.verb_noun_flash_off()
-            utils.log("Data load complete, calling {} ({})".format(
-                state["object_requesting_data"],
-                input_data
-            ))
-            state["object_requesting_data"](input_data)
+            data_requester = state["object_requesting_data"]
+            utils.log("Data load complete, calling {}({})".format(data_requester.__self__, data_requester.__name__))
+            data_requester(input_data)
             
             return
         if state["display_location_to_load"] in ["verb", "noun", "program"]:
@@ -190,6 +192,7 @@ def charin(keypress, state, dsky, computer):
         """
     
         computer.execute_verb()
+        state["requested_noun"] = ""
 
     def handle_reset_keypress():
     
@@ -233,7 +236,7 @@ def charin(keypress, state, dsky, computer):
             backgrounded_update = state["backgrounded_update"].resume
             if state["display_lock"]:
                 state["display_lock"].terminate()
-            dsky.annunciators["key_rel"].stop_blink()
+            dsky.stop_annunciator_blink("key_rel")
             backgrounded_update()
             state["backgrounded_update"] = None
             state["is_verb_being_loaded"] = False
@@ -245,15 +248,14 @@ def charin(keypress, state, dsky, computer):
             state["requested_noun"] = ""
             return
     
-        # if the computer is off, we only want to accept the PRO key input,
-        # all other keys are ignored
-        if computer.is_powered_on is False:
-            if keypress == "P":
-                computer.on()
-            else:
-                utils.log("Key {} ignored because gc is off".format(keypress))
-
-
+    # if the computer is off, we only want to accept the PRO key input,
+    # all other keys are ignored
+    if computer.is_powered_on == False:
+        if keypress == "P":
+            computer.on()
+        else:
+            utils.log("Key {} ignored because gc is off".format(keypress))
+            return
     
     if state["is_expecting_data"]:
         handle_expected_data()

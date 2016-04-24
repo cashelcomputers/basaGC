@@ -6,12 +6,12 @@ import logging
 import sys
 from collections import OrderedDict
 
-# from pudb import set_trace  # lint:ok
-
 from PyQt5.QtCore import QTimer
-from basagc import config, nouns, programs, utils, dsky
+from basagc import config, nouns, utils, dsky
 from basagc.telemachus import KSPNotConnected, TelemetryNotAvailable
 from basagc import telemachus
+if config.DEBUG:
+    from pudb import set_trace  # lint:ok
 
 log = logging.getLogger("Verbs")
 
@@ -133,6 +133,9 @@ class Verb:
         utils.log("{} received data: {}".format(self, data))
         self.data = data
         self.execute()
+
+    def __str__(self):
+        return "Verb {} ({})".format(self.number, self.name)
 
 
 class ExtendedVerb(Verb):
@@ -819,38 +822,34 @@ class Verb23(LoadVerb):
             #utils.log("V33 called, but nothing to proceed with!")
 
 
-#class Verb34(Verb):
+class Verb34(Verb):
 
-    #""" Terminate function
-    #"""
+    """ Terminate program
+    """
 
-    #def __init__(self, noun):
+    def __init__(self):
 
-        #""" Class constructor
-        #:return: None
-        #"""
+        """ Class constructor
+        :return: None
+        """
 
-        #super().__init__(name="Terminate function", verb_number="34", noun=noun)
+        super().__init__(name="Terminate function", verb_number="34")
 
-    #def execute(self):
+    def execute(self):
 
-        #""" Executes the verb.
-        #:return: None
-        #"""
+        """ Executes the verb.
+        :return: None
+        """
 
-        #if Verb.computer.keyboard_state["backgrounded_update"]:
-            #utils.log("Terminating backgrounded update")
-            #Verb.computer.keyboard_state["backgrounded_update"].terminate()
-            #Verb.computer.dsky.stop_annunciator_blink("key_rel")
-        #if Verb.computer.running_program:
-            #utils.log("Terminating active program {}".format(Verb.computer.running_program.number))
-            ## have to use try block to catch and ignore expected ProgramTerminated exception
-            #try:
-                #Verb.computer.running_program.terminate()
-            #except programs.ProgramTerminated:
-                #pass
-        #else:
-            #utils.log("V34 called, but nothing to terminate!")
+        if Verb.computer.keyboard_state["backgrounded_update"]:
+            utils.log("Terminating backgrounded update")
+            Verb.computer.keyboard_state["backgrounded_update"].terminate()
+            Verb.computer.dsky.stop_annunciator_blink("key_rel")
+        if Verb.computer.running_program:
+            utils.log("Terminating active program {}".format(Verb.computer.running_program.number))
+            Verb.computer.running_program.terminate()
+        else:
+            utils.log("V34 called, but nothing to terminate!")
 
 
 class Verb35(Verb):
@@ -1057,7 +1056,30 @@ class Verb98(ExtendedVerb):
         '''
         
         super().execute()
-        
+        self.dsky.request_data(requesting_object=self.receive_data, display_location="noun")
+
+    def receive_data(self, data):
+
+        if data == "01":
+            Verb.computer.accept_uplink()
+        elif data == "02":
+            data = telemachus.get_telemetry("maneuverNodes")
+            data = data[0]
+            for key, value in sorted(data.items()):
+                if key == "orbitPatches":
+                    print("-" * 40)
+                    print("Orbit patches:")
+                    print()
+                    for index in range(len(value)):
+                        print("Patch {}:".format(index))
+                        for a, b in sorted(value[index].items()):
+                            print("{}: {}".format(a, b))
+                        print()
+                    #for a, b in data[key].items():
+                        #print("{}: {}".format(a, b))
+                    print("-" * 40)
+                else:
+                    print("{}: {}".format(key, value))
 
 class Verb99(ExtendedVerb):
 
