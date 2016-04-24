@@ -13,6 +13,7 @@ Prerequisites:
 - [Python 3.4](https://www.python.org/downloads/release/python-344/)
 - [PyQt5](https://www.riverbankcomputing.com/software/pyqt/download5)
 - [Intrepid mod](https://github.com/tcannonfodder/Telemachus/releases/tag/v1.4.32.0) (fork of Telemachus mod) for KSP
+(for KSP 1.1, try [this release](https://github.com/tcannonfodder/Telemachus/releases/tag/v1.5.32.1))
 - [Mechjeb mod](https://github.com/MuMech/MechJeb2)
 
 Installation:
