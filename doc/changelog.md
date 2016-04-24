@@ -3,6 +3,11 @@ basaGC changelog
 
 Please note that this file only contains changes from version 0.5.0 onwards. All dates are in dd/mm/yy format.
 
+Future: version 2.3.0:
+- Modified noun 95 to display burn duration rather than delta v at cutoff
+- Added uplink capability
+- refactored P15, P40, and maneuver calculator classes
+
 17/04/16: version 2.2.0:
 - Fixed programs 15 and 40
 - Added correct calculation for burn start time

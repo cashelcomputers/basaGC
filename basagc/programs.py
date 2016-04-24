@@ -6,11 +6,12 @@ import sys
 import math
 from collections import OrderedDict
 
-# from pudb import set_trace  # lint:ok
+
 from PyQt5.QtCore import QTimer
 
-import basagc.maneuver
 from basagc import config
+if config.DEBUG:
+    from pudb import set_trace  # lint:ok
 
 from basagc import utils, maneuver
 
@@ -61,6 +62,9 @@ class Program(object):
 
         self.execute()
 
+    def __str__(self):
+        return "Program {} ({}) ".format(self.number, self.description)
+
 
 class Program00(Program):
 
@@ -101,12 +105,10 @@ class Program01(Program):
         
         super().execute()
         if check_connection() == False:
-            Program.computer.program_alarm(111)
+            Program.computer.poodoo_abort(111)
             self.terminate()
             return
         Program.computer.imu.on()
-        
-            
         self.timer.start(10000)
 
     def timeout(self):
@@ -114,6 +116,7 @@ class Program01(Program):
         called when timer hits 0
         :returns: None
         '''
+
         Program.computer.imu.set_fine_align()
         Program.computer.execute_program("02")
 
@@ -179,10 +182,7 @@ class Program11(Program):
         utils.log("Program 11 executing", log_level="INFO")
 
         # test if KSP is connected
-        try:
-            get_telemetry("universalTime")
-        except KSPNotConnected:
-            self.terminate()
+        if check_connection() == False:
             return
 
         # --> call average G integration with ΔV integration
@@ -230,22 +230,7 @@ class Program15(Program):
         # TODO: request twr from user
 
         super().__init__(description="TMI Calculate", number="15")
-        self.delta_v = 0.0
-        self.time_to_transfer = 0.0
-        self.orbiting_body = None
-        self.phase_angle_required = 0.0
-        self.time_of_ignition_first_burn = 0.0
-        self.delta_time_to_burn = 0.0
-        self.phase_angle_difference = 0.0
-        self.target_name = "Mun"
-        self.departure_body = None
-        self.departure_altitude = 0
-        self.destination_altitude = 0
-        self.grav_param = 0.0
-        self.orbital_period = 0
-        self.departure_body_orbital_period = 0
-        self.first_burn = None
-        self.second_burn = None
+        
 
     def execute(self):
 
@@ -260,33 +245,15 @@ class Program15(Program):
             self.computer.poodoo_abort(111)
             self.terminate()
             return
-        self.departure_body = get_telemetry("body")
-        self.orbiting_body = get_telemetry("body")
-
         
         # check that orbital parameters are within range to conduct burn
-        if not self._check_orbital_parameters():
-            return
-        #self.target_name = self._check_target()
-        #
-        ##self.computer.noun_data["30"] = config.OCTAL_BODY_NAMES[self.target_name]
-        #self.computer.execute_verb(verb="21", noun="30")
-        #self.computer.dsky.request_data(requesting_object=self._accept_target_input, display_location="data_1",
-                             #is_proceed_available=True)
-
-        self.computer.execute_verb(verb="21", noun="25")
-        self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_whole_part, display_location="data_1")
-
-    #def terminate(self):
-        #'''
-        #Terminates the program.
-        #:returns: None
-        #'''
-
-        #utils.log("Removing burn data", log_level="DEBUG")
-        #self.computer.remove_burn(self.first_burn)
-        #self.computer.remove_burn(self.second_burn)
-        #super().terminate()
+        is_orbit_ok = maneuver.HohmannTransfer.check_orbital_parameters()
+        if is_orbit_ok == True:
+            # request mass
+            self.computer.execute_verb(verb="21", noun="25")
+            self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_whole_part, display_location="data_1")
+        else:
+            self.computer.poodoo_abort(is_orbit_ok[1])
 
     def _accept_initial_mass_whole_part(self, mass):
         Program.computer.noun_data["25"][0] = mass
@@ -317,168 +284,11 @@ class Program15(Program):
         """ Calculates the maneuver parameters and creates a Burn object
         :return: Nothing
         """
-
-        # load target
-        telemachus_target_id = config.TELEMACHUS_BODY_IDS[self.target_name]
-        target_apoapsis = float(get_telemetry("body_ApA", body_number=telemachus_target_id))
-
-        # set destination altitude
-        # self.destination_altitude = 11400000  # for impact
-        self.destination_altitude = 15000000
-
-        # obtain parameters to calculate burn
-        self.departure_altitude = get_telemetry("altitude")
-        self.orbital_period = get_telemetry("period")
-        self.departure_body_orbital_period = get_telemetry("body_period", body_number=config.TELEMACHUS_BODY_IDS[
-            "Kerbin"])
-        self.grav_param = get_telemetry("body_gravParameter", body_number=config.TELEMACHUS_BODY_IDS[
-            self.orbiting_body])
-        current_phase_angle = get_telemetry("body_phaseAngle", body_number=telemachus_target_id)
-
-        # calculate the first and second burn Δv parameters
-        self.delta_v, self.computer.moi_burn_delta_v = basagc.maneuver.calculate_delta_v_hohmann(self.departure_altitude,
-                                                                                                 self.destination_altitude)
-
-        # calculate the time to complete the Hohmann transfer
-        self.time_to_transfer = basagc.maneuver.time_to_transfer(self.departure_altitude, self.destination_altitude,
-                                                                 self.grav_param)
-
-        # calculate the correct phase angle for the start of the burn
-        # note that the burn impulse is calculated as a instantaneous burn, to be correct the burn should be halfway
-        # complete at this calculated time
-
-        self.phase_angle_required = basagc.maneuver.phase_angle(self.departure_altitude, self.destination_altitude,
-                                                                self.grav_param)
-
-        # calculate the current difference in phase angle required and current phase angle
-        self.phase_angle_difference = current_phase_angle - self.phase_angle_required
-        # if self.phase_angle_difference < 0:
-        #     self.phase_angle_difference = 180 + abs(self.phase_angle_difference)
-
-        # calculate time of ignition (TIG) HOW MANY SECONDS IN FUTURE
-        self.delta_time_to_burn = self.phase_angle_difference / ((360 / self.orbital_period) -
-                                                                 (360 / self.departure_body_orbital_period))
-
-
-        # if the time of ignition is less than 120 seconds in the future, schedule the burn for next orbit
-        if self.delta_time_to_burn <= 120:
-            utils.log("Time of ignition less that 2 minutes in the future, starting burn during next orbit")
-            self.delta_time_to_burn += get_telemetry("period")
-
-        #calculate the universal time of node
-        self.time_of_node = get_telemetry("universalTime") + self.delta_time_to_burn
-        # convert the raw value in seconds to HMS
-        delta_time = utils.seconds_to_time(self.delta_time_to_burn)
-
-        # log the maneuver calculations
-        utils.log("P15 calculations:")
-        utils.log("Phase angle required: {}, Δv for burn: {} m/s, time to transfer: {}".format(
-            round(self.phase_angle_required, 2),
-            int(self.delta_v),
-            utils.seconds_to_time(self.time_to_transfer)))
-        utils.log("Current Phase Angle: {:.2f}, difference: {:.2f}".format(
-            current_phase_angle,
-            self.phase_angle_difference))
-        utils.log("Time to burn: {} hours, {} minutes, {} seconds".format(
-            int(delta_time["hours"]),
-            int(delta_time["minutes"]),
-            delta_time["seconds"]))
-
-        # calculate burn duration
-        initial_mass = float(self.computer.noun_data["25"][0] + "." + self.computer.noun_data["25"][1])
-        thrust = float(self.computer.noun_data["31"][0] + "." + self.computer.noun_data["31"][1])
-        specific_impulse = float(self.computer.noun_data["38"][0])
-        self.duration_of_burn = maneuver.calc_burn_duration(initial_mass, thrust, specific_impulse, self.delta_v)
-
-        # divide burn duration by 2 to get TIG
-        self.time_of_ignition = self.time_of_node - (self.duration_of_burn / 2)
-        
-        # create a Burn object for the outbound burn
-        self.first_burn = Burn(delta_v=self.delta_v,
-                               direction="node",
-                               time_of_ignition=self.time_of_ignition,
-                               time_of_node=self.time_of_node,
-                               calling_program=self)
-
-        # load the Burn object into computer
-        self.computer.add_burn_to_queue(self.first_burn, execute=False)
-
+        self.maneuver = maneuver.HohmannTransfer()
+        self.maneuver.execute()
         # display burn parameters and go to poo
         self.computer.execute_verb(verb="06", noun="95")
         self.computer.go_to_poo()
-
-    #def burn_time(self):
-        #initial_mass_str = self.computer.noun_data["25"][0] + "." + self.computer.noun_data["25"][1]
-        #initial_mass = float(initial_mass_str)
-        #thrust_string = self.computer.noun_data["31"][0] + "." + self.computer.noun_data["31"][1]
-        #thrust = float(thrust_string)
-        #specific_impulse = float(self.computer.noun_data["38"][0])
-        #exhaust_velocity = specific_impulse * 9.81
-        #delta_v = self.delta_v
-        #burn_duration = (initial_mass * exhaust_velocity / thrust) * (1 - math.exp(-delta_v / exhaust_velocity))
-        #utils.log(log_level="info")
-        #utils.log("-" * 40, log_level="info")
-        #utils.log("Burn duration calculations:", log_level="info")
-        #utils.log("Initial mass: {} tonnes".format(initial_mass), log_level="info")
-        #utils.log("Thrust: {} kN".format(thrust), log_level="info")
-        #utils.log("Specific Impulse: {} seconds".format(specific_impulse), log_level="info")
-        #utils.log("Exhaust Velocity: {:.2f} kg/s".format(exhaust_velocity), log_level="info")
-        #utils.log("Burn Duration: {:.1f} seconds".format(burn_duration), log_level="info")
-        #utils.log("-" * 40, log_level="info")
-        #return burn_duration
-        
-    
-    def recalculate_phase_angles(self):
-    
-        """ This function is to be placed in the GC main loop to recalculate maneuver parameters.
-        :return: nothing
-        """
-    
-        # update current phase angle
-        telemachus_body_id = config.TELEMACHUS_BODY_IDS[config.OCTAL_BODY_NAMES[self.target_name]]
-        current_phase_angle = get_telemetry("body_phaseAngle",
-                                            body_number=telemachus_body_id)
-    
-        # recalculate phase angle difference
-        phase_angle_difference = current_phase_angle - self.phase_angle_required
-        if phase_angle_difference < 0:
-            phase_angle_difference = 180 + abs(phase_angle_difference)
-        self.delta_time_to_burn = phase_angle_difference / ((360 / self.orbital_period) - (360 / self.departure_body_orbital_period))
-
-
-    def _check_orbital_parameters(self):
-
-        """ Checks to see if current orbital parameters are within an acceptable range to plot maneuver
-        :return: Bool
-        """
-
-        # check if orbit is circular
-        if get_telemetry("eccentricity") > 0.005:
-            self.computer.poodoo_abort(224)
-            return False
-
-        # check if orbit is excessively inclined
-        target_inclination = get_telemetry("target_inclination")
-        vessel_inclination = get_telemetry("inclination")
-        if (vessel_inclination > (target_inclination - 1)) and (vessel_inclination > (target_inclination + 1)):
-            self.computer.poodoo_abort(225)
-            return False
-        else:
-            return True
-
-    def _check_target(self):
-
-        """Checks if a target exists, it not, returns the default target, else returns the selected target number
-        Returns: octal target code
-        :rtype: str
-
-        """
-
-        if get_telemetry("target_name") == "No Target Selected.":
-            utils.log("No target selected in KSP, defaulting to Mun", log_level="WARNING")
-            return "Mun"
-        else:
-            return get_telemetry("target_name")
 
 class Program31(Program):
     '''
@@ -535,7 +345,7 @@ class Program31(Program):
         self.calculate_maneuver()
 
     def calculate_maneuver(self):
-        self.updateate_parameters()
+        self.update_parameters()
         self.burn = Burn(delta_v=self.delta_v,
                          direction="retrograde",
                          time_of_ignition=self.time_of_of_ignition,
@@ -571,7 +381,7 @@ class Program40(Program):
         super().execute()
         # if TIG < 2 mins away, abort burn
         if utils.seconds_to_time(self.burn.time_until_ignition)["minutes"] < 2:
-            self.computer.remove_burn(self.computer.next_burn)
+            self.computer.remove_burn()
             self.computer.poodoo_abort(226)
             return
         # if time to ignition if further than a hour away, display time to ignition

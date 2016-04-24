@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """This file contains the guts of the guidance computer"""
 
+import os
+
 from PyQt5.QtCore import QTimer
-# from pudb import set_trace  # lint:ok
+
 
 from basagc import config
+if config.DEBUG:
+    from pudb import set_trace
 from basagc import dsky
 from basagc import nouns
 from basagc import programs
@@ -70,7 +74,8 @@ class Computer:
 
         self.comp_acty_timer = QTimer()
         self.comp_acty_timer.timeout.connect(self._comp_acty_off)
-        
+
+        self.uplink_queue = []
         self.is_powered_on = False
         self.main_loop_table = []
         self.alarm_codes = [0, 0, 0]
@@ -82,7 +87,7 @@ class Computer:
             "38": ["00000", "", ""],
         }
         self.next_burn = None
-        self._burn_queue = []
+        #self._burn_queue = []
         self.is_ksp_connected = False
         self.ksp_paused_state = None
         self.is_direction_autopilot_engaged = False
@@ -102,9 +107,24 @@ class Computer:
             "00007": "",
             "00024": "",
         }
-
+        # register key handler with qt ui
+        self.register_charin()
         self.on()
 
+    def accept_uplink(self):
+        try:
+            uplink_file = open(os.path.join(config.BASE_DIR, "basagc/", "uplink.txt"), "r")
+        except FileNotFoundError:  # lint:ok
+            self.program_alarm(501)
+            return
+        self.dsky.set_annunciator("uplink_acty")
+        uplink_data = uplink_file.read().strip()
+        uplink_file.close()
+        for char in uplink_data:
+            if char == "\n":
+                continue
+            self.uplink_queue.append(char)
+    
     def charin(self, keypress):
         '''
         Receives a keypress event and passes it on to routines.charin
@@ -113,6 +133,17 @@ class Computer:
         :returns: None
         '''
         routines.charin(keypress, self.keyboard_state, self.dsky, self)
+
+    def process_uplink_data(self):
+        
+        # check if any data ready to be uplinked
+        if len(self.uplink_queue) > 0:
+            char = self.uplink_queue.pop(0)
+            self.charin(char)
+            return True
+        else:
+            self.dsky.set_annunciator("uplink_acty", False)
+            return False
 
     def add_to_mainloop(self, func):
         self.main_loop_table.append(func)
@@ -141,7 +172,7 @@ class Computer:
         '''
         self.keyboard_state[state_name] = new_value
 
-    def add_burn_to_queue(self, burn_object, execute=True):
+    def add_burn(self, burn_object):
 
         """ Adds a Burn object to the computer burn queue. If no burn is
         assigned to next_burn, load new burn to next_burn
@@ -149,35 +180,31 @@ class Computer:
         :param execute: if true, execute the added burn
         :return: None
         """
+        self.next_burn = burn_object
+        #self.add_to_mainloop(burn_object._coarse_start_time_monitor)
 
-        self._burn_queue.append(burn_object)
-        if not self.next_burn:
-            self.next_burn = self._burn_queue.pop()
-        if execute:
-            self.next_burn.execute()
+    def enable_burn(self):
+        self.next_burn.execute()
 
-    def remove_burn(self, this_burn):
+    def remove_burn(self):
 
         """ Removes a given Burn object from the computers burn queue
         :param this_burn: the Burn object to remove
         :return: None
         """
-
-        if this_burn == self.next_burn:
-            self.next_burn = None
-        if this_burn in self._burn_queue:
-            self._burn_queue.remove(this_burn)
-
-    def burn_complete(self):
-
-        """ Removes a completed burn and loads next queued burn if available.
-        :return: None
-        """
-        utils.log("Removing {} from burn queue".format(self.next_burn))
         self.next_burn = None
-        if self._burn_queue:
-            utils.log("Adding {} as next burn".format(self._burn_queue[0]))
-            self.next_burn = self._burn_queue.pop()
+
+
+    #def burn_complete(self):
+
+        #""" Removes a completed burn and loads next queued burn if available.
+        #:return: None
+        #"""
+        #utils.log("Removing {} from burn queue".format(self.next_burn))
+        #self.next_burn = None
+        #if self._burn_queue:
+            #utils.log("Adding {} as next burn".format(self._burn_queue[0]))
+            #self.next_burn = self._burn_queue.pop()
 
     def disable_direction_autopilot(self):
 
@@ -220,8 +247,8 @@ class Computer:
         else:
             utils.log("Retrieved telemetry listing", log_level="INFO")
 
-        # register key handler with qt ui
-        self.register_charin()
+        # add uplink function to main loop
+        self.add_to_mainloop(self.process_uplink_data)
 
         self.main_loop_timer.start(config.LOOP_TIMER_INTERVAL)
         self.slow_loop_timer.start(config.SLOW_LOOP_TIMER_INTERVAL)
@@ -277,6 +304,7 @@ class Computer:
                 if self.keyboard_state["requested_noun"] == "":
                     verb_to_execute = self.verbs[verb](**kwargs)
                 else:
+                    print(self.keyboard_state["requested_noun"])
                     verb_to_execute = self.verbs[verb](self.keyboard_state["requested_noun"], **kwargs)
             except KeyError:
                 self.operator_error("Verb {} does not exist :(".format(verb))
@@ -294,8 +322,12 @@ class Computer:
         :type program_number: str
         :returns: 
         '''
-        utils.log("Executing P{}".format(program_number))
-        program = self.programs[program_number]()
+        try:
+            program = self.programs[program_number]()
+        except KeyError:
+            self.program_alarm(116)
+            self.go_to_poo()
+            return
         program.execute()
         
     
@@ -373,13 +405,8 @@ class Computer:
         self.alarm_codes[0] = alarm_code
         self.alarm_codes[2] = self.alarm_codes[0]
         self.dsky.annunciators["prog"].on()
-        try:
-            self.running_program.terminate()
-        except programs.ProgramTerminated:
-            # this should happen if the program terminated successfully
-            utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), message), log_level="ERROR")
-        if message:
-            utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), message), log_level="ERROR")
+        self.running_program.terminate()
+        utils.log("P00DOO ABORT {}: {}".format(str(alarm_code), message), log_level="ERROR")
         poo = self.programs["00"]()
         poo.execute()
 
