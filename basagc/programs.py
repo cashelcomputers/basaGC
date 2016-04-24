@@ -182,10 +182,7 @@ class Program11(Program):
         utils.log("Program 11 executing", log_level="INFO")
 
         # test if KSP is connected
-        try:
-            get_telemetry("universalTime")
-        except KSPNotConnected:
-            self.terminate()
+        if check_connection() == False:
             return
 
         # --> call average G integration with ΔV integration
