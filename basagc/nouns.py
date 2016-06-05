@@ -502,9 +502,24 @@ class Noun95(Noun):
         return data
 
 # generate a OrderedDict of all nouns for inclusion in the computer
-nouns = OrderedDict()
+
+# JRI many verbs access nouns['xx'] without first testing
+#   if we have a class for Nounxx. As a workaround, create a container class 
+#   here that dynamically creates a new subclass of Noun named Nounxx as needed
+class OrderedDictDefaultNoun(OrderedDict):
+
+    def __init__(self):
+        super().__init__()
+    
+    def __getitem__(self, name):
+        try:
+            return super().__getitem__(name)
+        except KeyError:
+            self[name] = type("Noun" + name, (Noun,), {'__init__' : lambda self: Noun.__init__(self, description='Undefined', number=name)})
+            return self[name]
+            
+nouns = OrderedDictDefaultNoun()
 clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
 for class_tuple in clsmembers:
     if class_tuple[0][-1].isdigit():
         nouns[class_tuple[0][-2:]] = class_tuple[1]
-
