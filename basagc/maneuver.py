@@ -5,8 +5,8 @@ from pudb import set_trace
 
 from basagc import config, utils
 from basagc.interfaces import telemachus
-from basagc.config import TELEMACHUS_BODY_IDS
-from basagc.ksp import get_telemetry
+#from basagc.config import TELEMACHUS_BODY_IDS
+from basagc import ksp
 
 if config.DEBUG:
     from pudb import set_trace  # lint:ok
@@ -18,25 +18,29 @@ class HohmannTransfer:
     def __init__(self):
         self.delta_v_1 = 0.0
         self.delta_v_2 = 0.0
-        self.orbiting_body = get_telemetry("body")
-        self.radius = get_telemetry("body_radius", body_number=config.TELEMACHUS_BODY_IDS[self.orbiting_body])
-        
+        #self.orbiting_body = get_telemetry("body")
+        self.orbiting_body = ksp.get_telemetry("orbit_body", "name")
         self.phase_angle_required = 0.0
         self.time_of_ignition_first_burn = 0.0
         self.target_name = "Mun"
-        self.departure_body = get_telemetry("body")
-        self.departure_altitude = get_telemetry("sma")
-        self.radius = get_telemetry("body_radius", body_number=config.TELEMACHUS_BODY_IDS[self.orbiting_body])
+        #self.departure_body = get_telemetry("body")
+        self.departure_body = ksp.get_telemetry("orbit_body", "name")
+        #self.departure_altitude = get_telemetry("sma")
+        self.departure_altitude = ksp.get_telemetry("orbit", "semi_major_axis")
+        #self.radius = get_telemetry("body_radius", body_number=config.TELEMACHUS_BODY_IDS[self.orbiting_body])
+        self.radius = ksp.get_telemetry("orbit_body", "equatorial_radius")
         self.destination_altitude = 13500000 + self.radius
-        self.grav_param = get_telemetry("body_gravParameter",
-                                         body_number=config.TELEMACHUS_BODY_IDS[self.orbiting_body])
-        
-        self.orbital_period = get_telemetry("period")
-        self.departure_body_period = get_telemetry("body_period",
-                                                    body_number=config.TELEMACHUS_BODY_IDS["Kerbin"])
+        #self.grav_param = get_telemetry("body_gravParameter",
+        #                                 body_number=config.TELEMACHUS_BODY_IDS[self.orbiting_body])
+        self.grav_param = ksp.get_telemetry("orbit_body", "gravitational_parameter")
+        #self.orbital_period = get_telemetry("period")
+        self.orbital_period = ksp.get_telemetry("orbit", "period")
+        #self.departure_body_period = get_telemetry("body_period",
+        #                                            body_number=config.TELEMACHUS_BODY_IDS["Kerbin"])
+        self.departure_body_period = ksp.get_telemetry("orbit_body", "rotational_period")
         self.first_burn = None
         self.second_burn = None
-        self.target_id = config.TELEMACHUS_BODY_IDS[self.target_name]
+        #self.target_id = config.TELEMACHUS_BODY_IDS[self.target_name]
 
         self.time_of_node = 0.0
         #self.time_of_second_node = 0.0
@@ -91,7 +95,7 @@ class HohmannTransfer:
     @staticmethod
     def check_orbital_parameters():
         
-        if get_telemetry("eccentricity") > 0.002:
+        if ksp.get_telemetry("orbit", "eccentricity") > 0.002:
             return (False, 224)
 
         # check if orbit is excessively inclined
@@ -106,7 +110,7 @@ class HohmannTransfer:
     def update_parameters(self):
 
         # update departure altitide
-        self.departure_altitude = get_telemetry("altitude")
+        self.departure_altitude = ksp.get_telemetry("vessel", "mean_altitude", refssmat=config.REFSSMAT["planet_non_rotating"])
         self.calculate()
         self.calculate_burn_timings()
         self.first_burn.delta_v = self.delta_v_1
@@ -244,7 +248,7 @@ class HohmannTransfer:
         #departure_planet_radius = get_telemetry("body_radius", body_number=TELEMACHUS_BODY_IDS[departure_body])
         r1 = departure_altitude
         r2 = destination_altitude
-        mu = float(get_telemetry("body_gravParameter", body_number=TELEMACHUS_BODY_IDS[departure_body]))
+        mu = ksp.get_telemetry("orbit_body", "gravitational_parameter")
         sqrt_r1 = math.sqrt(r1)
         sqrt_r2 = math.sqrt(r2)
         sqrt_2_sum = math.sqrt(2 / (r1 + r2))

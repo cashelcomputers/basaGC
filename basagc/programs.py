@@ -241,43 +241,59 @@ class Program15(Program):
         super().execute()
         
         # if no connection to KSP, do P00DOO abort
-        if not check_connection():
-            self.computer.poodoo_abort(111)
-            self.terminate()
-            return
+        #if not check_connection():
+            #self.computer.poodoo_abort(111)
+            #self.terminate()
+            #return
+        #
+        ## check that orbital parameters are within range to conduct burn
+        #is_orbit_ok = maneuver.HohmannTransfer.check_orbital_parameters()
+        #if is_orbit_ok == False:
+            #self.computer.poodoo_abort(is_orbit_ok[1])
+            #return
         
-        # check that orbital parameters are within range to conduct burn
-        is_orbit_ok = maneuver.HohmannTransfer.check_orbital_parameters()
-        if is_orbit_ok == True:
-            # request mass
-            self.computer.execute_verb(verb="21", noun="25")
-            self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_whole_part, display_location="data_1")
-        else:
-            self.computer.poodoo_abort(is_orbit_ok[1])
-
-    def _accept_initial_mass_whole_part(self, mass):
-        Program.computer.noun_data["25"][0] = mass
-        self.computer.execute_verb(verb="22", noun="25")
-        self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_fractional_part, display_location="data_2")
+        # get mass
+        mass = ksp.get_telemetry("vessel", "mass") / 1000  # in tons
+        fractional_part, whole_part  = math.modf(mass)
+        Program.computer.noun_data["25"][0] = str(int(whole_part)).zfill(5)
+        Program.computer.noun_data["25"][1] = str(int(fractional_part * 100000))
         
-    def _accept_initial_mass_fractional_part(self, mass):
-        Program.computer.noun_data["25"][1] = mass
-        self.computer.execute_verb(verb="21", noun="31")
-        self.computer.dsky.request_data(requesting_object=self._accept_thrust_whole_part, display_location="data_1")
+        # get thrust
+        thrust = ksp.get_telemetry("vessel", "max_thrust") / 1000  # in kN
+        fractional_part, whole_part  = math.modf(thrust)
+        Program.computer.noun_data["31"][0] = str(int(whole_part)).zfill(5)
+        Program.computer.noun_data["31"][1] = str(int(fractional_part * 100000)).zfill(5)
 
-    def _accept_thrust_whole_part(self, thrust):
-        Program.computer.noun_data["31"][0] = thrust
-        self.computer.execute_verb(verb="22", noun="31")
-        self.computer.dsky.request_data(requesting_object=self._accept_thrust_fractional_part, display_location="data_2")
+        # get isp
+        isp = ksp.get_telemetry("vessel", "specific_impulse")
+        Program.computer.noun_data["38"][0] = str(int(isp)).zfill(5)
 
-    def _accept_thrust_fractional_part(self, thrust):
-        Program.computer.noun_data["31"][1] = thrust
-        self.computer.execute_verb(verb="21", noun="38")
-        self.computer.dsky.request_data(requesting_object=self._accept_isp, display_location="data_1")
-
-    def _accept_isp(self, isp):
-        Program.computer.noun_data["38"][0] = isp
+        # do it!
         self.calculate_maneuver()
+
+    #def _accept_initial_mass_whole_part(self, mass):
+        #Program.computer.noun_data["25"][0] = mass
+        #self.computer.execute_verb(verb="22", noun="25")
+        #self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_fractional_part, display_location="data_2")
+        
+    #def _accept_initial_mass_fractional_part(self, mass):
+        #Program.computer.noun_data["25"][1] = mass
+        #self.computer.execute_verb(verb="21", noun="31")
+        #self.computer.dsky.request_data(requesting_object=self._accept_thrust_whole_part, display_location="data_1")
+
+    #def _accept_thrust_whole_part(self, thrust):
+        #Program.computer.noun_data["31"][0] = thrust
+        #self.computer.execute_verb(verb="22", noun="31")
+        #self.computer.dsky.request_data(requesting_object=self._accept_thrust_fractional_part, display_location="data_2")
+
+    #def _accept_thrust_fractional_part(self, thrust):
+        #Program.computer.noun_data["31"][1] = thrust
+        #self.computer.execute_verb(verb="21", noun="38")
+        #self.computer.dsky.request_data(requesting_object=self._accept_isp, display_location="data_1")
+
+    #def _accept_isp(self, isp):
+        #Program.computer.noun_data["38"][0] = isp
+
 
     def calculate_maneuver(self):
 

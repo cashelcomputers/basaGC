@@ -24,6 +24,7 @@ LOOP_TIMER_INTERVAL = 50
 SLOW_LOOP_TIMER_INTERVAL = 2000
 ENABLE_COMP_ACTY_FLASH = True
 KSP_INTERFACE = "krpc"
+KRPC_PORT = 50002
 KOS_PORT = 5410
 
 LOG_LEVELS = [
@@ -50,25 +51,25 @@ DIRECTIONS = [
     "node",
 ]
 
-TELEMACHUS_BODY_IDS = {
-    "Kerbol": "0",
-    "Kerbin": "1",
-    "Mun": "2",
-    "Minmus": "3",
-    "Moho": "4",
-    "Eve": "5",
-    "Duna": "6",
-    "Ike": "7",
-    "Jool": "8",
-    "Laythe": "9",
-    "Vall": "10",
-    "Bop": "11",
-    "Tylo": "12",
-    "Gilly": "13",
-    "Pol": "14",
-    "Dres": "15",
-    "Eeloo": "16",
-}
+#TELEMACHUS_BODY_IDS = {
+    #"Kerbol": "0",
+    #"Kerbin": "1",
+    #"Mun": "2",
+    #"Minmus": "3",
+    #"Moho": "4",
+    #"Eve": "5",
+    #"Duna": "6",
+    #"Ike": "7",
+    #"Jool": "8",
+    #"Laythe": "9",
+    #"Vall": "10",
+    #"Bop": "11",
+    #"Tylo": "12",
+    #"Gilly": "13",
+    #"Pol": "14",
+    #"Dres": "15",
+    #"Eeloo": "16",
+#}
 
 _UNSORTED_ALARM_CODES = {
     110: "Error contacting KSP",
@@ -86,16 +87,16 @@ _UNSORTED_ALARM_CODES = {
 }
 
 ALARM_CODES = OrderedDict(sorted(_UNSORTED_ALARM_CODES.items()))
-OCTAL_BODY_IDS = {}
+#OCTAL_BODY_IDS = {}
 
-for key, value in TELEMACHUS_BODY_IDS.items():
-    value = oct(int(value))
-    value = value[2:]
-    OCTAL_BODY_IDS[value] = key
+#for key, value in TELEMACHUS_BODY_IDS.items():
+    #value = oct(int(value))
+    #value = value[2:]
+    #OCTAL_BODY_IDS[value] = key
 
 
-# OCTAL_BODY_IDS = {key: str(int(oct(int(value)))) for key, value in TELEMACHUS_BODY_IDS.items()}  # FIXME: abomination
-OCTAL_BODY_NAMES = {value: key for key, value in OCTAL_BODY_IDS.items()}
+## OCTAL_BODY_IDS = {key: str(int(oct(int(value)))) for key, value in TELEMACHUS_BODY_IDS.items()}  # FIXME: abomination
+#OCTAL_BODY_NAMES = {value: key for key, value in OCTAL_BODY_IDS.items()}
 
 PROGRAM_DESCRIPTION = "basaGC is a implementation of the Apollo Guidance Computer (AGC) for Kerbal Space Program." + (
                       "\n\nbasaGC includes code and images from the Virtual AGC Project ") + (

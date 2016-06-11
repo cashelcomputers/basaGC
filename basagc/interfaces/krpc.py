@@ -3,6 +3,8 @@
 
 import krpc as krpclib
 
+from basagc import config
+
 class KSPNotConnected(Exception):
     """ This exception should be raised when there is no connection to KSP """
     pass
@@ -19,7 +21,7 @@ class KRPCConnection:
     def start_connection(self):
 
         try:
-            self.connection = krpclib.connect(name='basaGC', rpc_port=50002)
+            self.connection = krpclib.connect(name='basaGC', rpc_port=config.KRPC_PORT)
         except krpclib.error.NetworkError:
             raise KSPNotConnected
 
@@ -45,11 +47,12 @@ class KRPCConnection:
         data = None
         if telemetry_type == "orbit":
             data = self.connection.space_center.active_vessel.orbit
+        elif telemetry_type == "orbit_body":
+            data = self.connection.space_center.active_vessel.orbit.body
         elif telemetry_type == "vessel":
             data = self.connection.space_center.active_vessel
         elif telemetry_type == "flight":
             data = self.connection.space_center.active_vessel.flight(refssmat)
-            print(getattr(data, telemetry))
         else:
             return False
 
@@ -60,35 +63,3 @@ class KRPCConnection:
                 return self.connection.add_stream(getattr, data, telemetry)
         else:
             return getattr(data, telemetry)
-        
-        
-
-    #def get_telemetry_stream(telemetry):
-        #pass
-
-    #def get_orbital_parameter(self, telemetry, stream):
-        #current_orbit = self.connection.space_center.active_vessel.orbit
-        #if stream:
-            #try:
-                #return self.connection.add_stream(getattr, current_orbit, telemetry)
-            #except AttributeError:
-                #return False
-        #else:
-            #try:
-                #return getattr(current_orbit, telemetry)
-            #except AttributeError:
-                #return False
-
-    #def get_vessel_telemetry(self, telemetry):
-        #vessel = self.connection.space_center.active_vessel
-        #try:
-            #return getattr(vessel, telemetry)
-        #except AttributeError:
-            #return False
-
-    #def get_flight_telemetry(self, telemetry, refssmat):
-        #flight = self.connection.space_center.active_vessel.flight(refssmat)
-        #try:
-            #return getattr(flight, telemetry)
-        #except AttributeError:
-            #return False
