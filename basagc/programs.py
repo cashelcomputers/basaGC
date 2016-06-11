@@ -16,7 +16,7 @@ if config.DEBUG:
 from basagc import utils, maneuver
 
 from basagc.maneuver import Burn
-from basagc.interfaces.telemachus import get_telemetry, KSPNotConnected, check_connection
+from basagc import ksp
 
 
 class Program(object):
@@ -104,7 +104,7 @@ class Program01(Program):
         """
         
         super().execute()
-        if check_connection() == False:
+        if ksp.check_connection() == False:
             Program.computer.poodoo_abort(111)
             self.terminate()
             return

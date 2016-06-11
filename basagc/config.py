@@ -23,8 +23,8 @@ COMP_ACTY_FLASH_DURATION = 100
 LOOP_TIMER_INTERVAL = 50
 SLOW_LOOP_TIMER_INTERVAL = 2000
 ENABLE_COMP_ACTY_FLASH = True
-KSP_INTERFACE = "kos"
-KOS_PORT = 23
+KSP_INTERFACE = "krpc"
+KOS_PORT = 5410
 
 LOG_LEVELS = [
     "DEBUG",
@@ -35,6 +35,10 @@ LOG_LEVELS = [
 ]
 
 current_log_level = "INFO"
+
+REFSSMAT = {
+    "planet_non_rotating": "non_rotating_reference_frame",
+    }
 
 DIRECTIONS = [
     "prograde",

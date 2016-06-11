@@ -6,7 +6,7 @@ from pudb import set_trace
 from basagc import config, utils
 from basagc.interfaces import telemachus
 from basagc.config import TELEMACHUS_BODY_IDS
-from basagc.interfaces.telemachus import get_telemetry
+from basagc.ksp import get_telemetry
 
 if config.DEBUG:
     from pudb import set_trace  # lint:ok

@@ -240,14 +240,15 @@ class Computer:
         """
         utils.log("Computer booting...", log_level="INFO")
 
+        ksp.connect()
+        
         # attempt to load telemetry listing
-        # set_trace()
-        try:
-            telemachus.get_api_listing()
-        except telemachus.KSPNotConnected:
-            utils.log("Cannot retrieve telemetry listing - no connection to KSP", log_level="WARNING")
-        else:
-            utils.log("Retrieved telemetry listing", log_level="INFO")
+        #try:
+            #telemachus.get_api_listing()
+        #except telemachus.KSPNotConnected:
+            #utils.log("Cannot retrieve telemetry listing - no connection to KSP", log_level="WARNING")
+        #else:
+            #utils.log("Retrieved telemetry listing", log_level="INFO")
 
         # add uplink function to main loop
         self.add_to_mainloop(self.process_uplink_data)
@@ -256,7 +257,6 @@ class Computer:
         self.slow_loop_timer.start(config.SLOW_LOOP_TIMER_INTERVAL)
         self.is_powered_on = True
 
-        print(ksp.check_connection())
 
     def main_loop(self):
 
@@ -277,7 +277,7 @@ class Computer:
         A slower loop to handle tasks that are less frequently run
         :returns: 
         '''
-        if not telemachus.check_connection():
+        if not ksp.check_connection():
             self.dsky.annunciators["no_att"].on()
         if config.ENABLE_COMP_ACTY_FLASH:
             self.flash_comp_acty()

@@ -9,7 +9,7 @@ from basagc import config
 if config.DEBUG:
     from pudb import set_trace  # lint:ok
 from basagc import utils
-from basagc.interfaces.telemachus import get_telemetry, TelemetryNotAvailable
+from basagc import ksp
 
 computer = None
 
@@ -353,16 +353,20 @@ class Noun43(Noun):
 
 class Noun44(Noun):
     def __init__(self):
-        super().__init__("Apoapsis (xxx.xx km), Periapsis (xxx.xx km), Time To Apoapsis (hmmss)",
+        super().__init__("Apoapsis (xxxx.x km), Periapsis (xxxx.x km), Time To Apoapsis (hmmss)",
                                      number="44")
 
     def return_data(self):
-        try:
-            apoapsis = str(round(get_telemetry("ApA") / 100, 1))
-            periapsis = str(round(get_telemetry("PeA") / 100, 1))
-            tff = int(get_telemetry("timeToAp"))
-        except TelemetryNotAvailable:
-            raise
+        #try:
+            #apoapsis = str(round(get_telemetry("ApA") / 100, 1))
+            #periapsis = str(round(get_telemetry("PeA") / 100, 1))
+            #tff = int(get_telemetry("timeToAp"))
+        #except TelemetryNotAvailable:
+            #raise
+        apoapsis = str(round(ksp.get_telemetry("orbit", "apoapsis_altitude") / 1000, 1))
+        periapsis = str(round(ksp.get_telemetry("orbit", "periapsis_altitude") / 1000, 1))
+        tff = int(ksp.get_telemetry("orbit", "time_to_apoapsis"))
+        print(apoapsis, periapsis, tff)
 
         apoapsis = apoapsis.replace(".", "")
         periapsis = periapsis.replace(".", "")
@@ -377,8 +381,8 @@ class Noun44(Noun):
             2: periapsis,
             3: tff,
             "tooltips": [
-                "Apoapsis Altitude (xxx.xx km)",
-                "Periapsis Altitude (xxx.xx km)",
+                "Apoapsis Altitude (xxxx.x km)",
+                "Periapsis Altitude (xxxx.x km)",
                 "Time to Apoapsis (hmmss)"
             ],
             "is_octal": False,
