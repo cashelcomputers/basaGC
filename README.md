@@ -4,6 +4,9 @@ basaGC: Apollo Guidance Computer for Kerbal Space Program.
 This is my reimplementation of the [Apollo Guidance Computer](https://en.wikipedia.org/wiki/Apollo_Guidance_Computer)
 (AGC) and Display/Keyboard (DSKY) for Kerbal Space Program.
 
+This branch contains the pre-3.0 release version. This will often be broken. New features in this release are mainly
+moving away from using Telemachus and using either KOS or kRPC. Stay tuned...
+
 Screenshots here: http://imgur.com/a/Tj5mJ
 
 Prerequisites:

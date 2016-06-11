@@ -8,8 +8,8 @@ from collections import OrderedDict
 
 from PyQt5.QtCore import QTimer
 from basagc import config, nouns, utils, dsky
-from basagc.telemachus import KSPNotConnected, TelemetryNotAvailable
-from basagc import telemachus
+from basagc.interfaces.telemachus import KSPNotConnected, TelemetryNotAvailable
+from basagc.interfaces import telemachus
 if config.DEBUG:
     from pudb import set_trace  # lint:ok
 

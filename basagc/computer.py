@@ -13,7 +13,7 @@ from basagc import dsky
 from basagc import nouns
 from basagc import programs
 from basagc import routines
-from basagc import telemachus
+from basagc.interfaces import telemachus
 from basagc import utils
 from basagc import verbs
 from basagc import imu

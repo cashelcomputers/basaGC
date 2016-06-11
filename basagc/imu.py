@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """This module contains a class to model the IMU found on Apollo spacecraft."""
 
-from basagc.telemachus import check_connection, get_telemetry
+from basagc.interfaces.telemachus import check_connection, get_telemetry
 from basagc import utils, config
 if config.DEBUG:
     from pudb import set_trace  # lint:ok

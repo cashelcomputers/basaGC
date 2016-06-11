@@ -16,7 +16,7 @@ if config.DEBUG:
 from basagc import utils, maneuver
 
 from basagc.maneuver import Burn
-from basagc.telemachus import get_telemetry, KSPNotConnected, check_connection
+from basagc.interfaces.telemachus import get_telemetry, KSPNotConnected, check_connection
 
 
 class Program(object):
