@@ -18,6 +18,8 @@ from basagc import utils
 from basagc import verbs
 from basagc import imu
 from basagc import maneuver
+from basagc import ksp
+
 
 
 class Computer:
@@ -253,6 +255,8 @@ class Computer:
         self.main_loop_timer.start(config.LOOP_TIMER_INTERVAL)
         self.slow_loop_timer.start(config.SLOW_LOOP_TIMER_INTERVAL)
         self.is_powered_on = True
+
+        print(ksp.check_connection())
 
     def main_loop(self):
 
