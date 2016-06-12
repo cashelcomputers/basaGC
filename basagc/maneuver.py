@@ -483,3 +483,32 @@ def calc_burn_duration(initial_mass, thrust, specific_impulse, delta_v):
     utils.log("Burn Duration: {:.1f} seconds".format(burn_duration), log_level="info")
     utils.log("-" * 40, log_level="info")
     return burn_duration
+
+#class Launch:
+    #
+    #def __init__(self, computer):
+        #self.turn_start_altitude = None
+        #self.turn_end_altitude = None
+        #self.target_altitude = None
+        #self.computer = computer
+        #self.ut_of_launch = 0.0
+
+    #def countdown(self):
+        ##set_trace()
+        #now = ksp.get_telemetry("space_center", "ut")
+        #self.ut_of_launch = now + 20
+        #self.computer.noun_data["06"] = 20.0
+        ## enable SAS
+        #ksp.send_command("sas", True)
+        #self.computer.execute_verb(verb="16", noun="06")
+        #self.computer.add_to_mainloop(self.countdown_monitor)
+        #
+    #def countdown_monitor(self):
+        ##set_trace()
+        #now = ksp.get_telemetry("space_center", "ut")
+        #delta_time = self.ut_of_launch - now
+        #self.computer.noun_data["06"] = round(delta_time, 2)
+        #print(self.computer.noun_data["06"])
+        #if delta_time <= 0:
+            #print("LIFTOFF!!!!!!1!")
+            #self.computer.remove_from_mainloop(self.countdown_monitor)

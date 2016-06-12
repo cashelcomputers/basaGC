@@ -6,7 +6,7 @@ import os
 
 from collections import OrderedDict
 
-DEBUG = False
+DEBUG = True
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 PROGRAM_NAME = "basaGC"
@@ -39,6 +39,7 @@ current_log_level = "INFO"
 
 REFSSMAT = {
     "planet_non_rotating": "non_rotating_reference_frame",
+    "planet_rotating": " reference_frame",
     }
 
 SAS_DIRECTIONS = [

@@ -16,7 +16,7 @@ from basagc import routines
 from basagc.interfaces import telemachus
 from basagc import utils
 from basagc import verbs
-from basagc import imu
+#from basagc import imu
 from basagc import maneuver
 from basagc import ksp
 from basagc import autopilot
@@ -45,7 +45,7 @@ class Computer:
 
         self.ui = ui
         self.dsky = dsky.DSKY(self, self.ui)
-        self.imu = imu.IMU(self)
+        #self.imu = imu.IMU(self)
         self.autopilot = autopilot.Autopilot()
         
         self.keyboard_state = {
@@ -85,6 +85,7 @@ class Computer:
         self.alarm_codes = [0, 0, 0]
         self.running_programs = []
         self.noun_data = {
+            "06": "",  # time to event
             "30": ["00002"],
             "25": ["00000", "00000", ""],
             "31": ["00000", "00000"],
@@ -258,6 +259,7 @@ class Computer:
         self.main_loop_timer.start(config.LOOP_TIMER_INTERVAL)
         self.slow_loop_timer.start(config.SLOW_LOOP_TIMER_INTERVAL)
         self.is_powered_on = True
+        
 
 
     def main_loop(self):
@@ -320,6 +322,9 @@ class Computer:
 
         self.flash_comp_acty(200)
         verb_to_execute.execute()
+
+    def terminate_verb(self, verb):
+        self.verbs[verb].terminate(self)
 
     def execute_program(self, program_number):
         '''

@@ -108,7 +108,7 @@ class Program01(Program):
             Program.computer.poodoo_abort(111)
             self.terminate()
             return
-        Program.computer.imu.on()
+        #Program.computer.imu.on()
         self.timer.start(10000)
 
     def timeout(self):
@@ -117,46 +117,84 @@ class Program01(Program):
         :returns: None
         '''
 
-        Program.computer.imu.set_fine_align()
+        #Program.computer.imu.set_fine_align()
         Program.computer.execute_program("02")
 
-
 class Program02(Program):
-    '''
-    Waits until liftoff is detected, blanks display and starts P11
-    '''
-
+    
     def __init__(self):
         
-        """ Class constructor.
-        :return: None
-        """
         super().__init__(description="Prelaunch or service - Gyrocompassing program", number="02")
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.timeout)
+        self.turn_start_altitude = None
+        self.turn_end_altitude = None
+        self.target_altitude = None
+        self.computer = Program.computer
+        self.ut_of_launch = 0.0
+
 
     def execute(self):
-
-        """ Executes the program.
-        :return: None
-        """
-        super().execute()
-        Program.computer.add_to_mainloop(self.check_for_liftoff)
-
-    def check_for_liftoff(self):
-        if get_telemetry("verticalSpeed") > 1:
-            utils.log("Liftoff discrete")
-            Program.computer.remove_from_mainloop(self.check_for_liftoff)
-
+        #set_trace()
+        now = ksp.get_telemetry("space_center", "ut")
+        self.ut_of_launch = now + 5
+        self.computer.noun_data["06"] = 5
+        # enable SAS
+        ksp.send_command("sas", True)
+        self.computer.execute_verb(verb="16", noun="06")
+        self.computer.add_to_mainloop(self.countdown_monitor)
+        
+    def countdown_monitor(self):
+        #set_trace()
+        now = ksp.get_telemetry("space_center", "ut")
+        delta_time = self.ut_of_launch - now
+        self.computer.noun_data["06"] = round(delta_time, 2)
+        if delta_time <= 0.1:
+            print("LIFTOFF!!!!!!1!")
+            #set_trace()
+            #self.computer.terminate_verb(verb="16")
+            self.computer.dsky.current_verb.terminate()
+            self.computer.remove_from_mainloop(self.countdown_monitor)
             # Clear display
             for register in ["verb", "noun", "program", "data_1", "data_2", "data_3"]:
-                Program.computer.dsky.blank_register(register)
-            # pause for 1 second, then run P11
-            self.timer.start(1000)
+                self.computer.dsky.blank_register(register)
+            Program.computer.execute_program("11")
+        
+        
+#class Program02(Program):
+    #'''
+    #Waits until liftoff is detected, blanks display and starts P11
+    #'''
 
-    def timeout(self):
-        self.timer.stop()
-        Program.computer.execute_program("11")
+    #def __init__(self):
+        #
+        #""" Class constructor.
+        #:return: None
+        #"""
+        #super().__init__(description="Prelaunch or service - Gyrocompassing program", number="02")
+        #self.timer = QTimer()
+        #self.timer.timeout.connect(self.timeout)
+
+    #def execute(self):
+
+        #""" Executes the program.
+        #:return: None
+        #"""
+        #super().execute()
+        #Program.computer.add_to_mainloop(self.check_for_liftoff)
+
+    #def check_for_liftoff(self):
+        #if get_telemetry("verticalSpeed") > 1:
+            #utils.log("Liftoff discrete")
+            #Program.computer.remove_from_mainloop(self.check_for_liftoff)
+
+            ## Clear display
+            #for register in ["verb", "noun", "program", "data_1", "data_2", "data_3"]:
+                #Program.computer.dsky.blank_register(register)
+            ## pause for 1 second, then run P11
+            #self.timer.start(1000)
+
+    #def timeout(self):
+        #self.timer.stop()
+        #Program.computer.execute_program("11")
 
 class Program11(Program):
 
@@ -182,14 +220,15 @@ class Program11(Program):
         utils.log("Program 11 executing", log_level="INFO")
 
         # test if KSP is connected
-        if check_connection() == False:
-            return
+        #if check_connection() == False:
+            #return
 
         # --> call average G integration with ΔV integration
         # self.computer.run_average_g_routine = True
 
         # --> terminate gyrocompassing
         if "02" in self.computer.running_programs:
+            utils.log("Late termination of P02")
             self.computer.programs["02"].terminate()
 
         # --> compute initial state vector
@@ -256,9 +295,6 @@ class Program15(Program):
 
         # do it!
         self.calculate_maneuver()
-
-
-
 
     def calculate_maneuver(self):
 

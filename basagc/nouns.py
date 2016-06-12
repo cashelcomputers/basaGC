@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """ This module contains all nouns used by the guidance computer."""
 
+import math
 import inspect
 import sys
 from collections import OrderedDict
@@ -44,6 +45,39 @@ class Noun(object):
 
 # -----------------------BEGIN NORMAL NOUNS--------------------------------------
 
+
+class Noun06(Noun):
+    
+    def __init__(self):
+        super().__init__(description="Time to event", number="06")
+
+    def return_data(self):
+        now = ksp.get_telemetry("space_center", "ut")
+        time_until_event = computer.noun_data["06"]
+        #hms_until_event = utils.seconds_to_time(time_until_event)
+
+        ##set_trace()
+        #hours = "-" + str(hms_until_event["hours"]).replace(".", "").zfill(5)
+        #minutes = "-" + str(hms_until_event["minutes"]).replace(".", "").zfill(5)
+
+        ## the following is a workaround to ensure the displayed value doesn't loose a digit
+        #frac_seconds, whole_seconds = math.modf(hms_until_event["seconds"])
+        #frac_seconds = round(frac_seconds, 2)
+        #seconds = "-" + str(int(whole_seconds)).zfill(3) + str(frac_seconds)[3:5].replace(".", "").zfill(2)
+        #print(seconds)
+        data = {
+            1: "-00000",
+            2: "-00000",
+            3: "-{:.2f}".format(time_until_event).replace(".", ""),
+            "is_octal": False,
+            "tooltips" : [
+                "Hours until event",
+                "Minutes until event",
+                "Seconds until event"
+                ],
+            }
+        return data
+
 class Noun09(Noun):
 
     def __init__(self):
@@ -51,7 +85,6 @@ class Noun09(Noun):
 
     def return_data(self):
 
-        utils.log("Noun 09 requested")
         alarm_codes = computer.alarm_codes
         data = {
             1: str(alarm_codes[0]),
@@ -80,7 +113,7 @@ class Noun14(Noun):
             return False
         burn = computer.next_burn
         expected_delta_v_at_cutoff = burn.velocity_at_cutoff
-        actual_delta_v_at_cutoff = get_telemetry("orbitalVelocity")
+        actual_delta_v_at_cutoff = get_telemetry("flight", "speed", refssmat=config.REFSSMAT["planet_rotating"])  # check if this works
         delta_v_error = actual_delta_v_at_cutoff - expected_delta_v_at_cutoff
 
         expected_delta_v_at_cutoff = str(int(expected_delta_v_at_cutoff)).replace(".", "")
@@ -116,12 +149,10 @@ class Noun17(Noun):
 
         # FIXME: need to make sure that data is correct length (sometimes drops the last 0 when input is xxx.x rather
         # then xxx.xx
-        try:
-            roll = str(round(get_telemetry("roll"), 1))
-            pitch = str(round(get_telemetry("pitch"), 1))
-            yaw = str(round(get_telemetry("heading"), 1))
-        except TelemetryNotAvailable:
-            raise
+
+        roll = str(round(ksp.get_telemetry("flight", "roll"), 1))
+        pitch = str(round(ksp.get_telemetry("flight", "pitch"), 1))
+        yaw = str(round(ksp.get_telemetry("flight", "heading"), 1))
 
         roll = roll.replace(".", "")
         pitch = pitch.replace(".", "")

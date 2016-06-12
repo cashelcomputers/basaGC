@@ -8,8 +8,7 @@ from collections import OrderedDict
 
 from PyQt5.QtCore import QTimer
 from basagc import config, nouns, utils, dsky
-from basagc.interfaces.telemachus import KSPNotConnected, TelemetryNotAvailable
-from basagc.interfaces import telemachus
+from basagc import maneuver
 if config.DEBUG:
     from pudb import set_trace  # lint:ok
 
@@ -155,34 +154,34 @@ class ExtendedVerb(Verb):
         super().__init__(name, verb_number, noun=None)
 
 
-class DisplayVerb(Verb):
+#class DisplayVerb(Verb):
 
-    """ Base class for display verbs (verbs 01 through 07 inclusive)
-    """
+    #""" Base class for display verbs (verbs 01 through 07 inclusive)
+    #"""
 
-    def __init__(self, name, verb_number, noun):
+    #def __init__(self, name, verb_number, noun):
 
-        """ Class constructor
-        :param name: name (description) of verb
-        :type name: string
-        :param verb_number: the verb number
-        :type verb_number: str
-        :return: None
-        """
+        #""" Class constructor
+        #:param name: name (description) of verb
+        #:type name: string
+        #:param verb_number: the verb number
+        #:type verb_number: str
+        #:return: None
+        #"""
 
-        super().__init__(name, verb_number, noun)
+        #super().__init__(name, verb_number, noun)
 
-    def execute(self):
+    #def execute(self):
 
-        """ Executes the verb
-        :return: None
-        """
+        #""" Executes the verb
+        #:return: None
+        #"""
 
-        super(DisplayVerb, self).execute()
+        #super().execute()
 
 
 
-class MonitorVerb(DisplayVerb):
+class MonitorVerb(Verb):
 
     """ Base class for Monitor verbs (verbs 11 through 17 inclusive)
     """
@@ -223,18 +222,18 @@ class MonitorVerb(DisplayVerb):
             self.computer.operator_error("Noun {} not implemented yet. Sorry about that...".format(dsky.requested_noun))
             self.terminate()
             return
-        except KSPNotConnected:
-            utils.log("KSP not connected, terminating V{}".format(self.number),
-                      log_level="ERROR")
-            Verb.computer.program_alarm(110)
-            self.terminate()
-            raise
-        except TelemetryNotAvailable:
-            utils.log("Telemetry not available, terminating V{}".format(self.number),
-                      log_level="ERROR")
-            Verb.computer.program_alarm(111)
-            self.terminate()
-            raise
+        #except KSPNotConnected:
+            #utils.log("KSP not connected, terminating V{}".format(self.number),
+                      #log_level="ERROR")
+            #Verb.computer.program_alarm(110)
+            #self.terminate()
+            #raise
+        #except TelemetryNotAvailable:
+            #utils.log("Telemetry not available, terminating V{}".format(self.number),
+                      #log_level="ERROR")
+            #Verb.computer.program_alarm(111)
+            #self.terminate()
+            #raise
         if not data:
             # if the noun returns False, the noun *should* have already raised a program alarm, so we just need to
             # terminate and return
@@ -249,7 +248,7 @@ class MonitorVerb(DisplayVerb):
             Verb.computer.dsky.set_tooltip("data_3", data["tooltips"][2])
 
             self.is_tooltips_set = True
-
+        #set_trace()
         # display data on DSKY registers
         Verb.computer.dsky.set_register(output[0], "data_1")
         Verb.computer.dsky.set_register(output[1], "data_2")
@@ -265,12 +264,12 @@ class MonitorVerb(DisplayVerb):
         #     Verb.computer.keyboard_state["backgrounded_update"].terminate()
         Verb.computer.keyboard_state["display_lock"] = self
 
-        try:
-            self._send_output()
-        except KSPNotConnected:
-            return
-        except TelemetryNotAvailable:
-            return
+        #try:
+        self._send_output()
+        #except KSPNotConnected:
+            #return
+        #except TelemetryNotAvailable:
+            #return
 
         self.timer.start(config.DISPLAY_UPDATE_INTERVAL)
 
@@ -356,7 +355,7 @@ class LoadVerb(Verb):
 # no verb 00
 
 
-class Verb01(DisplayVerb):
+class Verb01(Verb):
 
     """ Displays Octal component 1 in R1
     """
@@ -385,7 +384,7 @@ class Verb01(DisplayVerb):
         Verb.computer.dsky.set_register(output[0], "data_1")
 
 
-class Verb02(DisplayVerb):
+class Verb02(Verb):
 
     """ Displays Octal component 2 in R1
     """
@@ -413,7 +412,7 @@ class Verb02(DisplayVerb):
         output = self._format_output_data(noun_data)
         Verb.computer.dsky.set_register(output[1], "data_2")
 
-class Verb03(DisplayVerb):
+class Verb03(Verb):
 
     """ Displays Octal component 3 in R1
     """
@@ -442,7 +441,7 @@ class Verb03(DisplayVerb):
         output = self._format_output_data(noun_data)
         Verb.computer.dsky.set_register(output[2], "data_3")
 
-class Verb04(DisplayVerb):
+class Verb04(Verb):
 
     """ Displays Octal components 1, 2 in R1, R2
     """
@@ -469,7 +468,7 @@ class Verb04(DisplayVerb):
         Verb.computer.dsky.set_register(output[1], "data_2")
 
 
-class Verb05(DisplayVerb):
+class Verb05(Verb):
 
     """ Displays Octal components 1, 2, 3 in R1, R2, R3
     """
@@ -501,7 +500,7 @@ class Verb05(DisplayVerb):
         Verb.computer.dsky.set_register(output[2], "data_3")
 
 
-class Verb06(DisplayVerb):
+class Verb06(Verb):
 
     """ Displays Decimal in R1 or in R1, R2 or in R1, R2, R3
     """
@@ -1056,30 +1055,33 @@ class Verb98(ExtendedVerb):
         '''
         
         super().execute()
-        self.dsky.request_data(requesting_object=self.receive_data, display_location="noun")
+        testing = maneuver.Launch(self.computer)
+        #set_trace()
+        testing.countdown()
+        #self.dsky.request_data(requesting_object=self.receive_data, display_location="noun")
 
-    def receive_data(self, data):
+    #def receive_data(self, data):
 
-        if data == "01":
-            Verb.computer.accept_uplink()
-        elif data == "02":
-            data = telemachus.get_telemetry("maneuverNodes")
-            data = data[0]
-            for key, value in sorted(data.items()):
-                if key == "orbitPatches":
-                    print("-" * 40)
-                    print("Orbit patches:")
-                    print()
-                    for index in range(len(value)):
-                        print("Patch {}:".format(index))
-                        for a, b in sorted(value[index].items()):
-                            print("{}: {}".format(a, b))
-                        print()
-                    #for a, b in data[key].items():
-                        #print("{}: {}".format(a, b))
-                    print("-" * 40)
-                else:
-                    print("{}: {}".format(key, value))
+        #if data == "01":
+            #Verb.computer.accept_uplink()
+        #elif data == "02":
+            #data = telemachus.get_telemetry("maneuverNodes")
+            #data = data[0]
+            #for key, value in sorted(data.items()):
+                #if key == "orbitPatches":
+                    #print("-" * 40)
+                    #print("Orbit patches:")
+                    #print()
+                    #for index in range(len(value)):
+                        #print("Patch {}:".format(index))
+                        #for a, b in sorted(value[index].items()):
+                            #print("{}: {}".format(a, b))
+                        #print()
+                    ##for a, b in data[key].items():
+                        ##print("{}: {}".format(a, b))
+                    #print("-" * 40)
+                #else:
+                    #print("{}: {}".format(key, value))
 
 class Verb99(ExtendedVerb):
 

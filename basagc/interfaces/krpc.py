@@ -62,6 +62,8 @@ class KRPCConnection:
             data = self.space_center.bodies[body]
         elif telemetry_type == "body_orbit":  # the orbit parameters of a body
             data = self.space_center.bodies[body].orbit
+        elif telemetry_type == "space_center":
+            data = self.space_center
         else:
             return False
 
