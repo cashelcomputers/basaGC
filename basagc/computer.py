@@ -19,6 +19,7 @@ from basagc import verbs
 from basagc import imu
 from basagc import maneuver
 from basagc import ksp
+from basagc import autopilot
 
 
 
@@ -45,6 +46,7 @@ class Computer:
         self.ui = ui
         self.dsky = dsky.DSKY(self, self.ui)
         self.imu = imu.IMU(self)
+        self.autopilot = autopilot.Autopilot()
         
         self.keyboard_state = {
             "input_data_buffer": "",

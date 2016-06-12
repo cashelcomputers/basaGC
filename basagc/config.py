@@ -41,14 +41,17 @@ REFSSMAT = {
     "planet_non_rotating": "non_rotating_reference_frame",
     }
 
-DIRECTIONS = [
+SAS_DIRECTIONS = [
+    "stability_assist",  # normal SAS ie attitude hold
     "prograde",
     "retrograde",
-    "normalplus",
-    "normalminus",
-    "radialplus",
-    "radialminus",
-    "node",
+    "normal",
+    "anti_normal",
+    "radial",
+    "anti_radial",
+    "maneuver",  # node
+    "target",
+    "anti_target",
 ]
 
 #TELEMACHUS_BODY_IDS = {

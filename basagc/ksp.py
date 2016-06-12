@@ -36,6 +36,9 @@ def check_connection():
     else:
         return True
 
-def get_telemetry(telemetry_type, telemetry, stream=False, refssmat=None, **kwargs):
-    return connection.get_telemetry(telemetry_type, telemetry, stream, refssmat, **kwargs)
+def get_telemetry(telemetry_type, telemetry, body=None, stream=False, refssmat=None, **kwargs):
+    return connection.get_telemetry(telemetry_type, telemetry, body, stream, refssmat, **kwargs)
 
+
+def send_command(command, data):
+    return connection.send_command(command, data)

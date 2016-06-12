@@ -214,20 +214,6 @@ class Program15(Program):
         """ Class constructor.
         :return: None
         """
-        # sequence of events:
-        # V37E15E
-        # Flashing V01N30 displays target octal ID
-        # PRO to accept, V21 to change
-        # Display blanks for 5 seconds at TIG - 105 seconds
-        # Display V16N95
-        # at TIG - 10 seconds: Flashing V99
-        # if proceed: execute maneuver
-
-        # FIXME: this program should only *calculate* the maneuver, the actual execution of the burn should be
-        # FIXME: performed by P40
-
-        # TODO: scale final altitude based on crafts TWR
-        # TODO: request twr from user
 
         super().__init__(description="TMI Calculate", number="15")
         
@@ -271,28 +257,7 @@ class Program15(Program):
         # do it!
         self.calculate_maneuver()
 
-    #def _accept_initial_mass_whole_part(self, mass):
-        #Program.computer.noun_data["25"][0] = mass
-        #self.computer.execute_verb(verb="22", noun="25")
-        #self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_fractional_part, display_location="data_2")
-        
-    #def _accept_initial_mass_fractional_part(self, mass):
-        #Program.computer.noun_data["25"][1] = mass
-        #self.computer.execute_verb(verb="21", noun="31")
-        #self.computer.dsky.request_data(requesting_object=self._accept_thrust_whole_part, display_location="data_1")
 
-    #def _accept_thrust_whole_part(self, thrust):
-        #Program.computer.noun_data["31"][0] = thrust
-        #self.computer.execute_verb(verb="22", noun="31")
-        #self.computer.dsky.request_data(requesting_object=self._accept_thrust_fractional_part, display_location="data_2")
-
-    #def _accept_thrust_fractional_part(self, thrust):
-        #Program.computer.noun_data["31"][1] = thrust
-        #self.computer.execute_verb(verb="21", noun="38")
-        #self.computer.dsky.request_data(requesting_object=self._accept_isp, display_location="data_1")
-
-    #def _accept_isp(self, isp):
-        #Program.computer.noun_data["38"][0] = isp
 
 
     def calculate_maneuver(self):

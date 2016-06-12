@@ -4,7 +4,7 @@ import math
 from pudb import set_trace
 
 from basagc import config, utils
-from basagc.interfaces import telemachus
+#from basagc.interfaces import telemachus
 #from basagc.config import TELEMACHUS_BODY_IDS
 from basagc import ksp
 
@@ -99,8 +99,8 @@ class HohmannTransfer:
             return (False, 224)
 
         # check if orbit is excessively inclined
-        target_inclination = get_telemetry("target_inclination")
-        vessel_inclination = get_telemetry("inclination")
+        target_inclination = ksp.get_telemetry("body_orbit", "inclination", "Mun")  # FIXME: hardcoded to Mun
+        vessel_inclination = ksp.get_telemetry("orbit", "inclination")
         if (vessel_inclination > (target_inclination - 1)) and (vessel_inclination > (target_inclination + 1)):
             #self.computer.poodoo_abort(225)
             return (False, 225)

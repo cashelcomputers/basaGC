@@ -17,6 +17,10 @@ class KRPCConnection:
     def __init__(self):
         self.connection = None
         self.streams = []
+        self.control = None
+        self.orbit = None
+        self.vessel = None
+        self.space_center = None
 
     def start_connection(self):
 
@@ -24,6 +28,11 @@ class KRPCConnection:
             self.connection = krpclib.connect(name='basaGC', rpc_port=config.KRPC_PORT)
         except krpclib.error.NetworkError:
             raise KSPNotConnected
+            return
+        self.vessel = self.connection.space_center.active_vessel
+        self.control = self.vessel.control
+        self.orbit = self.vessel.orbit
+        self.space_center = self.connection.space_center
 
     def check_connection(self):
         if self.connection == None:
@@ -34,25 +43,25 @@ class KRPCConnection:
         else:
             return True
 
-    def set_throttle(percent):
-        pass
-
-    def get_telemetry(self, telemetry_type, telemetry, stream, refssmat, **kwargs):
+    def get_telemetry(self, telemetry_type, telemetry, body, stream, refssmat, **kwargs):
 
         if refssmat:
             vessel = self.connection.space_center.active_vessel
-            print(dir(vessel.orbit.body))
-            refssmat = getattr(vessel.orbit.body, refssmat)
+            refssmat = getattr(self.orbit.body, refssmat)
             print(refssmat)
         data = None
         if telemetry_type == "orbit":
-            data = self.connection.space_center.active_vessel.orbit
-        elif telemetry_type == "orbit_body":
-            data = self.connection.space_center.active_vessel.orbit.body
+            data = self.orbit
+        elif telemetry_type == "orbit_body":  # the parameters of the body being orbited
+            data = self.orbit.body
         elif telemetry_type == "vessel":
-            data = self.connection.space_center.active_vessel
+            data = self.vessel
         elif telemetry_type == "flight":
             data = self.connection.space_center.active_vessel.flight(refssmat)
+        elif telemetry_type == "body":  # the parameters of a given body
+            data = self.space_center.bodies[body]
+        elif telemetry_type == "body_orbit":  # the orbit parameters of a body
+            data = self.space_center.bodies[body].orbit
         else:
             return False
 
@@ -63,3 +72,14 @@ class KRPCConnection:
                 return self.connection.add_stream(getattr, data, telemetry)
         else:
             return getattr(data, telemetry)
+
+    def send_command(self, command, data):
+
+        # sas
+        if command == "sas_mode":
+            data = getattr(self.space_center.SASMode, data)
+        try:
+            setattr(self.control, command, data)
+        except AttributeError:
+            return False
+        return True

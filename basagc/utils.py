@@ -3,6 +3,7 @@
 
 import logging
 import time
+import math
 
 from basagc import config
 if config.DEBUG:
@@ -67,3 +68,6 @@ def log(message="", log_level="DEBUG"):
     
     # since there is no logging window yet, print message to stdout
     print("{:20}{:10}{}".format(now, log_level, message))
+
+def vector_magnitude(vector):
+    return math.sqrt(vector[0]**2 + vector[1]**2 + vector[2]**2)
