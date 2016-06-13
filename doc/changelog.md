@@ -9,6 +9,7 @@ Future: version 3.0:
 - refactored P15, P40, and maneuver calculator classes
 - Noun 44 now displays apoapsis and periapsis as xxxx.x km (was xxx.xx km)
 - Replaced Telemachus with kRPC
+- Removed dependency on MechJeb
 - Refactorings to telemetry code
 
 17/04/16: version 2.2.0:

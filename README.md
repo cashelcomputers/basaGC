@@ -12,12 +12,10 @@ Screenshots here: http://imgur.com/a/Tj5mJ
 Prerequisites:
 ---
 
-- KSP (tested on 1.0.5), should work on any version that Telemachus works on
+- KSP (tested on 1.1.2), should work on any version that kRPC works on
 - [Python 3.4](https://www.python.org/downloads/release/python-344/)
 - [PyQt5](https://www.riverbankcomputing.com/software/pyqt/download5)
-- [Intrepid mod](https://github.com/tcannonfodder/Telemachus/releases/tag/v1.4.32.0) (fork of Telemachus mod) for KSP
-1.0.5 (for KSP 1.1, try [this release](https://github.com/tcannonfodder/Telemachus/releases/tag/v1.5.32.1))
-- [Mechjeb mod](https://github.com/MuMech/MechJeb2)
+- [kRPC](https://github.com/krpc/krpc/releases) >= 0.3.4
 
 Installation:
 ---
