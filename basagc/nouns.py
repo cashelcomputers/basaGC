@@ -177,16 +177,24 @@ class Noun25(Noun):
     def __init__(self):
         
         super().__init__("Spacecraft mass", number="25")
-        self.mass_whole_part = computer.noun_data["25"][0]
-        self.mass_fractional_part = computer.noun_data["25"][1]
+        
+        #self.mass_whole_part = computer.noun_data["25"][0]
+        #self.mass_fractional_part = computer.noun_data["25"][1]
 
     def return_data(self):
 
+        mass_in_tons = ksp.get_telemetry("vessel", "mass") / 1000
+        mass_frac_part, mass_whole_part = math.modf(mass_in_tons)
+        mass_frac_part = str(round(mass_frac_part, 5))[2:].ljust(5, "0")
+        
+        mass_whole_part = str(int(mass_whole_part)).zfill(5)
+        print(mass_in_tons, mass_whole_part, mass_frac_part)
         data = {
-            1: self.mass_whole_part,
-            2: self.mass_fractional_part,
+            1: mass_whole_part,
+            2: mass_frac_part,
             3: "bbbbb",
-            "tooltips": ["Spacecraft mass ", None, None],
+            "tooltips": ["Spacecraft mass (whole part, in tons)",
+                         "Spacecraft mass (fractional part, in tons)", None],
             "is_octal": True,
         }
         return data
@@ -194,26 +202,26 @@ class Noun25(Noun):
 
 
         
-class Noun30(Noun):
-    
-    def __init__(self):
-        
-        super().__init__("Octal Target ID (000XX)", number="30")
+#class Noun30(Noun):
+    #
+    #def __init__(self):
+        #
+        #super().__init__("Octal Target ID (000XX)", number="30")
 
-    def return_data(self):
+    #def return_data(self):
 
-        target_id = computer.noun_data["30"][0]
-        data = {
-            1: target_id,
-            2: "",
-            3: "",
-            "tooltips": ["Target Octal ID", None, None],
-            "is_octal": True,
-        }
-        return data
+        #target_id = computer.noun_data["30"][0]
+        #data = {
+            #1: target_id,
+            #2: "",
+            #3: "",
+            #"tooltips": ["Target Octal ID", None, None],
+            #"is_octal": True,
+        #}
+        #return data
 
-    def receive_data(self, data):
-        computer.noun_data["30"] = data
+    #def receive_data(self, data):
+        #computer.noun_data["30"] = data
 
 class Noun31(Noun):
     
@@ -223,7 +231,9 @@ class Noun31(Noun):
 
     def return_data(self):
 
-        
+        available_thrust_kn = ksp.get_telemetry("vessel", "available_thrust") / 1000
+        thrust_frac_part, thrust_whole_part = math.modf(available_thrust_kn)
+        print(available_thrust)
         data = {
             1: computer.noun_data["31"][0],
             2: computer.noun_data["31"][1],
