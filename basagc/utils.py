@@ -71,3 +71,11 @@ def log(message="", log_level="DEBUG"):
 
 def vector_magnitude(vector):
     return math.sqrt(vector[0]**2 + vector[1]**2 + vector[2]**2)
+
+def float_to_parts(number):
+    """Converts the given float into two strings, one being the whole number part and the other being the fractional
+    part. The decimal point is removed. Numbers are padded out with zeros on the left. This formats data for display."""
+    frac_part, whole_part = math.modf(number)
+    whole_part = str(int(whole_part)).zfill(5)
+    frac_part = str(round(frac_part, 5))[2:].ljust(5, "0")  # [2:] to get rid of leading 0., then padded to left
+    return whole_part, frac_part

@@ -312,7 +312,6 @@ class Computer:
                 if self.keyboard_state["requested_noun"] == "":
                     verb_to_execute = self.verbs[verb](**kwargs)
                 else:
-                    print(self.keyboard_state["requested_noun"])
                     verb_to_execute = self.verbs[verb](self.keyboard_state["requested_noun"], **kwargs)
             except KeyError:
                 self.operator_error("Verb {} does not exist :(".format(verb))

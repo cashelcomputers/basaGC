@@ -12,8 +12,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 PROGRAM_NAME = "basaGC"
 VERSION = "2.2.0"
 LICENCE_FILE = os.path.join(BASE_DIR, "licence")
-
-
 IMAGES_DIR = os.path.join(BASE_DIR, "assets/")
 IP = "127.0.0.1"
 PORT = "8085"
@@ -40,6 +38,8 @@ current_log_level = "INFO"
 REFSSMAT = {
     "planet_non_rotating": "non_rotating_reference_frame",
     "planet_rotating": " reference_frame",
+    "vessel": "reference_frame",
+    "vessel_orbital": "orbital_reference_frame",
     }
 
 SAS_DIRECTIONS = [
@@ -54,26 +54,6 @@ SAS_DIRECTIONS = [
     "target",
     "anti_target",
 ]
-
-#TELEMACHUS_BODY_IDS = {
-    #"Kerbol": "0",
-    #"Kerbin": "1",
-    #"Mun": "2",
-    #"Minmus": "3",
-    #"Moho": "4",
-    #"Eve": "5",
-    #"Duna": "6",
-    #"Ike": "7",
-    #"Jool": "8",
-    #"Laythe": "9",
-    #"Vall": "10",
-    #"Bop": "11",
-    #"Tylo": "12",
-    #"Gilly": "13",
-    #"Pol": "14",
-    #"Dres": "15",
-    #"Eeloo": "16",
-#}
 
 _UNSORTED_ALARM_CODES = {
     110: "Error contacting KSP",
@@ -91,16 +71,6 @@ _UNSORTED_ALARM_CODES = {
 }
 
 ALARM_CODES = OrderedDict(sorted(_UNSORTED_ALARM_CODES.items()))
-#OCTAL_BODY_IDS = {}
-
-#for key, value in TELEMACHUS_BODY_IDS.items():
-    #value = oct(int(value))
-    #value = value[2:]
-    #OCTAL_BODY_IDS[value] = key
-
-
-## OCTAL_BODY_IDS = {key: str(int(oct(int(value)))) for key, value in TELEMACHUS_BODY_IDS.items()}  # FIXME: abomination
-#OCTAL_BODY_NAMES = {value: key for key, value in OCTAL_BODY_IDS.items()}
 
 PROGRAM_DESCRIPTION = "basaGC is a implementation of the Apollo Guidance Computer (AGC) for Kerbal Space Program." + (
                       "\n\nbasaGC includes code and images from the Virtual AGC Project ") + (

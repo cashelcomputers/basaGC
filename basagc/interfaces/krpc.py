@@ -43,12 +43,11 @@ class KRPCConnection:
         else:
             return True
 
-    def get_telemetry(self, telemetry_type, telemetry, body, stream, refssmat, **kwargs):
+    def get_telemetry(self, telemetry_type, telemetry, body, once_only, refssmat, **kwargs):
 
         if refssmat:
             vessel = self.connection.space_center.active_vessel
             refssmat = getattr(self.orbit.body, refssmat)
-            print(refssmat)
         data = None
         if telemetry_type == "orbit":
             data = self.orbit
@@ -67,13 +66,14 @@ class KRPCConnection:
         else:
             return False
 
-        if stream:
+        if once_only:
+            return getattr(data, telemetry)  # just return the data
+        else:  # return a function that returns the telemetry
             if callable(getattr(data, telemetry)):
                 return self.connection.add_stream(data, **kwargs,)
             else:
                 return self.connection.add_stream(getattr, data, telemetry)
-        else:
-            return getattr(data, telemetry)
+
 
     def send_command(self, command, data):
 

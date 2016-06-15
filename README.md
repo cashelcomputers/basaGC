@@ -13,7 +13,7 @@ Prerequisites:
 ---
 
 - KSP (tested on 1.1.2), should work on any version that kRPC works on
-- [Python 3.4](https://www.python.org/downloads/release/python-344/)
+- [Python 3.4+](https://www.python.org/downloads/release/python-344/)
 - [PyQt5](https://www.riverbankcomputing.com/software/pyqt/download5)
 - [kRPC](https://github.com/krpc/krpc/releases) >= 0.3.4
 

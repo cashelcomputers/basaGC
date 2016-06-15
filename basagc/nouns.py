@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """ This module contains all nouns used by the guidance computer."""
 
+# noinspection PyUnresolvedReferences
 import math
 import inspect
 import sys
@@ -8,11 +9,13 @@ from collections import OrderedDict
 
 from basagc import config
 if config.DEBUG:
+    # noinspection PyUnresolvedReferences
     from pudb import set_trace  # lint:ok
 from basagc import utils
 from basagc import ksp
 
 computer = None
+
 
 def octal(value):
 
@@ -39,6 +42,7 @@ class Noun(object):
     def __init__(self, description, number):
         self.description = description
         self.number = number
+        self.telemetry = None  # this will be a dict of functions that when called returns the telemetry
 
     def return_data(self):
         raise NounNotImplementedError
@@ -52,9 +56,11 @@ class Noun06(Noun):
         super().__init__(description="Time to event", number="06")
 
     def return_data(self):
-        now = ksp.get_telemetry("space_center", "ut")
+
+        self.telemetry = ksp.get_telemetry("space_center", "ut")
+        now = self.telemetry()
         time_until_event = computer.noun_data["06"]
-        #hms_until_event = utils.seconds_to_time(time_until_event)
+        # hms_until_event = utils.seconds_to_time(time_until_event)
 
         ##set_trace()
         #hours = "-" + str(hms_until_event["hours"]).replace(".", "").zfill(5)
@@ -113,7 +119,7 @@ class Noun14(Noun):
             return False
         burn = computer.next_burn
         expected_delta_v_at_cutoff = burn.velocity_at_cutoff
-        actual_delta_v_at_cutoff = get_telemetry("flight", "speed", refssmat=config.REFSSMAT["planet_rotating"])  # check if this works
+        actual_delta_v_at_cutoff = ksp.get_telemetry("flight", "speed", refssmat=config.REFSSMAT["planet_rotating"])  #TODO: check if this works
         delta_v_error = actual_delta_v_at_cutoff - expected_delta_v_at_cutoff
 
         expected_delta_v_at_cutoff = str(int(expected_delta_v_at_cutoff)).replace(".", "")
@@ -149,10 +155,17 @@ class Noun17(Noun):
 
         # FIXME: need to make sure that data is correct length (sometimes drops the last 0 when input is xxx.x rather
         # then xxx.xx
+        # FIXME: note to self, this is figured out in other nouns that have already been changed to new API
+        #set_trace()
+        self.telemetry = {
+            "roll": ksp.get_telemetry("flight", "roll", refssmat=config.REFSSMAT["vessel_orbital"]),
+            "pitch": ksp.get_telemetry("flight", "pitch", refssmat=config.REFSSMAT["vessel_orbital"]),
+            "yaw": ksp.get_telemetry("flight", "heading", refssmat=config.REFSSMAT["vessel_orbital"]),
+            }
 
-        roll = str(round(ksp.get_telemetry("flight", "roll"), 1))
-        pitch = str(round(ksp.get_telemetry("flight", "pitch"), 1))
-        yaw = str(round(ksp.get_telemetry("flight", "heading"), 1))
+        roll = str(round(self.telemetry["roll"](), 1))
+        pitch = str(round(self.telemetry["pitch"](), 1))
+        yaw = str(round(self.telemetry["yaw"](),  1))
 
         roll = roll.replace(".", "")
         pitch = pitch.replace(".", "")
@@ -177,18 +190,15 @@ class Noun25(Noun):
     def __init__(self):
         
         super().__init__("Spacecraft mass", number="25")
-        
-        #self.mass_whole_part = computer.noun_data["25"][0]
-        #self.mass_fractional_part = computer.noun_data["25"][1]
 
     def return_data(self):
 
+        self.telemetry = {
+            "mass": ksp.get_telemetry("vessel", "mass")
+        }
         mass_in_tons = ksp.get_telemetry("vessel", "mass") / 1000
-        mass_frac_part, mass_whole_part = math.modf(mass_in_tons)
-        mass_frac_part = str(round(mass_frac_part, 5))[2:].ljust(5, "0")
-        
-        mass_whole_part = str(int(mass_whole_part)).zfill(5)
-        print(mass_in_tons, mass_whole_part, mass_frac_part)
+        mass_whole_part, mass_frac_part = utils.float_to_parts(mass_in_tons)
+
         data = {
             1: mass_whole_part,
             2: mass_frac_part,
@@ -232,15 +242,15 @@ class Noun31(Noun):
     def return_data(self):
 
         available_thrust_kn = ksp.get_telemetry("vessel", "available_thrust") / 1000
-        thrust_frac_part, thrust_whole_part = math.modf(available_thrust_kn)
-        print(available_thrust)
+        thrust_whole_part, thrust_frac_part = utils.float_to_parts(available_thrust_kn)
         data = {
-            1: computer.noun_data["31"][0],
-            2: computer.noun_data["31"][1],
+            1: thrust_whole_part,
+            2: thrust_frac_part,
             3: "bbbbb",
-            "tooltips": ["Stage Max Thrust (s) ", None, None],
+            "tooltips": ["Stage Max Thrust (whole part) (kN)", "Stage Max Thrust (fractional part) (kN)", None],
             "is_octal": False,
         }
+        #set_trace()
         return data
 
 class Noun33(Noun):
@@ -278,10 +288,8 @@ class Noun36(Noun):
         super().__init__("Mission Elapsed Time (MET) (dddhh, bbbmm, bss.ss)", number="36")
 
     def return_data(self):
-        try:
-            telemetry = get_telemetry("missionTime")
-        except TelemetryNotAvailable:
-            raise
+
+        telemetry = get_telemetry("missionTime")
 
         minutes, seconds = divmod(telemetry, 60)
         hours, minutes = divmod(minutes, 60)
@@ -359,15 +367,12 @@ class Noun43(Noun):
         super().__init__("Geographic Position (Latitude, Longitude, Altitude)", number="43")
 
     def return_data(self):
-        try:
-            # latitude = str(round(get_telemetry("lat"), 2)).replace(".", "").zfill(5)
-            # longitude = str(round(get_telemetry("long"), 2)).replace(".", "").zfill(5)
-            # altitude = str(round(get_telemetry("altitude") / 1000, 1)).replace(".", "").zfill(5)
-            latitude = str(round(get_telemetry("lat"), 2))
-            longitude = str(round(get_telemetry("long"), 2))
-            altitude = str(round(get_telemetry("altitude") / 1000, 1))
-        except TelemetryNotAvailable:
-            raise
+        # latitude = str(round(get_telemetry("lat"), 2)).replace(".", "").zfill(5)
+        # longitude = str(round(get_telemetry("long"), 2)).replace(".", "").zfill(5)
+        # altitude = str(round(get_telemetry("altitude") / 1000, 1)).replace(".", "").zfill(5)
+        latitude = str(round(get_telemetry("lat"), 2))
+        longitude = str(round(get_telemetry("long"), 2))
+        altitude = str(round(get_telemetry("altitude") / 1000, 1))
 
         # the following fixes a problem that round() will discard a trailing 0 eg 100.10 becomes 100.1
         if latitude[-2] == ".":
