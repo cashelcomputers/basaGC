@@ -11,6 +11,7 @@ from basagc import config, nouns, utils, dsky
 from basagc import maneuver
 if config.DEBUG:
     from pudb import set_trace  # lint:ok
+from basagc import ksp
 
 log = logging.getLogger("Verbs")
 
@@ -33,7 +34,6 @@ INVALID_VERBS = [
     79,
     84,
     95,
-    98,
 ]
 
 
@@ -1057,9 +1057,13 @@ class Verb98(ExtendedVerb):
         '''
         
         super().execute()
-        testing = maneuver.Launch(self.computer)
-        #set_trace()
-        testing.countdown()
+
+        vessel_up = ksp.get_telemetry("space_center", "transform_direction", "(0,0,-1)", "vessel.reference_frame",
+                                      "vessel.surface_reference_frame")
+
+        # testing = maneuver.Launch(self.computer)
+        # #set_trace()
+        # testing.countdown()
         #self.dsky.request_data(requesting_object=self.receive_data, display_location="noun")
 
     #def receive_data(self, data):

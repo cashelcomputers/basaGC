@@ -37,9 +37,11 @@ current_log_level = "INFO"
 
 REFSSMAT = {
     "planet_non_rotating": "non_rotating_reference_frame",
-    "planet_rotating": " reference_frame",
+    "planet_rotating": "reference_frame",
     "vessel": "reference_frame",
     "vessel_orbital": "orbital_reference_frame",
+    "surface_velocity": "surface_velocity_reference_frame",
+    "surface": "surface_reference_frame",
     }
 
 SAS_DIRECTIONS = [
