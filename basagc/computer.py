@@ -16,11 +16,8 @@ from basagc import routines
 from basagc.interfaces import telemachus
 from basagc import utils
 from basagc import verbs
-#from basagc import imu
 from basagc import maneuver
 from basagc import ksp
-from basagc import autopilot
-
 
 
 class Computer:
@@ -143,7 +140,7 @@ class Computer:
             self.charin(char)
             return True
         else:
-            self.dsky.set_annunciator("uplink_acty", False)
+            # self.dsky.set_annunciator("uplink_acty", False)
             return False
 
     def add_to_mainloop(self, func):
@@ -250,7 +247,6 @@ class Computer:
             #utils.log("Retrieved telemetry listing", log_level="INFO")
 
         # add uplink function to main loop
-        self.add_to_mainloop(self.process_uplink_data)
 
         self.main_loop_timer.start(config.LOOP_TIMER_INTERVAL)
         self.slow_loop_timer.start(config.SLOW_LOOP_TIMER_INTERVAL)
@@ -269,7 +265,9 @@ class Computer:
 
         # run each item in process queue
         for item in self.main_loop_table:
+            print(item)
             item()
+        print("TITS")
 
 
     def slow_loop(self):
