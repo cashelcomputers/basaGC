@@ -106,6 +106,7 @@ class Verb:
         self.dsky.current_verb = self
         if self.noun:
             Verb.computer.dsky.set_register(self.noun, "noun")
+            utils.log(" With noun {}".format(self.noun)) # JRI
 
     # def _activity(self, event):
     #
@@ -220,7 +221,7 @@ class MonitorVerb(DisplayVerb):
         try:
             data = noun_function.return_data()
         except nouns.NounNotImplementedError:
-            self.computer.operator_error("Noun {} not implemented yet. Sorry about that...".format(dsky.requested_noun))
+            self.computer.operator_error("Noun {} not implemented yet. Sorry about that...".format(self.noun))
             self.terminate()
             return
         except KSPNotConnected:
@@ -270,6 +271,8 @@ class MonitorVerb(DisplayVerb):
         except KSPNotConnected:
             return
         except TelemetryNotAvailable:
+            return
+        if self.noun is None:   #JRI if monitoring was terminated noun=None and we don't want to start the timer.
             return
 
         self.timer.start(config.DISPLAY_UPDATE_INTERVAL)
@@ -1121,4 +1124,3 @@ clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
 for class_tuple in clsmembers:
     if class_tuple[0][-1].isdigit():
         verbs[class_tuple[0][-2:]] = class_tuple[1]
-
