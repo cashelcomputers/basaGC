@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """This module contains a class to model the IMU found on Apollo spacecraft."""
 
-from basagc.ksp import check_connection, get_telemetry
+import decimal
+
 from basagc import utils, config
+from basagc.interfaces import krpc
+from basagc import vector
+
 if config.DEBUG:
     from pudb import set_trace  # lint:ok
 
@@ -10,7 +14,7 @@ class IMU:
     '''
     This class models the IMU used in Apollo spacecraft.
     '''
-    def __init__(self, computer):
+    def __init__(self, vessel):
         '''
         Class init
         :param computer: the instance of the computer
@@ -18,57 +22,101 @@ class IMU:
         :returns: None
         '''
         
-        self.computer = computer
+        self.vessel = vessel
+        self.computer = vessel.computer
+        self.krpc_connection = krpc.get_connection()
         self._is_on = False
-        self.is_course_aligned = False
+        self.is_coarse_aligned = False
         self.is_fine_aligned = False
-        self.gyro_angles = {
-            "inner": 0.0,  # Y axis, aka pitch
-            "middle": 0.0,  # Z axis, aka heading
-            "outer": 0.0,  # X axis, aka roll
-            }
+
+        self.pitch = decimal.Decimal(0.0)
+        self.roll = decimal.Decimal(0.0)
+        self.yaw = decimal.Decimal(0.0)
 
     def on(self):
-        '''
+        """
         Turns the IMU on
         :returns: True if successful, False otherwise
-        '''
-        if check_connection() == False:
-            utils.log("Cannot connect to KSP", "WARNING")
-        else:
-            self.set_coarse_align()
+        """
+        self._is_on = True
+        return True
+
+    def off(self):
+        """
+        Turns the IMU off
+        :returns: True if successful, False otherwise
+        """
+        self._is_on = False
+        return True
 
 
-        # add check for gimbal lock to computer main loop
-
-
-    def update_gyro_angles(self):
-        '''
+    def _update_state_vector(self):
+        """
         Gets the latest attitude from KSP and sets those values in IMU
         :returns: None
-        '''
+        """
 
-        self.gyro_angles["inner"] = get_telemetry("pitch")
-        self.gyro_angles["middle"] = get_telemetry("heading")
-        self.gyro_angles["outer"] = get_telemetry("roll")
+        vessel_direction = self.krpc_connection.get_telemetry("vessel", "direction",
+                                                             refssmat=config.REFSSMAT["surface"])()
 
-    def check_for_gimbal_lock(self):
-        '''
-        Checks if middle gimbal is approaching gimbal lock, only applies to fine align mode
-        :returns: False if ok, True if approaching gimbal lock
-        '''
-        if self.is_fine_aligned:
-            # check if approaching gimbal lock
-            if (70 <= self.gyro_angles["middle"] <= 85) or \
-                (95 <= self.gyro_angles["middle"] <= 110) or \
-                (250 <= self.gyro_angles["middle"] <= 265) or \
-                (275 <= self.gyro_angles["middle"] <= 290):
-                    self.computer.dsky.set_annunciator("gimbal_lock")
-            else:
-            # if middle gimbal = 90 +- 5 or 270 +- 5, gimbal lock has occured
-                if (85 < self.gyro_angles["middle"] < 95) or \
-                    (265 < self.gyro_angles["middle"] <= 275):
-                        self.set_coarse_align()
+        # Get the direction of the vessel in the horizon plane
+        horizon_direction = (0, vessel_direction[1], vessel_direction[2])
+
+        # Compute the pitch - the angle between the vessels direction and the direction in the horizon plane
+        pitch = vector.angle_between_vectors(vessel_direction, horizon_direction)
+        if vessel_direction[0] < 0:
+            pitch = -pitch
+
+        # Compute the heading - the angle between north and the direction in the horizon plane
+        north = (0, 1, 0)
+        heading = vector.angle_between_vectors(north, horizon_direction)
+        if horizon_direction[2] < 0:
+            heading = 360 - heading
+
+        # Compute the roll
+        # Compute the plane running through the vessels direction and the upwards direction
+        up = (1, 0, 0)
+        plane_normal = vector.cross_product(vessel_direction, up)
+
+        # Compute the upwards direction of the vessel
+
+        vessel_up = self.krpc_connection.space_center.transform_direction(
+            (0, 0, -1), self.krpc_connection.vessel.reference_frame,
+            self.krpc_connection.vessel.surface_reference_frame)
+
+        # Compute the angle between the upwards direction of the vessel and the plane
+        roll = vector.angle_between_vector_and_plane(vessel_up, plane_normal)
+        # Adjust so that the angle is between -180 and 180 and
+        # rolling right is +ve and left is -ve
+        if vessel_up[0] > 0:
+            roll *= -1
+        elif roll < 0:
+            roll += 180
+        else:
+            roll -= 180
+
+        self.pitch = pitch
+        self.roll = roll
+        self.yaw = heading
+
+
+    # def _check_for_gimbal_lock(self):
+    #     '''
+    #     Checks if middle gimbal is approaching gimbal lock, only applies to fine align mode
+    #     :returns: False if ok, True if approaching gimbal lock
+    #     '''
+    #     if self.is_fine_aligned:
+    #         # check if approaching gimbal lock
+    #         if (70 <= self.gyro_angles["middle"] <= 85) or \
+    #             (95 <= self.gyro_angles["middle"] <= 110) or \
+    #             (250 <= self.gyro_angles["middle"] <= 265) or \
+    #             (275 <= self.gyro_angles["middle"] <= 290):
+    #                 self.computer.dsky.set_annunciator("gimbal_lock")
+    #         else:
+    #         # if middle gimbal = 90 +- 5 or 270 +- 5, gimbal lock has occured
+    #             if (85 < self.gyro_angles["middle"] < 95) or \
+    #                 (265 < self.gyro_angles["middle"] <= 275):
+    #                     self.set_coarse_align()
 
     def set_coarse_align(self):
         '''
@@ -76,12 +124,12 @@ class IMU:
         :returns: None
         '''
         self.is_fine_aligned = False
-        self.is_course_aligned = True
+        self.is_coarse_aligned = True
         self.computer.dsky.set_annunciator("no_att")
-        if self.update_gyro_angles in self.computer.main_loop_table:
-            self.computer.main_loop_table.remove(self.update_gyro_angles)
-        if self.check_for_gimbal_lock in self.computer.main_loop_table:
-            self.computer.main_loop_table.remove(self.check_for_gimbal_lock)
+        # if self.update_gyro_angles in self.computer.main_loop_table:
+        #     self.computer.main_loop_table.remove(self.update_gyro_angles)
+        # if self.check_for_gimbal_lock in self.computer.main_loop_table:
+        #     self.computer.main_loop_table.remove(self.check_for_gimbal_lock)
         utils.log("IMU coarse align set")
 
     def set_fine_align(self):
@@ -90,11 +138,11 @@ class IMU:
         :returns: None
         '''
         # if no connection to KSP, stop fine align and go back to coarse align
-        if check_connection() == False:
-            utils.log("IMU: cannot complete fine align, no connection to KSP", log_level="ERROR")
-            return
+        # if check_connection() == False:
+        #     utils.log("IMU: cannot complete fine align, no connection to KSP", log_level="ERROR")
+        #     return
         self.is_fine_aligned = True
-        self.is_course_aligned = False
+        self.is_coarse_aligned = False
         self.computer.dsky.set_annunciator("gimbal_lock", False)
         self.computer.dsky.set_annunciator("no_att", False)
         #self.computer.main_loop_table.append(self.update_gyro_angles)

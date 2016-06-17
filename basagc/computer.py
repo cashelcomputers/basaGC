@@ -45,8 +45,6 @@ class Computer:
 
         self.ui = ui
         self.dsky = dsky.DSKY(self, self.ui)
-        #self.imu = imu.IMU(self)
-        self.autopilot = autopilot.Autopilot()
         
         self.keyboard_state = {
             "input_data_buffer": "",
@@ -92,13 +90,11 @@ class Computer:
             "38": ["00000", "", ""],
         }
         self.next_burn = None
-        #self._burn_queue = []
         self.is_ksp_connected = False
         self.ksp_paused_state = None
         self.is_direction_autopilot_engaged = False
         self.is_thrust_autopilot_engaged = False
         self.moi_burn_delta_v = 0.0  # a bit of a hack, need to rethink this
-        # self.jobs = []
 
         self.nouns = nouns.nouns
         self.verbs = verbs.verbs

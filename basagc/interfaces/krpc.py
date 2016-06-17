@@ -34,7 +34,6 @@ class KRPCConnection:
             self.connection = krpclib.connect(name='basaGC', rpc_port=config.KRPC_PORT)
         except krpclib.error.NetworkError:
             raise KSPNotConnected
-            return
         self.vessel = self.connection.space_center.active_vessel
         self.control = self.vessel.control
         self.orbit = self.vessel.orbit
@@ -49,7 +48,7 @@ class KRPCConnection:
         else:
             return True
 
-    def get_telemetry(self, telemetry_type, telemetry, body, once_only, refssmat, *args, **kwargs):
+    def get_telemetry(self, telemetry_type, telemetry, body=None, once_only=False, refssmat=None, *args, **kwargs):
 
         if refssmat:
             vessel = self.connection.space_center.active_vessel

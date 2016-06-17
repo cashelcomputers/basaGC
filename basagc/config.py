@@ -6,7 +6,7 @@ import os
 
 from collections import OrderedDict
 
-DEBUG = True
+DEBUG = False
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 PROGRAM_NAME = "basaGC"

@@ -18,13 +18,14 @@ if __name__ == "__main__":
         config.current_log_level = "DEBUG"
         print("================DEBUG MODE================")
         
-    from basagc import gui, computer  # import the rest
+    from basagc import vessel, gui  # import the rest
     app = QApplication(sys.argv)
     main_window = QMainWindow()
     
     ui = gui.GUI(main_window)
-    computer = computer.Computer(ui)
-    main_window.setWindowTitle('basaGC');
+
+    vessel = vessel.Vessel(ui)
+    main_window.setWindowTitle('basaGC')
     main_window.show()
 
     sys.exit(app.exec_())
