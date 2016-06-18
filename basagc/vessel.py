@@ -8,6 +8,7 @@ from basagc import vector
 from basagc import autopilot
 from basagc.interfaces import krpc
 from basagc import computer
+from basagc import imu
 
 class Vessel:
 
@@ -19,4 +20,8 @@ class Vessel:
         self.krpc_connection = krpc.get_connection()
         self.computer = computer.Computer(ui)
         self.autopilot = autopilot.Autopilot()
-        self.IMU = None  # TODO: implement this
+        self.imu = imu.IMU(vessel=self)
+
+        # turn on the computer and IMU
+        self.computer.on()
+        self.imu.on()

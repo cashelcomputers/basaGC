@@ -107,7 +107,7 @@ class Computer:
         }
         # register key handler with qt ui
         self.register_charin()
-        self.on()
+        #self.on()
 
     def accept_uplink(self):
         try:
@@ -124,12 +124,12 @@ class Computer:
             self.uplink_queue.append(char)
     
     def charin(self, keypress):
-        '''
+        """
         Receives a keypress event and passes it on to routines.charin
         :param keypress: the value of the key pressed
         :type keypress: str
         :returns: None
-        '''
+        """
         routines.charin(keypress, self.keyboard_state, self.dsky, self)
 
     def process_uplink_data(self):
