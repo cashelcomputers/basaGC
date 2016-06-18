@@ -160,10 +160,10 @@ class Noun17(Noun):
         # get data from IMU
         pitch, roll, yaw = vessel.imu.get_pitch_roll_yaw()
 
+        # format data
         roll = str(round(roll, 1))
         pitch = str(round(pitch, 1))
         yaw = str(round(yaw,  1))
-
         roll = roll.replace(".", "")
         pitch = pitch.replace(".", "")
         yaw = yaw.replace(".", "")

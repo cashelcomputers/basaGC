@@ -4,9 +4,10 @@ This module contains code for the DSKY (the guidance computer/user interface). I
 interface between the computer and the gui toolkit.
 """
 
-from basagc import utils, config
+from basagc import utils
+from basagc import config
 if config.DEBUG:
-    from pudb import set_trace  # lint:ok
+    from pudb import set_trace
 
 
 class DSKY:
@@ -76,60 +77,60 @@ class DSKY:
         for register in ["verb", "noun", "program", "data_1", "data_2", "data_3"]:
                 self.blank_register(register)
 
-    def blink_register(self, register):
-
-        """
-        Blinks the named register.
-        :param register: the name of the register to blink
-        :return: None
-        """
-
-        # check if we are to blink a control register
-        for digit in self.registers[register].digits:
-            digit.blink_data["is_blinking_lit"] = False
-            digit.blink_data["is_blinking"] = True
-            digit.display("b")
-
-            # bind andstart the timer
-            digit.blink_timer.timeout.connect(self._blink_event)
-            digit.blink_timer.start(500)
-
-    def _blink_event(self):
-        """alternates the digit between a value and blank ie to flash the digit."""
-
-        # digit displaying the number, switch to blank
-        if self.is_blinking_lit:
-            self.display(10)
-            self.is_blinking_lit = False
-        else:
-            # digit displaying blank, change to number
-            self.display(self.last_value)
-            self.is_blinking_lit = True
+    # def blink_register(self, register):
+    #
+    #     """
+    #     Blinks the named register.
+    #     :param register: the name of the register to blink
+    #     :return: None
+    #     """
+    #
+    #     # check if we are to blink a control register
+    #     for digit in self.registers[register].digits:
+    #         digit.blink_data["is_blinking_lit"] = False
+    #         digit.blink_data["is_blinking"] = True
+    #         digit.display("b")
+    #
+    #         # bind and start the timer
+    #         digit.blink_timer.timeout.connect(self._blink_event)
+    #         digit.blink_timer.start(500)
+    #
+    # def _blink_event(self):
+    #     """alternates the digit between a value and blank ie to flash the digit."""
+    #
+    #     # digit displaying the number, switch to blank
+    #     if self.is_blinking_lit:
+    #         self.display(10)
+    #         self.is_blinking_lit = False
+    #     else:
+    #         # digit displaying blank, change to number
+    #         self.display(self.last_value)
+    #         self.is_blinking_lit = True
 
     def blank_register(self, register):
-        '''
+        """
         Blanks the given register.
         :param register: The register to blank.
         :type register: register object or string name of register
         :returns: None
-        '''
+        """
 
 
         # if we are passed a string name of a register, get the register
         if isinstance(register, str):
             register = self.get_register(register)
-        
+
         for digit in register.values():
                 digit.display("b")
 
 
     def get_register(self, register):
-        '''
+        """
         maps the given register name to a actual register.
         :param register: the name of the register
         :type register: str
         :returns: the register object
-        '''
+        """
         registers = {
             "verb": self.registers["verb"],
             "noun": self.registers["noun"],
@@ -141,7 +142,7 @@ class DSKY:
         return registers[register]
 
     def set_register(self, value, register, digit=None):
-        '''
+        """
         Displays some data on a register.
         :param value: the value to display
         :type value: str
@@ -150,7 +151,7 @@ class DSKY:
         :param digit: if set, indicates that just one digit is to be set
         :type digit: str
         :returns: False if value checks fail, True if display set sucessfully
-        '''
+        """
 
         # some sanity checks. If checks fail, return False
         # if digit is set, only should be one digit supplied
@@ -175,7 +176,7 @@ class DSKY:
                 if value[0] not in ["+", "-", "b"]:
                     utils.log("First digit to display should be either +, -, or b, got {}".format(value[0]))
                     return False
-        
+
         # setting control register
         if register in ["verb", "noun", "program"]:
             this_register = self.get_register(register)  # get the register we want to change
@@ -206,7 +207,7 @@ class DSKY:
                         digit_to_set = display_map[index]
                         value_to_set = value[index]
                         this_register[digit_to_set].display(value_to_set)
-                        
+
             elif register == "data_2":
                 this_register = self.registers["data"]["2"]  # get the register we want to change
                 if digit:
@@ -216,7 +217,7 @@ class DSKY:
                         digit_to_set = display_map[index]
                         value_to_set = value[index]
                         this_register[digit_to_set].display(value_to_set)
-    
+
             elif register == "data_3":
                 this_register = self.registers["data"]["3"]  # get the register we want to change
                 if digit:
@@ -288,7 +289,7 @@ class DSKY:
         #         for register in list(self.data_registers.values()):
         #             register.blank()
         #     else:
-        
+
 
     def verb_noun_flash_on(self):
 
@@ -314,14 +315,14 @@ class DSKY:
 
     def stop_blink(self):
 
-        """ 
+        """
         THIS METHOD IS DEPRECIATED. It is left in here to catch any other usages.
 
         Stops the verb/noun flash
         :return: None
         """
         utils.log(message="Called depreciated method stop_blink(). Please use verb_noun_flash_off()", log_level="ERROR")
-        
+
 
 
     def flash_comp_acty(self):
@@ -350,14 +351,14 @@ class DSKY:
             self.annunciators[annunciator].off()
 
     def set_tooltip(self, register, tooltip):
-        '''
+        """
         Sets the tooltop on the given register
         :param register: the name of the register to set the tooltip on
         :type register: str
         :param tooltip: the tooltip to display
         :type tooltip: str
-        :returns: 
-        '''
+        :returns:
+        """
         this_register = self.get_register(register)
         for digit in this_register.values():
             digit.set_tooltip(tooltip)
