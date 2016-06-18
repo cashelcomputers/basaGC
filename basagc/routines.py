@@ -7,8 +7,8 @@ if config.DEBUG:
     from pudb import set_trace  # lint:ok
     
 def charin(keypress, state, dsky, computer):
-    '''
-    This function is called whenever a keypress is sent from the UI. 
+    """
+    This function is called whenever a keypress is sent from the UI.
     :param keypress: What key was pressed
     :type keypress: str
     :param state: the dsky and computer state relevant to dsky operations
@@ -18,7 +18,7 @@ def charin(keypress, state, dsky, computer):
     :param computer: the instance of the computer
     :type computer: basagc.computer.Computer
     :returns: None
-    '''
+    """
     
     def handle_control_register_load():
         
@@ -47,7 +47,7 @@ def charin(keypress, state, dsky, computer):
         """ Handles data register loading
         :return: None
         """
-        if keypress.isdigit() == False:
+        if not keypress.isdigit():
             utils.log("Expecting a digit for data load, got {}".format(keypress), log_level="ERROR")
             return
         display_register = state["display_location_to_load"]
@@ -250,7 +250,7 @@ def charin(keypress, state, dsky, computer):
     
     # if the computer is off, we only want to accept the PRO key input,
     # all other keys are ignored
-    if computer.is_powered_on == False:
+    if not computer.is_powered_on:
         if keypress == "P":
             computer.on()
         else:

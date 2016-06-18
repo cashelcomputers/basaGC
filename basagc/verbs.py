@@ -145,14 +145,14 @@ class ExtendedVerb(Verb):
     """
 
     def __init__(self, name, verb_number):
-        '''
+        """
         class constructor
         :param name: name of the verb
         :type name: str
         :param verb_number: the verb number
-        :type verb_number: 
-        :returns: 
-        '''
+        :type verb_number:
+        :returns:
+        """
         super().__init__(name, verb_number, noun=None)
 
 
@@ -890,10 +890,10 @@ class Verb35(Verb):
         self.computer.memory_hack = self
         
     def terminate(self):
-        '''
+        """
         Terminates the verb updates
         :returns: None
-        '''
+        """
         for annunciator in self.dsky.annunciators.values():
             annunciator.off()
         self.dsky.verb_noun_flash_off()
@@ -1014,47 +1014,47 @@ class Verb82(ExtendedVerb):
 
 class Verb93(ExtendedVerb):
 
-    '''
+    """
     Disables autopilot.
-    '''
+    """
     
     def __init__(self):
-        
-        '''
+
+        """
         Instance constructor.
         :returns: None
-        '''
+        """
         
         super().__init__(name="Disable Autopilot", verb_number="93")
 
     def execute(self):
-        
-        '''
+
+        """
         Executes the verb.
         :returns: None
-        '''
+        """
         
         Verb.computer.disable_direction_autopilot()
 
 
 class Verb98(ExtendedVerb):
-    '''
+    """
     Debug verb
-    '''
+    """
     
     def __init__(self):
-        '''
+        """
         Instance constructor.
         :returns: None
-        '''
+        """
         super().__init__(name="Debug", verb_number="98")
 
     def execute(self):
-        
-        '''
+
+        """
         Executes the verb.
         :returns: None
-        '''
+        """
         
         super().execute()
 

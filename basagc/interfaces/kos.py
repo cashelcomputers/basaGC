@@ -27,7 +27,6 @@ class KOSConnection:
             connection.open(host=config.IP, port=config.KOS_PORT)
         except ConnectionRefusedError:
             raise KSPNotConnected
-            return
         print(connection.read_until(b"> "))
         #naws_command = b"255 250 31 80 25 255 240"
         #connection.get_socket().send(naws_command)
@@ -38,7 +37,7 @@ class KOSConnection:
         #self.connection.write(b"PRINT THROTTLE.\n")
 
     def check_connection(self):
-        if KOSConnection.connection == None:
+        if KOSConnection.connection is None:
             try:
                 self.start_connection()
             except KSPNotConnected:

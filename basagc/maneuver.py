@@ -41,6 +41,7 @@ class HohmannTransfer:
         self.first_burn = None
         self.second_burn = None
         #self.target_id = config.TELEMACHUS_BODY_IDS[self.target_name]
+        self.time_to_transfer = None
 
         self.time_of_node = 0.0
         #self.time_of_second_node = 0.0
@@ -96,14 +97,14 @@ class HohmannTransfer:
     def check_orbital_parameters():
         
         if ksp.get_telemetry("orbit", "eccentricity") > 0.002:
-            return (False, 224)
+            return False, 224
 
         # check if orbit is excessively inclined
         target_inclination = ksp.get_telemetry("body_orbit", "inclination", "Mun")  # FIXME: hardcoded to Mun
         vessel_inclination = ksp.get_telemetry("orbit", "inclination")
         if (vessel_inclination > (target_inclination - 1)) and (vessel_inclination > (target_inclination + 1)):
             #self.computer.poodoo_abort(225)
-            return (False, 225)
+            return False, 225
         else:
             return True
 
@@ -459,7 +460,7 @@ class Burn:
         return True
 
 def calc_burn_duration(initial_mass, thrust, specific_impulse, delta_v):
-    '''
+    """
     Calculates the duration of a burn in seconds.
     :param initial_mass: initial mass of spacecraft
     :type initial_mass: float
@@ -470,7 +471,7 @@ def calc_burn_duration(initial_mass, thrust, specific_impulse, delta_v):
     :param delta_v: delta_v for burn
     :type delta_v: float
     :returns: float time of burn in seconds
-    '''
+    """
     exhaust_velocity = specific_impulse * 9.81
     burn_duration = (initial_mass * exhaust_velocity / thrust) * (1 - math.exp(-delta_v / exhaust_velocity))
     utils.log(log_level="info")

@@ -12,20 +12,9 @@ if config.DEBUG:
     # noinspection PyUnresolvedReferences
     from pudb import set_trace  # lint:ok
 from basagc import utils
-from basagc import ksp
+from basagc.interfaces import krpc
 
 vessel = None
-
-
-def octal(value):
-
-    """ Converts a value to octal, but not written as Ooxxx
-    :param value: the value to convert
-    :return: the octal value
-    :rtype: int
-    """
-
-    return int(oct(value))
 
 
 class NounNotImplementedError(Exception):
@@ -44,11 +33,7 @@ class Noun(object):
         self.number = number
         self.telemetry = {}  # this will be a dict of functions that when called returns the telemetry
 
-    def return_data(self):
-        raise NounNotImplementedError
-
 # -----------------------BEGIN NORMAL NOUNS--------------------------------------
-
 
 class Noun06(Noun):
     
@@ -57,7 +42,7 @@ class Noun06(Noun):
 
     def return_data(self):
 
-        self.telemetry["ut"] = ksp.get_telemetry("space_center", "ut")
+        self.telemetry["ut"] = krpc.get_telemetry("space_center", "ut")
         now = self.telemetry["ut"]()
         time_until_event = vessel.computer.noun_data["06"]
         # hms_until_event = utils.seconds_to_time(time_until_event)
@@ -163,7 +148,7 @@ class Noun17(Noun):
         # format data
         roll = str(round(roll, 1))
         pitch = str(round(pitch, 1))
-        yaw = str(round(yaw,  1))
+        yaw = str(round(yaw, 1))
         roll = roll.replace(".", "")
         pitch = pitch.replace(".", "")
         yaw = yaw.replace(".", "")

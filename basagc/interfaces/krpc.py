@@ -40,7 +40,7 @@ class KRPCConnection:
         self.space_center = self.connection.space_center
 
     def check_connection(self):
-        if self.connection == None:
+        if self.connection is None:
             try:
                 self.start_connection()
             except KSPNotConnected:

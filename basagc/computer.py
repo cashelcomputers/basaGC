@@ -152,21 +152,21 @@ class Computer:
             utils.log("Cannot remove function from mainloop, function {} not found".format(func))
 
     def register_charin(self):
-        '''
+        """
         Registers the charin handler with the GUI
         :returns: None
-        '''
+        """
         self.ui.register_key_event_handler(self.charin)
 
     def set_keyboard_state(self, state_name, new_value):
-        '''
+        """
         setter for keyboard state
         :param state_name: the name of the state to change
         :type state_name: str
         :param new_value: the new value
         :type new_value: str
         :returns: None
-        '''
+        """
         self.keyboard_state[state_name] = new_value
 
     def add_burn(self, burn_object):
@@ -257,10 +257,10 @@ class Computer:
 
 
     def slow_loop(self):
-        '''
+        """
         A slower loop to handle tasks that are less frequently run
-        :returns: 
-        '''
+        :returns:
+        """
         # if not ksp.check_connection():
         #     self.dsky.annunciators["no_att"].on()
         if config.ENABLE_COMP_ACTY_FLASH:
@@ -306,12 +306,12 @@ class Computer:
         self.verbs[verb].terminate(self)
 
     def execute_program(self, program_number):
-        '''
+        """
         Executes the given program.Must have between 1 and 6 values to disp
         :param program_number: the program number to execute
         :type program_number: str
-        :returns: 
-        '''
+        :returns:
+        """
         try:
             program = self.programs[program_number]()
         except KeyError:
@@ -322,19 +322,19 @@ class Computer:
         
     
     def flash_comp_acty(self, duration=config.COMP_ACTY_FLASH_DURATION):
-        '''
+        """
         Flashes the Computer Activity annunciator.
-        
-        :returns: 
-        '''
+
+        :returns:
+        """
         self.dsky.annunciators["comp_acty"].on()
         self.comp_acty_timer.start(duration)
 
     def _comp_acty_off(self):
-        '''
+        """
         Turns off the comp acty annunciator
         :returns: None
-        '''
+        """
         self.dsky.annunciators["comp_acty"].off()
         self.comp_acty_timer.stop()
     

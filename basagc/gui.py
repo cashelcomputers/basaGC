@@ -184,21 +184,21 @@ class Annunciator(QtWidgets.QLabel):
 
 
 class SignDigit(QtWidgets.QLabel):
-    '''
+    """
     This class is a sign (+ or -) digit of the DSKY.
-    '''
+    """
     
     def __init__(self, central_widget, name, geometry):
-        '''
+        """
         Initialiser
         :param central_widget: the PyQt6 central widget to use
-        :type central_widget: 
+        :type central_widget:
         :param name: the name of the widget
         :type name: str
-        :param geometry: position where widget is located 
+        :param geometry: position where widget is located
         :type geometry: QRect object
         :returns: None
-        '''
+        """
         
         super().__init__(central_widget)
         self.setGeometry(geometry)
@@ -263,7 +263,7 @@ class Digit(QtWidgets.QLabel):
             number_to_display = str(number_to_display)
 
         # only change image if we arn't flashing, it will be changed next flash
-        if self.blink_data["is_blinking"] == False:
+        if not self.blink_data["is_blinking"]:
             image = self.digit_pixmaps[number_to_display]
             self.setPixmap(image)
         self.blink_data["blink_value"] = number_to_display
@@ -301,6 +301,8 @@ class Digit(QtWidgets.QLabel):
         self.blink_timer.stop()
         self.blink_data["is_blinking"] = False
 
+
+# noinspection PyArgumentList
 class GUI:
     """This class represents the GUI. It contains the DSKY and its elements."""
     

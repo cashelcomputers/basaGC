@@ -85,7 +85,6 @@ def get_telemetry(data, body_number=None):
         query_string = data + "=" + telemetry[data]
     except KeyError:
         raise KSPNotConnected
-        return
     if body_number:
         query_string += "[{}]".format(body_number)
 

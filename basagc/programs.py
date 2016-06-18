@@ -82,11 +82,11 @@ class Program00(Program):
 
 
 class Program01(Program):
-    
-    '''
+
+    """
     Prelaunch or service - Initialization program
-    
-    '''
+
+    """
     
     def __init__(self):
         
@@ -104,7 +104,7 @@ class Program01(Program):
         """
         
         super().execute()
-        if ksp.check_connection() == False:
+        if not ksp.check_connection():
             Program.computer.poodoo_abort(111)
             self.terminate()
             return
@@ -112,10 +112,10 @@ class Program01(Program):
         self.timer.start(10000)
 
     def timeout(self):
-        '''
+        """
         called when timer hits 0
         :returns: None
-        '''
+        """
 
         #Program.computer.imu.set_fine_align()
         Program.computer.execute_program("02")
@@ -308,9 +308,9 @@ class Program15(Program):
         self.computer.go_to_poo()
 
 class Program31(Program):
-    '''
+    """
     Mun Orbital Insertion (MOI) burn calculator
-    '''
+    """
     def __init__(self):
         
         """ Class constructor.
@@ -377,24 +377,24 @@ class Program31(Program):
         self.computer.go_to_poo()
 
 class Program40(Program):
-    
-    '''
+
+    """
     Controls a SPS (Service Propulsion System) burn.
-    '''
+    """
     
     def __init__(self):
-        '''
+        """
         instance constructor.
         :returns: None
-        '''
+        """
         super().__init__(description="SPS Burn", number="40")
         self.burn = self.computer.next_burn
 
     def execute(self):
-        '''
+        """
         Executes the program
         :returns: None
-        '''
+        """
         super().execute()
         # if TIG < 2 mins away, abort burn
         if utils.seconds_to_time(self.burn.time_until_ignition)["minutes"] < 2:
@@ -411,19 +411,19 @@ class Program40(Program):
             self.burn.execute()
 
     def _ten_minute_monitor(self):
-        '''
+        """
         Part of the sequence of P40
         :returns: None
-        '''
+        """
         if utils.seconds_to_time(self.burn.time_until_ignition)["minutes"] < 10:
             self.computer.main_loop_table.remove(self._ten_minute_monitor)
             self.burn.execute()
 
     def terminate(self):
-        '''
+        """
         Terminates the program.
         :returns: None
-        '''
+        """
         super().terminate()
         self.burn.terminate()
 

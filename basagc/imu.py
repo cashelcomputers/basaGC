@@ -11,16 +11,16 @@ if config.DEBUG:
     from pudb import set_trace  # lint:ok
 
 class IMU:
-    '''
+    """
     This class models the IMU used in Apollo spacecraft.
-    '''
+    """
     def __init__(self, vessel):
-        '''
+        """
         Class init
         :param computer: the instance of the computer
         :type computer: Computer object
         :returns: None
-        '''
+        """
         
         self.vessel = vessel
         self.computer = vessel.computer
@@ -121,10 +121,10 @@ class IMU:
     #                     self.set_coarse_align()
 
     def set_coarse_align(self):
-        '''
+        """
         Sets coarse align mode.
         :returns: None
-        '''
+        """
         self.is_fine_aligned = False
         self.is_coarse_aligned = True
         self.computer.dsky.set_annunciator("no_att")
@@ -135,10 +135,10 @@ class IMU:
         utils.log("IMU coarse align set")
 
     def set_fine_align(self):
-        '''
+        """
         Sets fine align mode.
         :returns: None
-        '''
+        """
         # if no connection to KSP, stop fine align and go back to coarse align
         # if check_connection() == False:
         #     utils.log("IMU: cannot complete fine align, no connection to KSP", log_level="ERROR")
