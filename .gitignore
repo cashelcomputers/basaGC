@@ -8,8 +8,4 @@ wxglade_output/
 doc/notes
 basagc/__pycache__/
 basagc/interfaces/__pycache__/
-basagc/telemachus_old.py
 testing.py
-ui/new_gui_info_dialog.py
-ui/new_gui_log_dialog.py
-ui/new_gui_settings_dialog.py
