@@ -1,3 +1,13 @@
+Setting up KSP:
+===============
+
+Once you have installed kRPC, you have to start the server. The GUI window should appear when you start KSP. Most settings
+can be left alone, however check that RPC port is set to 50000, and Stream port set to 50001 (if you change the setting for RPC
+port, make sure to change this in config.py, look for the line "KRPC_PORT = 50000"). In advances settings, you can set the kRPC 
+server to autostart, and if you wish you can check the box for "Auto-accept new clients" (otherwise you will have to authorise
+basaGC every time you start it).
+
+
 Intro to the display:
 =====================
 
@@ -79,6 +89,8 @@ Currently implemented programs (major modes):
 
 How to set up basaGC for launch:
 ----------------------------
+
+**Note: these instructions are out of date. More coming Soon...**
 
 Key in V37E01E (start program 01) to start the IMU. After 10 seconds, confirm NO ATT annunciator is extinguished. When
 complete, P01 will start P02. P02 waits until it detects a liftoff, then automatically runs P11 (launch monitor.) The
