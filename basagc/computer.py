@@ -266,8 +266,6 @@ class Computer:
         # run each item in process queue
         for item in self.main_loop_table:
             print(item)
-            item()
-        print("TITS")
 
 
     def slow_loop(self):
@@ -275,8 +273,8 @@ class Computer:
         A slower loop to handle tasks that are less frequently run
         :returns: 
         '''
-        if not ksp.check_connection():
-            self.dsky.annunciators["no_att"].on()
+        # if not ksp.check_connection():
+        #     self.dsky.annunciators["no_att"].on()
         if config.ENABLE_COMP_ACTY_FLASH:
             self.flash_comp_acty()
         

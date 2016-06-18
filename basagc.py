@@ -7,6 +7,21 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 
 from basagc import config  # need to import this first to set debug flag
 
+
+# def tracefunc(frame, event, arg, indent=[0]):
+#     if event == "call":
+#         indent[0] += 2
+#         print("-" * indent[0] + "> call function", frame.f_code.co_name)
+#     elif event == "return":
+#         print("<" + "-" * indent[0], "exit function", frame.f_code.co_name)
+#         indent[0] -= 2
+#     return tracefunc
+#
+#
+# import sys
+#
+# sys.settrace(tracefunc)
+
 if __name__ == "__main__":
 
     # arg parser for debug flag
