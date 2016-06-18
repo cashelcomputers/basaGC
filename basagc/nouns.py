@@ -12,7 +12,6 @@ if config.DEBUG:
     # noinspection PyUnresolvedReferences
     from pudb import set_trace  # lint:ok
 from basagc import utils
-from basagc.interfaces import krpc
 
 vessel = None
 
@@ -32,6 +31,7 @@ class Noun(object):
         self.description = description
         self.number = number
         self.telemetry = {}  # this will be a dict of functions that when called returns the telemetry
+        self.ksp = vessel.krpc_connection
 
 # -----------------------BEGIN NORMAL NOUNS--------------------------------------
 
@@ -42,24 +42,24 @@ class Noun06(Noun):
 
     def return_data(self):
 
-        self.telemetry["ut"] = krpc.get_telemetry("space_center", "ut")
+        self.telemetry["ut"] = self.ksp.get_telemetry("space_center", "ut")
         now = self.telemetry["ut"]()
         time_until_event = vessel.computer.noun_data["06"]
-        # hms_until_event = utils.seconds_to_time(time_until_event)
+        if time_until_event == "":
+            return False
+        hms_until_event = utils.seconds_to_time(time_until_event)
 
-        ##set_trace()
-        #hours = "-" + str(hms_until_event["hours"]).replace(".", "").zfill(5)
-        #minutes = "-" + str(hms_until_event["minutes"]).replace(".", "").zfill(5)
+        hours = "-" + str(hms_until_event["hours"]).replace(".", "").zfill(5)
+        minutes = "-" + str(hms_until_event["minutes"]).replace(".", "").zfill(5)
+        seconds = hms_until_event["seconds"]
 
-        ## the following is a workaround to ensure the displayed value doesn't loose a digit
-        #frac_seconds, whole_seconds = math.modf(hms_until_event["seconds"])
-        #frac_seconds = round(frac_seconds, 2)
-        #seconds = "-" + str(int(whole_seconds)).zfill(3) + str(frac_seconds)[3:5].replace(".", "").zfill(2)
-        #print(seconds)
+        whole_seconds, frac_seconds = utils.float_to_parts(seconds)
+        seconds = "-" + whole_seconds + frac_seconds
+
         data = {
-            1: "-00000",
-            2: "-00000",
-            3: "-{:.2f}".format(time_until_event).replace(".", ""),
+            1: hours,
+            2: minutes,
+            3: seconds,
             "is_octal": False,
             "tooltips" : [
                 "Hours until event",
@@ -76,7 +76,7 @@ class Noun09(Noun):
 
     def return_data(self):
 
-        alarm_codes = vessel.alarm_codes
+        alarm_codes = vessel.computer.alarm_codes
         data = {
             1: str(alarm_codes[0]),
             2: str(alarm_codes[1]),
@@ -176,10 +176,9 @@ class Noun25(Noun):
     def return_data(self):
 
         self.telemetry = {
-            "mass": ksp.get_telemetry("vessel", "mass")
+            "mass": self.ksp.get_telemetry("vessel", "mass") / 1000
         }
-        mass_in_tons = ksp.get_telemetry("vessel", "mass") / 1000
-        mass_whole_part, mass_frac_part = utils.float_to_parts(mass_in_tons)
+        mass_whole_part, mass_frac_part = utils.float_to_parts(self.telemetry["mass"])
 
         data = {
             1: mass_whole_part,
@@ -192,29 +191,6 @@ class Noun25(Noun):
         return data
 
 
-
-        
-#class Noun30(Noun):
-    #
-    #def __init__(self):
-        #
-        #super().__init__("Octal Target ID (000XX)", number="30")
-
-    #def return_data(self):
-
-        #target_id = computer.noun_data["30"][0]
-        #data = {
-            #1: target_id,
-            #2: "",
-            #3: "",
-            #"tooltips": ["Target Octal ID", None, None],
-            #"is_octal": True,
-        #}
-        #return data
-
-    #def receive_data(self, data):
-        #computer.noun_data["30"] = data
-
 class Noun31(Noun):
     
     def __init__(self):
@@ -223,7 +199,7 @@ class Noun31(Noun):
 
     def return_data(self):
 
-        available_thrust_kn = ksp.get_telemetry("vessel", "available_thrust") / 1000
+        available_thrust_kn = self.ksp.get_telemetry("vessel", "available_thrust") / 1000
         thrust_whole_part, thrust_frac_part = utils.float_to_parts(available_thrust_kn)
         data = {
             1: thrust_whole_part,
