@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
 """This file contains the interface to interact with kRPC."""
 
-import krpc as krpclib
+import krpc
 
 from basagc import config
+from basagc import utils
 
 class KSPNotConnected(Exception):
     """ This exception should be raised when there is no connection to KSP """
     pass
 
 
+class NotInFlightScene(Exception):
+    """Should be raised when KSP is not in the flight scene"""
+    pass
+
+def get_telemetry(telemetry_type, telemetry, body=None, once_only=False, refssmat=None, *args, **kwargs):
+    return get_connection().connection.get_telemetry(telemetry_type, telemetry, body, once_only, refssmat, *args, **kwargs)
 
 def get_connection():
     return KRPCConnection.connection if KRPCConnection.connection else KRPCConnection()
@@ -27,16 +34,21 @@ class KRPCConnection:
         self.orbit = None
         self.vessel = None
         self.space_center = None
+        self.is_connected = False
 
     def start_connection(self):
 
         try:
-            self.connection = krpclib.connect(name='basaGC', rpc_port=config.KRPC_PORT)
-        except krpclib.error.NetworkError:
+            self.connection = krpc.connect(name='basaGC', rpc_port=config.KRPC_PORT)
+        except krpc.error.NetworkError:
             raise KSPNotConnected
-        self.vessel = self.connection.space_center.active_vessel
-        self.control = self.vessel.control
-        self.orbit = self.vessel.orbit
+        try:
+            self.vessel = self.connection.space_center.active_vessel
+            self.control = self.vessel.control
+            self.orbit = self.vessel.orbit
+        except krpc.error.RPCError:
+            raise NotInFlightScene
+        self.is_connected = True
         self.space_center = self.connection.space_center
 
     def check_connection(self):
@@ -44,12 +56,30 @@ class KRPCConnection:
             try:
                 self.start_connection()
             except KSPNotConnected:
+                self.is_connected = False
                 return False
+            self.is_connected = True
+            return True
         else:
             return True
 
+    def check_flight_scene(self):
+        flight_scene = self.connection.krpc.current_game_scene
+        if flight_scene == self.connection.krpc.GameScene.flight:
+            return True
+        else:
+            return flight_scene
+
     def get_telemetry(self, telemetry_type, telemetry, body=None, once_only=False, refssmat=None, *args, **kwargs):
 
+        flight_scene = self.check_flight_scene()
+        if not flight_scene:
+            utils.log("Cannot obtain telemetry: not in flight scene (currently in {} scene".format(flight_scene))
+            return False
+        #first, check if we have a active connection
+        if not self.check_connection():
+            utils.log("Cannot obtain telemetry: no connection to KSP")
+            return False
         if refssmat:
             vessel = self.connection.space_center.active_vessel
             refssmat = getattr(self.orbit.body, refssmat)

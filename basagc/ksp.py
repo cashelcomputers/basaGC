@@ -7,7 +7,7 @@ from basagc import utils
 if config.KSP_INTERFACE == "kos":
     from basagc.interfaces import kos as ksp_interface
 elif config.KSP_INTERFACE == "krpc":
-    from basagc.interfaces import krpc as ksp_interface
+    from basagc import krpc_interface as ksp_interface
 else:
     from basagc.interfaces import telemachus as ksp_interface
 
@@ -43,4 +43,5 @@ def get_telemetry(telemetry_type, telemetry, body=None, once_only=False, refssma
 
 
 def send_command(command, data):
+    utils.log("Use of depreciated function send_command()", log_level="DEBUG")
     return connection.send_command(command, data)

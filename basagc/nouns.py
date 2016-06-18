@@ -12,6 +12,7 @@ if config.DEBUG:
     # noinspection PyUnresolvedReferences
     from pudb import set_trace  # lint:ok
 from basagc import utils
+from basagc import krpc_interface
 
 vessel = None
 
@@ -176,9 +177,9 @@ class Noun25(Noun):
     def return_data(self):
 
         self.telemetry = {
-            "mass": self.ksp.get_telemetry("vessel", "mass") / 1000
+            "mass": self.ksp.get_telemetry("vessel", "mass")
         }
-        mass_whole_part, mass_frac_part = utils.float_to_parts(self.telemetry["mass"])
+        mass_whole_part, mass_frac_part = utils.float_to_parts(self.telemetry["mass"]() / 1000)
 
         data = {
             1: mass_whole_part,

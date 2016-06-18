@@ -214,33 +214,20 @@ class MonitorVerb(Verb):
             self.timer.start(config.DISPLAY_UPDATE_INTERVAL)
 
         if self.noun is None:
+            utils.log(message="Obtaining noun number from computer, this should be passed in by function call :(",
+                      log_level="DEBUG")
             self.noun = Verb.computer.keyboard_state["requested_noun"]
-        if self.noun in self.illegal_nouns:
-            raise NounNotAcceptableError
-        noun_function = Verb.computer.nouns[self.noun]()
-        try:
-            data = noun_function.return_data()
-        except nouns.NounNotImplementedError:
-            self.computer.operator_error("Noun {} not implemented yet. Sorry about that...".format(dsky.requested_noun))
-            self.terminate()
-            return
-        #except KSPNotConnected:
-            #utils.log("KSP not connected, terminating V{}".format(self.number),
-                      #log_level="ERROR")
-            #Verb.computer.program_alarm(110)
-            #self.terminate()
-            #raise
-        #except TelemetryNotAvailable:
-            #utils.log("Telemetry not available, terminating V{}".format(self.number),
-                      #log_level="ERROR")
-            #Verb.computer.program_alarm(111)
-            #self.terminate()
-            #raise
+
+        data = Verb.computer.nouns[self.noun]().return_data()
+
+        # get the data from the noun
+
         if not data:
-            # if the noun returns False, the noun *should* have already raised a program alarm, so we just need to
-            # terminate and return
+            utils.log("Telemetry not available, terminating V{}".format(self.number), log_level="ERROR")
+            Verb.computer.program_alarm(111)
             self.terminate()
-            return
+
+        # format the data for display
         output = self._format_output_data(data)
         
         # set tooltips
@@ -250,7 +237,7 @@ class MonitorVerb(Verb):
             Verb.computer.dsky.set_tooltip("data_3", data["tooltips"][2])
 
             self.is_tooltips_set = True
-        #set_trace()
+
         # display data on DSKY registers
         Verb.computer.dsky.set_register(output[0], "data_1")
         Verb.computer.dsky.set_register(output[1], "data_2")

@@ -241,7 +241,6 @@ class Computer:
         self.main_loop_timer.start(config.LOOP_TIMER_INTERVAL)
         self.slow_loop_timer.start(config.SLOW_LOOP_TIMER_INTERVAL)
 
-
     def main_loop(self):
 
         """ The guidance computer main loop.

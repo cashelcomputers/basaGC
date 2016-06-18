@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 """This module contains a class to model the IMU found on Apollo spacecraft."""
 
-import decimal
-
-from basagc import utils, config
-from basagc.interfaces import krpc
+from basagc import utils, config, krpc_interface
 from basagc import vector
+from basagc import krpc_interface
 
 if config.DEBUG:
-    from pudb import set_trace  # lint:ok
+    pass
 
 class IMU:
     """
@@ -24,7 +22,7 @@ class IMU:
         
         self.vessel = vessel
         self.computer = vessel.computer
-        self.krpc_connection = krpc.get_connection()
+        self.krpc_connection = krpc_interface.get_connection()
         self._is_on = False
         self.is_coarse_aligned = False
         self.is_fine_aligned = False
@@ -42,7 +40,8 @@ class IMU:
         :returns: True if successful, False otherwise
         """
         self._is_on = True
-        self.computer.add_to_mainloop(self._update_state_vector)
+        if krpc_interface.get_connection().check_connection():
+            self.computer.add_to_mainloop(self._update_state_vector)
         return True
 
     def off(self):
@@ -59,6 +58,10 @@ class IMU:
         Gets the latest attitude from KSP and sets those values in IMU
         :returns: None
         """
+
+        # if we have lost connection to KSP, terminate state vector updates
+        if not krpc_interface.get_connection().check_connection():
+            self.computer.remove_from_mainloop(self._update_state_vector)
         vessel_direction = self.krpc_connection.vessel.direction(self.krpc_connection.vessel.surface_reference_frame)
 
         # Get the direction of the vessel in the horizon plane
