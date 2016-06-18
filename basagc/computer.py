@@ -27,7 +27,7 @@ class Computer:
 
     computer_instance = None
 
-    def __init__(self, ui):
+    def __init__(self, ui, vessel):
 
         """ Class constructor.
         :param gui: the wxPython frame object
@@ -37,7 +37,7 @@ class Computer:
         Computer.computer_instance = self
         verbs.Verb.computer = self
         programs.Program.computer = self
-        nouns.computer = self
+        nouns.vessel = vessel
         maneuver.computer = self
 
         self.ui = ui
@@ -107,7 +107,6 @@ class Computer:
         }
         # register key handler with qt ui
         self.register_charin()
-        #self.on()
 
     def accept_uplink(self):
         try:
@@ -204,54 +203,43 @@ class Computer:
             #utils.log("Adding {} as next burn".format(self._burn_queue[0]))
             #self.next_burn = self._burn_queue.pop()
 
-    def disable_direction_autopilot(self):
+    # def disable_direction_autopilot(self):
+    #
+    #     """ Disables the directional autopilot
+    #     :return: None
+    #     """
+    #
+    #     telemachus.disable_smartass()
+    #     self.is_direction_autopilot_engaged = False
+    #     utils.log("Autopilot disabled", log_level="INFO")
 
-        """ Disables the directional autopilot
-        :return: None
-        """
-
-        telemachus.disable_smartass()
-        self.is_direction_autopilot_engaged = False
-        utils.log("Autopilot disabled", log_level="INFO")
-
-    def quit(self):
-
-        """ Quits basaGC.
-        :return: None
-        """
-
-        # disables SMARTASS
-        try:
-            telemachus.disable_smartass()
-        except TypeError:
-            pass
-        # if self.loop_timer.is_running:
-        #     self.loop_timer.stop()
-        self.gui.Destroy()
+    # def quit(self):
+    #
+    #     """ Quits basaGC.
+    #     :return: None
+    #     """
+    #
+    #     # disables SMARTASS
+    #     try:
+    #         telemachus.disable_smartass()
+    #     except TypeError:
+    #         pass
+    #     # if self.loop_timer.is_running:
+    #     #     self.loop_timer.stop()
+    #     self.gui.Destroy()
 
     def on(self):
 
         """ Turns the guidance computer on.
         :return: None
         """
+
         utils.log("Computer booting...", log_level="INFO")
+        self.is_powered_on = True
 
-        ksp.connect()
-        
-        # attempt to load telemetry listing
-        #try:
-            #telemachus.get_api_listing()
-        #except telemachus.KSPNotConnected:
-            #utils.log("Cannot retrieve telemetry listing - no connection to KSP", log_level="WARNING")
-        #else:
-            #utils.log("Retrieved telemetry listing", log_level="INFO")
-
-        # add uplink function to main loop
-
+        # start the loops
         self.main_loop_timer.start(config.LOOP_TIMER_INTERVAL)
         self.slow_loop_timer.start(config.SLOW_LOOP_TIMER_INTERVAL)
-        self.is_powered_on = True
-        
 
 
     def main_loop(self):
@@ -265,7 +253,7 @@ class Computer:
 
         # run each item in process queue
         for item in self.main_loop_table:
-            print(item)
+            item()
 
 
     def slow_loop(self):
@@ -438,59 +426,3 @@ class Computer:
         if message:
             utils.log(message, log_level="CRITICAL")
         pass
-
-    def servicer(self):
-
-        """ For future use. The servicer updates the spacecrafts state vector.
-        """
-
-        pass
-
-    #def check_ksp_connection(self):
-
-        #""" checks if we have a connection to Telemachus / KSP
-        #:return: None
-        #"""
-        ## set_trace()
-        #if not telemachus.check_connection():
-            #if self.is_ksp_connected:
-                ## we have just lost the connection, illuminate NO ATT annunciator and log it
-                #self.dsky.annunciators["no_att"].on()
-                #utils.log("No connection to KSP, navigation functions unavailable", log_level="ERROR")
-                #self.is_ksp_connected = False
-        #else:
-            #if not self.is_ksp_connected:
-                ## have just regained connection, deluminate NO ATT annunciator and log it
-                #self.dsky.annunciators["no_att"].off()
-                #utils.log("Connection to KSP established", log_level="INFO")
-                #self.is_ksp_connected = True
-            #if not telemachus.telemetry:
-                #telemachus.get_api_listing()
-
-    #def check_paused_state(self):
-
-        #""" Checks the paused state of KSP, and illuminates STBY annunciator and logs state as necessary.
-        #:return: None
-        #"""
-
-        #if self.is_ksp_connected:
-            #paused_state = telemachus.get_telemetry("paused")
-            ## if the paused state hasn't changed, skip any annunciator changes
-            #if paused_state != self.ksp_paused_state:
-                #if paused_state == 0:
-                    #self.dsky.annunciators["stby"].off()
-                    #utils.log("KSP unpaused, all systems go", log_level="INFO")
-                #elif paused_state == 1:
-                    #self.dsky.annunciators["stby"].on()
-                    #utils.log("KSP paused", log_level="INFO")
-                #elif paused_state == 2:
-                    #self.dsky.annunciators["stby"].on()
-                    #utils.log("No power to Telemachus antenna", log_level="WARNING")
-                #elif paused_state == 3:
-                    #self.dsky.annunciators["stby"].on()
-                    #utils.log("Telemachus antenna off", log_level="WARNING")
-                #elif paused_state == 4:
-                    #self.dsky.annunciators["stby"].on()
-                    #utils.log("No Telemachus antenna found", log_level="WARNING")
-                #self.ksp_paused_state = paused_state
-

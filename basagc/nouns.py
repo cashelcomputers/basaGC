@@ -14,7 +14,7 @@ if config.DEBUG:
 from basagc import utils
 from basagc import ksp
 
-computer = None
+vessel = None
 
 
 def octal(value):
@@ -42,7 +42,7 @@ class Noun(object):
     def __init__(self, description, number):
         self.description = description
         self.number = number
-        self.telemetry = None  # this will be a dict of functions that when called returns the telemetry
+        self.telemetry = {}  # this will be a dict of functions that when called returns the telemetry
 
     def return_data(self):
         raise NounNotImplementedError
@@ -57,9 +57,9 @@ class Noun06(Noun):
 
     def return_data(self):
 
-        self.telemetry = ksp.get_telemetry("space_center", "ut")
-        now = self.telemetry()
-        time_until_event = computer.noun_data["06"]
+        self.telemetry["ut"] = ksp.get_telemetry("space_center", "ut")
+        now = self.telemetry["ut"]()
+        time_until_event = vessel.computer.noun_data["06"]
         # hms_until_event = utils.seconds_to_time(time_until_event)
 
         ##set_trace()
@@ -91,7 +91,7 @@ class Noun09(Noun):
 
     def return_data(self):
 
-        alarm_codes = computer.alarm_codes
+        alarm_codes = vessel.alarm_codes
         data = {
             1: str(alarm_codes[0]),
             2: str(alarm_codes[1]),
@@ -114,10 +114,10 @@ class Noun14(Noun):
                                      number="14")
 
     def return_data(self):
-        if not computer.next_burn:
-            computer.program_alarm(115)
+        if not vessel.next_burn:
+            vessel.program_alarm(115)
             return False
-        burn = computer.next_burn
+        burn = vessel.next_burn
         expected_delta_v_at_cutoff = burn.velocity_at_cutoff
         actual_delta_v_at_cutoff = ksp.get_telemetry("flight", "speed", refssmat=config.REFSSMAT["planet_rotating"])  #TODO: check if this works
         delta_v_error = actual_delta_v_at_cutoff - expected_delta_v_at_cutoff
@@ -156,16 +156,13 @@ class Noun17(Noun):
         # FIXME: need to make sure that data is correct length (sometimes drops the last 0 when input is xxx.x rather
         # then xxx.xx
         # FIXME: note to self, this is figured out in other nouns that have already been changed to new API
-        #set_trace()
-        self.telemetry = {
-            "roll": ksp.get_telemetry("flight", "roll", refssmat=config.REFSSMAT["vessel_orbital"]),
-            "pitch": ksp.get_telemetry("flight", "pitch", refssmat=config.REFSSMAT["vessel_orbital"]),
-            "yaw": ksp.get_telemetry("flight", "heading", refssmat=config.REFSSMAT["vessel_orbital"]),
-            }
 
-        roll = str(round(self.telemetry["roll"](), 1))
-        pitch = str(round(self.telemetry["pitch"](), 1))
-        yaw = str(round(self.telemetry["yaw"](),  1))
+        # get data from IMU
+        pitch, roll, yaw = vessel.imu.get_pitch_roll_yaw()
+
+        roll = str(round(roll, 1))
+        pitch = str(round(pitch, 1))
+        yaw = str(round(yaw,  1))
 
         roll = roll.replace(".", "")
         pitch = pitch.replace(".", "")
@@ -260,10 +257,10 @@ class Noun33(Noun):
 
     def return_data(self):
 
-        if not computer.next_burn:
-            computer.program_alarm(alarm_code=115, message="No burn data loaded")
+        if not vessel.next_burn:
+            vessel.program_alarm(alarm_code=115, message="No burn data loaded")
             return False
-        time_until_ignition = utils.seconds_to_time(computer.next_burn.calculate_time_to_ignition())
+        time_until_ignition = utils.seconds_to_time(vessel.next_burn.calculate_time_to_ignition())
         hours = str(int(time_until_ignition["hours"]))
         minutes = str(int(time_until_ignition["minutes"]))
         seconds = str(int(time_until_ignition["seconds"])).replace(".", "")
@@ -322,7 +319,7 @@ class Noun38(Noun):
 
         
         data = {
-            1: computer.noun_data["38"][0],
+            1: vessel.noun_data["38"][0],
             2: "bbbbb",
             3: "bbbbb",
             "tooltips": ["Stage Specific Impulse (s) ", None, None],
@@ -338,10 +335,10 @@ class Noun40(Noun):
         super().__init__("Burn Data (Time from ignition, orbital velocity, accumulated Δv", number="40")
 
     def return_data(self):
-        if not computer.next_burn:
-            computer.program_alarm(115)
+        if not vessel.next_burn:
+            vessel.program_alarm(115)
             return False
-        burn = computer.next_burn
+        burn = vessel.next_burn
         time_to_ignition = utils.seconds_to_time(burn.time_until_ignition)
         minutes_to_ignition = str(int(time_to_ignition["minutes"])).zfill(2)
         seconds_to_ignition = str(int(time_to_ignition["seconds"])).zfill(2)
@@ -528,15 +525,15 @@ class Noun95(Noun):
 
     def return_data(self):
 
-        if not computer.next_burn:
-            computer.program_alarm(115)
+        if not vessel.next_burn:
+            vessel.program_alarm(115)
             return False
 
-        time_to_ignition = utils.seconds_to_time(computer.next_burn.time_until_ignition)
+        time_to_ignition = utils.seconds_to_time(vessel.next_burn.time_until_ignition)
         minutes_to_ignition = str(int(time_to_ignition["minutes"])).zfill(2)
         seconds_to_ignition = str(int(time_to_ignition["seconds"])).zfill(2)
-        delta_v = str(int(computer.next_burn.delta_v_required))
-        burn_duration = str(int(computer.next_burn.burn_duration))
+        delta_v = str(int(vessel.next_burn.delta_v_required))
+        burn_duration = str(int(vessel.next_burn.burn_duration))
 
         data = {
             1: "-" + minutes_to_ignition + "b" + seconds_to_ignition,

@@ -38,6 +38,7 @@ def check_connection():
 
 def get_telemetry(telemetry_type, telemetry, body=None, once_only=False, refssmat=None, **kwargs):
     # TODO: depreciate this in favour of direct access to krpc
+    utils.log("Use of depreciated function get_telemetry()", log_level="DEBUG")
     return connection.get_telemetry(telemetry_type, telemetry, body, once_only, refssmat, **kwargs)
 
 

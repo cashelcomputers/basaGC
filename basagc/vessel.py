@@ -18,10 +18,17 @@ class Vessel:
         self.pitch = 0.0
         self.yaw = 0.0
         self.krpc_connection = krpc.get_connection()
-        self.computer = computer.Computer(ui)
+        self.computer = computer.Computer(ui, vessel=self)
         self.autopilot = autopilot.Autopilot()
         self.imu = imu.IMU(vessel=self)
 
         # turn on the computer and IMU
         self.computer.on()
         self.imu.on()
+
+        # connect to ksp
+        conn = krpc.get_connection()
+        try:
+            conn.start_connection()
+        except krpc.KSPNotConnected:
+            pass  # FIXME

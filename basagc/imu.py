@@ -29,9 +29,12 @@ class IMU:
         self.is_coarse_aligned = False
         self.is_fine_aligned = False
 
-        self.pitch = decimal.Decimal(0.0)
-        self.roll = decimal.Decimal(0.0)
-        self.yaw = decimal.Decimal(0.0)
+        self.pitch = 0.0
+        self.roll = 0.0
+        self.yaw = 0.0
+
+    def get_pitch_roll_yaw(self):
+        return self.pitch, self.roll, self.yaw
 
     def on(self):
         """
@@ -39,6 +42,7 @@ class IMU:
         :returns: True if successful, False otherwise
         """
         self._is_on = True
+        self.computer.add_to_mainloop(self._update_state_vector)
         return True
 
     def off(self):
@@ -55,9 +59,7 @@ class IMU:
         Gets the latest attitude from KSP and sets those values in IMU
         :returns: None
         """
-
-        vessel_direction = self.krpc_connection.get_telemetry("vessel", "direction",
-                                                             refssmat=config.REFSSMAT["surface"])()
+        vessel_direction = self.krpc_connection.vessel.direction(self.krpc_connection.vessel.surface_reference_frame)
 
         # Get the direction of the vessel in the horizon plane
         horizon_direction = (0, vessel_direction[1], vessel_direction[2])
