@@ -13,11 +13,9 @@ from basagc import dsky
 from basagc import nouns
 from basagc import programs
 from basagc import routines
-from basagc.interfaces import telemachus
 from basagc import utils
 from basagc import verbs
 from basagc import maneuver
-from basagc import ksp
 
 
 class Computer:
@@ -36,7 +34,7 @@ class Computer:
 
         Computer.computer_instance = self
         verbs.Verb.computer = self
-        programs.Program.computer = self
+
         nouns.vessel = vessel
         maneuver.computer = self
 
@@ -85,6 +83,9 @@ class Computer:
             "25": ["00000", "00000", ""],
             "31": ["00000", "00000"],
             "38": ["00000", "", ""],
+        }
+        self.memory = {
+            "TIG": 0.0,
         }
         self.next_burn = None
         self.is_ksp_connected = False
