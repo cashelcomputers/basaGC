@@ -6,24 +6,23 @@ import sys
 import math
 from collections import OrderedDict
 
-
+import krpc
 from PyQt5.QtCore import QTimer
 
 from basagc import config
 if config.DEBUG:
     from pudb import set_trace  # lint:ok
-
-from basagc import utils, maneuver
-
+from basagc import utils
+from basagc import maneuver
 from basagc.maneuver import Burn
 from basagc import ksp
 
+_vessel = None
 
 class Program(object):
 
     """ Major mode base class.
     """
-    computer = None
 
     def __init__(self, description, number):
 
@@ -32,9 +31,10 @@ class Program(object):
         :param number: program number
         :return: None
         """
-        self.computer = Program.computer
+        self.computer = _vessel.computer
         self.description = description
         self.number = number
+        self.vessel = _vessel
 
     def execute(self):
 
@@ -105,7 +105,7 @@ class Program01(Program):
         
         super().execute()
         if not ksp.check_connection():
-            Program.computer.poodoo_abort(111)
+            self.computer.poodoo_abort(111)
             self.terminate()
             return
         #Program.computer.imu.on()
@@ -118,7 +118,7 @@ class Program01(Program):
         """
 
         #Program.computer.imu.set_fine_align()
-        Program.computer.execute_program("02")
+        self.computer.execute_program("02")
 
 class Program02(Program):
     
@@ -128,73 +128,42 @@ class Program02(Program):
         self.turn_start_altitude = None
         self.turn_end_altitude = None
         self.target_altitude = None
-        self.computer = Program.computer
         self.ut_of_launch = 0.0
+        self.timer = QTimer()
 
 
     def execute(self):
         #set_trace()
         now = ksp.get_telemetry("space_center", "ut")
-        self.ut_of_launch = now + 5
-        self.computer.noun_data["06"] = 5
+        self.ut_of_launch = now + config.LAUNCH_LEAD_TIME
+        self.computer.memory["TIG"] = config.LAUNCH_LEAD_TIME
         # enable SAS
         ksp.send_command("sas", True)
         self.computer.execute_verb(verb="16", noun="06")
         self.computer.add_to_mainloop(self.countdown_monitor)
-        
+
+
     def countdown_monitor(self):
         #set_trace()
         now = ksp.get_telemetry("space_center", "ut")
         delta_time = self.ut_of_launch - now
         self.computer.noun_data["06"] = round(delta_time, 2)
         if delta_time <= 0.1:
-            print("LIFTOFF!!!!!!1!")
-            #set_trace()
-            #self.computer.terminate_verb(verb="16")
+            utils.log("LIFTOFF!!!!!!1!", log_level="INFO")
             self.computer.dsky.current_verb.terminate()
             self.computer.remove_from_mainloop(self.countdown_monitor)
+
             # Clear display
             for register in ["verb", "noun", "program", "data_1", "data_2", "data_3"]:
                 self.computer.dsky.blank_register(register)
-            Program.computer.execute_program("11")
-        
-        
-#class Program02(Program):
-    #'''
-    #Waits until liftoff is detected, blanks display and starts P11
-    #'''
+            # pause for 1 second, then run P11
+            self.timer.start(1000)
 
-    #def __init__(self):
-        #
-        #""" Class constructor.
-        #:return: None
-        #"""
-        #super().__init__(description="Prelaunch or service - Gyrocompassing program", number="02")
-        #self.timer = QTimer()
-        #self.timer.timeout.connect(self.timeout)
 
-    #def execute(self):
+    def timeout(self):
+        self.timer.stop()
+        self.computer.execute_program("11")
 
-        #""" Executes the program.
-        #:return: None
-        #"""
-        #super().execute()
-        #Program.computer.add_to_mainloop(self.check_for_liftoff)
-
-    #def check_for_liftoff(self):
-        #if get_telemetry("verticalSpeed") > 1:
-            #utils.log("Liftoff discrete")
-            #Program.computer.remove_from_mainloop(self.check_for_liftoff)
-
-            ## Clear display
-            #for register in ["verb", "noun", "program", "data_1", "data_2", "data_3"]:
-                #Program.computer.dsky.blank_register(register)
-            ## pause for 1 second, then run P11
-            #self.timer.start(1000)
-
-    #def timeout(self):
-        #self.timer.stop()
-        #Program.computer.execute_program("11")
 
 class Program11(Program):
 
@@ -217,28 +186,6 @@ class Program11(Program):
         """
 
         super().execute()
-        utils.log("Program 11 executing", log_level="INFO")
-
-        # test if KSP is connected
-        #if check_connection() == False:
-            #return
-
-        # --> call average G integration with ΔV integration
-        # self.computer.run_average_g_routine = True
-
-        # --> terminate gyrocompassing
-        if "02" in self.computer.running_programs:
-            utils.log("Late termination of P02")
-            self.computer.programs["02"].terminate()
-
-        # --> compute initial state vector
-        # self.computer.routines["average_g"]()
-
-        # --> Display on DSKY:
-        # --> V06 N62 (we are going to use V16N62 though, so we can have a updated display
-        # --> R1: Velocity
-        # --> R2: Rate of change of vehicle altitude
-        # --> R3: Vehicle altitude in km to nearest .1 km
         self.computer.execute_verb(verb="16", noun="62")
 
 
@@ -255,7 +202,7 @@ class Program15(Program):
         """
 
         super().__init__(description="TMI Calculate", number="15")
-        
+        self.maneuver = None
 
     def execute(self):
 
@@ -266,10 +213,10 @@ class Program15(Program):
         super().execute()
         
         # if no connection to KSP, do P00DOO abort
-        #if not check_connection():
-            #self.computer.poodoo_abort(111)
-            #self.terminate()
-            #return
+        if not ksp.check_connection():
+            self.computer.poodoo_abort(111)
+            self.terminate()
+            return
         #
         ## check that orbital parameters are within range to conduct burn
         #is_orbit_ok = maneuver.HohmannTransfer.check_orbital_parameters()
@@ -278,34 +225,24 @@ class Program15(Program):
             #return
         
         # get mass
-        mass = ksp.get_telemetry("vessel", "mass") / 1000  # in tons
-        fractional_part, whole_part  = math.modf(mass)
-        Program.computer.noun_data["25"][0] = str(int(whole_part)).zfill(5)
-        Program.computer.noun_data["25"][1] = str(int(fractional_part * 100000))
+        get_mass = ksp.get_telemetry("vessel", "mass")
+        self.computer.memory["mass"] = get_mass() / 1000  # in tons
         
         # get thrust
-        thrust = ksp.get_telemetry("vessel", "max_thrust") / 1000  # in kN
-        fractional_part, whole_part  = math.modf(thrust)
-        Program.computer.noun_data["31"][0] = str(int(whole_part)).zfill(5)
-        Program.computer.noun_data["31"][1] = str(int(fractional_part * 100000)).zfill(5)
+        get_max_stage_thrust = ksp.get_telemetry("vessel", "max_thrust")
+        self.computer.memory["max_stage_thrust"] = get_max_stage_thrust() / 1000  # in kN
 
         # get isp
-        isp = ksp.get_telemetry("vessel", "specific_impulse")
-        Program.computer.noun_data["38"][0] = str(int(isp)).zfill(5)
+        get_isp = ksp.get_telemetry("vessel", "specific_impulse")
+        self.computer.memory["stage_vacuum_isp"] = get_isp()
 
         # do it!
-        self.calculate_maneuver()
-
-    def calculate_maneuver(self):
-
-        """ Calculates the maneuver parameters and creates a Burn object
-        :return: Nothing
-        """
         self.maneuver = maneuver.HohmannTransfer()
         self.maneuver.execute()
         # display burn parameters and go to poo
         self.computer.execute_verb(verb="06", noun="95")
         self.computer.go_to_poo()
+
 
 class Program31(Program):
     """
@@ -317,14 +254,14 @@ class Program31(Program):
         :return: None
         """
         super().__init__(description="MOI Burn Calculator", number="31")
-        self.delta_v = Program.computer.moi_burn_delta_v
-        self.time_of_node = get_telemetry("timeOfPeriapsisPassage")
+        self.delta_v = Program.vessel.moi_burn_delta_v
+        self.time_of_node = ksp.get_telemetry("timeOfPeriapsisPassage")
         self.time_of_ignition = None
 
     def update_parameters(self):
         
-        self.delta_v = Program.computer.moi_burn_delta_v
-        self.time_of_node = get_telemetry("timeOfPeriapsisPassage")
+        self.delta_v = Program.vessel.moi_burn_delta_v
+        self.time_of_node = ksp.get_telemetry("timeOfPeriapsisPassage")
 
         initial_mass = float(self.computer.noun_data["25"][0] + "." + self.computer.noun_data["25"][1])
         thrust = float(self.computer.noun_data["31"][0] + "." + self.computer.noun_data["31"][1])
@@ -338,27 +275,27 @@ class Program31(Program):
         self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_whole_part, display_location="data_1")
         
     def _accept_initial_mass_whole_part(self, mass):
-        Program.computer.noun_data["25"][0] = mass
+        Program.vessel.noun_data["25"][0] = mass
         self.computer.execute_verb(verb="22", noun="25")
         self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_fractional_part, display_location="data_2")
         
     def _accept_initial_mass_fractional_part(self, mass):
-        Program.computer.noun_data["25"][1] = mass
+        Program.vessel.noun_data["25"][1] = mass
         self.computer.execute_verb(verb="21", noun="31")
         self.computer.dsky.request_data(requesting_object=self._accept_thrust_whole_part, display_location="data_1")
 
     def _accept_thrust_whole_part(self, thrust):
-        Program.computer.noun_data["31"][0] = thrust
+        Program.vessel.noun_data["31"][0] = thrust
         self.computer.execute_verb(verb="22", noun="31")
         self.computer.dsky.request_data(requesting_object=self._accept_thrust_fractional_part, display_location="data_2")
 
     def _accept_thrust_fractional_part(self, thrust):
-        Program.computer.noun_data["31"][1] = thrust
+        Program.vessel.noun_data["31"][1] = thrust
         self.computer.execute_verb(verb="21", noun="38")
         self.computer.dsky.request_data(requesting_object=self._accept_isp, display_location="data_1")
 
     def _accept_isp(self, isp):
-        Program.computer.noun_data["38"][0] = isp
+        Program.vessel.noun_data["38"][0] = isp
         self.calculate_maneuver()
 
     def calculate_maneuver(self):

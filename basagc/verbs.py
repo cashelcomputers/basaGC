@@ -7,11 +7,10 @@ import sys
 from collections import OrderedDict
 
 from PyQt5.QtCore import QTimer
-from basagc import config, nouns, utils, dsky
-from basagc import maneuver
+from basagc import config, utils, dsky
 if config.DEBUG:
     from pudb import set_trace  # lint:ok
-from basagc import ksp
+
 
 log = logging.getLogger("Verbs")
 
@@ -1045,7 +1044,7 @@ class Verb98(ExtendedVerb):
         
         super().execute()
 
-        vessel_up = ksp.get_telemetry("space_center", "transform_direction", "(0,0,-1)", "vessel.reference_frame",
+        vessel_up = krpc.get_telemetry("space_center", "transform_direction", "(0,0,-1)", "vessel.reference_frame",
                                       "vessel.surface_reference_frame")
 
         # testing = maneuver.Launch(self.computer)

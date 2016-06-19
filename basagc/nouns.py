@@ -12,7 +12,7 @@ if config.DEBUG:
     # noinspection PyUnresolvedReferences
     from pudb import set_trace  # lint:ok
 from basagc import utils
-from basagc import krpc_interface
+from basagc import ksp
 
 vessel = None
 
@@ -43,7 +43,7 @@ class Noun06(Noun):
 
     def return_data(self):
 
-        self.telemetry["ut"] = self.ksp.get_telemetry("space_center", "ut")
+        self.telemetry["ut"] = ksp.get_telemetry("space_center", "ut")
         now = self.telemetry["ut"]()
         time_until_event = vessel.computer.noun_data["06"]
         if time_until_event == "":
@@ -105,7 +105,7 @@ class Noun14(Noun):
             return False
         burn = vessel.next_burn
         expected_delta_v_at_cutoff = burn.velocity_at_cutoff
-        actual_delta_v_at_cutoff = ksp.get_telemetry("flight", "speed", refssmat=config.REFSSMAT["planet_rotating"])  #TODO: check if this works
+        actual_delta_v_at_cutoff = krpc.get_telemetry("flight", "speed", refssmat=config.REFSSMAT["planet_rotating"])  #TODO: check if this works
         delta_v_error = actual_delta_v_at_cutoff - expected_delta_v_at_cutoff
 
         expected_delta_v_at_cutoff = str(int(expected_delta_v_at_cutoff)).replace(".", "")
@@ -200,7 +200,7 @@ class Noun31(Noun):
 
     def return_data(self):
 
-        available_thrust_kn = self.ksp.get_telemetry("vessel", "available_thrust") / 1000
+        available_thrust_kn = ksp.get_telemetry("vessel", "available_thrust") / 1000
         thrust_whole_part, thrust_frac_part = utils.float_to_parts(available_thrust_kn)
         data = {
             1: thrust_whole_part,
@@ -368,9 +368,9 @@ class Noun44(Noun):
             #tff = int(get_telemetry("timeToAp"))
         #except TelemetryNotAvailable:
             #raise
-        apoapsis = str(round(ksp.get_telemetry("orbit", "apoapsis_altitude") / 1000, 1))
-        periapsis = str(round(ksp.get_telemetry("orbit", "periapsis_altitude") / 1000, 1))
-        tff = int(ksp.get_telemetry("orbit", "time_to_apoapsis"))
+        apoapsis = str(round(krpc.get_telemetry("orbit", "apoapsis_altitude") / 1000, 1))
+        periapsis = str(round(krpc.get_telemetry("orbit", "periapsis_altitude") / 1000, 1))
+        tff = int(krpc.get_telemetry("orbit", "time_to_apoapsis"))
         print(apoapsis, periapsis, tff)
 
         apoapsis = apoapsis.replace(".", "")
