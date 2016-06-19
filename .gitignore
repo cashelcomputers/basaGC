@@ -1,7 +1,6 @@
 *.log
 .idea/
 *.nja
-*.pyc
 doc/api_list.txt
 scripts/
 wxglade_output/

@@ -30,7 +30,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.debug:
         config.DEBUG = True
-        config.current_log_level = "DEBUG"
+        config.CURRENT_LOG_LEVEL = "DEBUG"
         print("================DEBUG MODE================")
         
     from basagc import vessel, gui  # import the rest
