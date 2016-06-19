@@ -1,77 +1,65 @@
+#!/usr/bin/env python3
+
+""" This file contains classes to model maneuvers."""
+
 import math
 
-
-from pudb import set_trace
-
-from basagc import config, utils
-#from basagc.interfaces import telemachus
-#from basagc.config import TELEMACHUS_BODY_IDS
-from basagc import ksp
-
+from basagc import config
 if config.DEBUG:
-    from pudb import set_trace  # lint:ok
-
+    from pudb import set_trace
+from basagc import utils
+from basagc import ksp
 computer = None
 
 class HohmannTransfer:
 
     def __init__(self):
+
+        ksp_connection = ksp.get_connection()
+        self.orbit = ksp_connection.orbit
+        self.vessel = ksp_connection.vessel
+        self.space_center = ksp_connection.space_center
         self.delta_v_1 = 0.0
         self.delta_v_2 = 0.0
-        #self.orbiting_body = get_telemetry("body")
-        self.orbiting_body = ksp.get_telemetry("orbit_body", "name")
         self.phase_angle_required = 0.0
         self.time_of_ignition_first_burn = 0.0
         self.target_name = "Mun"
-        #self.departure_body = get_telemetry("body")
-        self.departure_body = ksp.get_telemetry("orbit_body", "name")
-        #self.departure_altitude = get_telemetry("sma")
-        self.departure_altitude = ksp.get_telemetry("orbit", "semi_major_axis")
-        #self.radius = get_telemetry("body_radius", body_number=config.TELEMACHUS_BODY_IDS[self.orbiting_body])
-        self.radius = ksp.get_telemetry("orbit_body", "equatorial_radius")
-        self.destination_altitude = 13500000 + self.radius
-        #self.grav_param = get_telemetry("body_gravParameter",
-        #                                 body_number=config.TELEMACHUS_BODY_IDS[self.orbiting_body])
-        self.grav_param = ksp.get_telemetry("orbit_body", "gravitational_parameter")
-        #self.orbital_period = get_telemetry("period")
-        self.orbital_period = ksp.get_telemetry("orbit", "period")
-        #self.departure_body_period = get_telemetry("body_period",
-        #                                            body_number=config.TELEMACHUS_BODY_IDS["Kerbin"])
-        self.departure_body_period = ksp.get_telemetry("orbit_body", "rotational_period")
+        self.departure_body = self.orbit.body
+        self.destination_orbit_radius = 13500000 + self.orbit.radius
+        self.grav_param = self.orbit.body.gravitational_parameter
+        self.orbital_period = self.orbit.period
+        self.departure_body_rotational_period = self.orbit.body.rotational_period
         self.first_burn = None
         self.second_burn = None
-        #self.target_id = config.TELEMACHUS_BODY_IDS[self.target_name]
         self.time_to_transfer = None
-
         self.time_of_node = 0.0
-        #self.time_of_second_node = 0.0
         self.duration_of_burn = 0
 
     def calculate_sma_transfer_ellipse(self):
         
-        radius_departure_orbit = self.departure_altitude
-        radius_arrival_orbit = self.destination_altitude
+        radius_departure_orbit = self.departure_orbit_radius
+        radius_arrival_orbit = self.destination_orbit_radius
         sma = (radius_departure_orbit + radius_arrival_orbit) / 2
         return sma
 
     def calculate_velocity_initial(self):
         
-        radius_departure_orbit = self.departure_altitude
+        radius_departure_orbit = self.departure_orbit_radius
         vi = math.sqrt(self.grav_param / radius_departure_orbit)
         return vi
 
     def calculate_velocity_final(self):
-        radius_arrival_orbit = self.destination_altitude
+        radius_arrival_orbit = self.destination_orbit_radius
         vf = math.sqrt(self.grav_param / radius_arrival_orbit)
         return vf
 
     def calculate_velocity_initial_on_transfer_orbit(self):
-        radius_departure_orbit = self.departure_altitude
+        radius_departure_orbit = self.departure_orbit_radius
         vtxi = math.sqrt(self.grav_param * ((2 / radius_departure_orbit) - (1 / self.calculate_sma_transfer_ellipse())))
         return vtxi
 
     def calculate_velocity_final_on_transfer_orbit(self):
-        radius_arrival_orbit = self.destination_altitude
+        radius_arrival_orbit = self.destination_orbit_radius
         vtxf = math.sqrt(self.grav_param * ((2 / radius_arrival_orbit) - (1 / self.calculate_sma_transfer_ellipse())))
         return vtxf
 
@@ -111,14 +99,14 @@ class HohmannTransfer:
     def update_parameters(self):
 
         # update departure altitide
-        self.departure_altitude = ksp.get_telemetry("vessel", "mean_altitude", refssmat=config.REFSSMAT["planet_non_rotating"])
+        self.departure_orbit_radius = ksp.get_telemetry("vessel", "mean_altitude", refssmat=config.REFSSMAT["planet_non_rotating"])
         self.calculate()
         self.calculate_burn_timings()
         self.first_burn.delta_v = self.delta_v_1
         self.first_burn.time_of_ignition = self.time_of_ignition_first_burn
         self.first_burn.time_of_node = self.time_of_node
         telemachus.update_maneuver_node(ut=self.time_of_node, delta_v=(0.0, 0.0, self.delta_v_1))
-        if config.current_log_level == "DEBUG":
+        if config.CURRENT_LOG_LEVEL == "DEBUG":
             self.print_maneuver_data()
 
     def print_maneuver_data(self):
@@ -133,9 +121,7 @@ class HohmannTransfer:
     def execute(self):
 
         self.calculate()
-        time_to_node = HohmannTransfer.get_time_to_node(self.phase_angle_difference(),
-                                                                     self.orbital_period,
-                                                                     self.departure_body_period)
+
         if time_to_node <= 120:
             utils.log("Time of ignition less that 2 minutes in the future, starting burn during next orbit")
             time_to_node += self.orbital_period
@@ -146,7 +132,7 @@ class HohmannTransfer:
                                time_of_node=self.time_of_node,
                                burn_duration=self.duration_of_burn,
                                )
-        if config.current_log_level == "DEBUG":
+        if config.CURRENT_LOG_LEVEL == "DEBUG":
             self.print_maneuver_data()
         computer.add_burn(self.first_burn)
         #self.add_maneuver_node()
@@ -166,29 +152,34 @@ class HohmannTransfer:
         return phase_angle_difference
         
     def calculate(self):
+        """
+        This method is the entry point to calculate the transfer.
+        """
+        # calculate time to transfer
+        self.time_to_transfer = HohmannTransfer.time_to_transfer(self.departure_orbit_radius,
+                                                                 self.destination_orbit_radius,
+                                                                 self.grav_param)
 
         # determine correct phase angle
-        self.phase_angle_required = HohmannTransfer.calculate_phase_angle(
-            self.departure_altitude,
-            self.destination_altitude,
-            self.grav_param,
+        self.phase_angle_required = HohmannTransfer.calculate_phase_angle(self.departure_orbit_radius,
+                                                                          self.destination_orbit_radius,
+                                                                          self.grav_param,
+                                                                          self.time_to_transfer,
         )
 
         # determine delta-v for burns 1 and 2
-        self.delta_v_1, self.delta_v_2 = HohmannTransfer.calculate_delta_v(self.departure_altitude,
-                                                                   self.destination_altitude)
+        self.delta_v_1, self.delta_v_2 = HohmannTransfer.calculate_delta_v(self.departure_orbit_radius,
+                                                                           self.destination_orbit_radius,
+                                                                           self.grav_param)
 
-        # calculate time to transfer
-        self.time_to_transfer = HohmannTransfer.time_to_transfer(self.departure_altitude,
-                                                 self.destination_altitude,
-                                                 self.grav_param)
-
-        #self.time_of_second_node = self.time_of_node + self.time_to_transfer
+        time_to_node = HohmannTransfer.get_time_to_node(self.phase_angle_difference(),
+                                                        self.orbital_period,
+                                                        self.departure_body_rotational_period)
 
     def calculate_burn_timings(self):
         time_to_node = HohmannTransfer.get_time_to_node(self.phase_angle_difference(),
-                                                                     self.orbital_period,
-                                                                     self.departure_body_period)
+                                                        self.orbital_period,
+                                                        self.departure_body_rotational_period)
 
         self.time_of_node = get_telemetry("universalTime") + time_to_node
         initial_mass = float(computer.noun_data["25"][0] + "." + computer.noun_data["25"][1])
@@ -214,26 +205,23 @@ class HohmannTransfer:
         :param grav_param: orbiting body gravitational parameter
         :return: a float in seconds of the time to transfer
         """
-        tH = math.pi * math.sqrt(math.pow(departure_orbit + destination_orbit, 3) / (8 * grav_param))
-        return tH
+        th = math.pi * math.sqrt(math.pow(departure_orbit + destination_orbit, 3) / (8 * grav_param))
+        return th
 
     @staticmethod
-    def calculate_phase_angle(departure_orbit, destination_orbit, grav_param):
+    def calculate_phase_angle(departure_orbit, destination_orbit, , transfer_time, grav_param):
         """ Calculates the required phase angle for transfer.
         :param departure_orbit: departure orbit altitude
         :param destination_orbit: destination orbit altitude
         :param grav_param: orbiting body gravitational parameter
         :return: the required phase angle
         """
-        #departure_planet_radius = get_telemetry("body_radius", body_number=TELEMACHUS_BODY_IDS["Kerbin"])
-        #departure_orbit += departure_planet_radius
-        #destination_orbit += departure_planet_radius
-        tH = HohmannTransfer.time_to_transfer(departure_orbit, destination_orbit, grav_param)
-        required_phase_angle = 180 - math.sqrt(grav_param / destination_orbit) * (tH / destination_orbit) * 180 / math.pi
+
+        required_phase_angle = 180 - math.sqrt(grav_param / destination_orbit) * (transfer_time / destination_orbit) * 180 / math.pi
         return required_phase_angle
 
     @staticmethod
-    def calculate_delta_v(departure_altitude, destination_altitude, departure_body="Kerbin"):
+    def calculate_delta_v(departure_orbit_radius, destination_orbit_radius, grav_param):
         """
         Given a circular orbit at altitude departure_altitude and a target orbit at altitude
         destination_altitude, return the delta-V budget of the two burns required for a Hohmann
@@ -241,22 +229,21 @@ class HohmannTransfer:
     
         departure_altitude and destination_altitude are in meters above the surface.
         returns a float of the burn delta-v required, positive means prograde, negative means retrograde
-    
-        :param departure_body:
-        :param departure_altitude: departure orbit altitude
-        :param destination_altitude: destination orbit altitude
+
+        :param departure_orbit_radius: departure orbit altitude
+        :param destination_orbit_radius: destination orbit altitude
         """
-        #departure_planet_radius = get_telemetry("body_radius", body_number=TELEMACHUS_BODY_IDS[departure_body])
-        r1 = departure_altitude
-        r2 = destination_altitude
-        mu = ksp.get_telemetry("orbit_body", "gravitational_parameter")
+
+        r1 = departure_orbit_radius
+        r2 = destination_orbit_radius
+        mu = grav_param
         sqrt_r1 = math.sqrt(r1)
         sqrt_r2 = math.sqrt(r2)
         sqrt_2_sum = math.sqrt(2 / (r1 + r2))
         sqrt_mu = math.sqrt(mu)
-        delta_v_1 = sqrt_mu / sqrt_r1 * (sqrt_r2 * sqrt_2_sum - 1)
-        delta_v_2 = sqrt_mu / sqrt_r2 * (1 - sqrt_r1 * sqrt_2_sum)
-        return delta_v_1, delta_v_2
+        v1 = sqrt_mu / sqrt_r1 * (sqrt_r2 * sqrt_2_sum - 1)
+        v2 = sqrt_mu / sqrt_r2 * (1 - sqrt_r1 * sqrt_2_sum)
+        return v2 - v1
 
 
 class Burn:
@@ -294,6 +281,7 @@ class Burn:
         self.accumulated_delta_v = 0.0
         self._is_thrust_reduced = False
         self.current_velocity = 0.0
+        self.velocity_at_cutoff = 0.0
 
     def recalculate(self):
         self.recalc_function()
