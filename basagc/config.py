@@ -3,26 +3,37 @@
 """ This file contains config information common to the whole package."""
 
 import os
-
 from collections import OrderedDict
+
+###############################################################################
+# PROGRAM CONFIGURATION - DO NOT EDIT
+###############################################################################
 
 DEBUG = False
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 PROGRAM_NAME = "basaGC"
-VERSION = "2.2.0"
+VERSION = "pre-3.0.0"
 LICENCE_FILE = os.path.join(BASE_DIR, "licence")
 IMAGES_DIR = os.path.join(BASE_DIR, "assets/")
+ICON = os.path.join(IMAGES_DIR, "icon.png")
 IP = "127.0.0.1"
-PORT = "8085"
-URL = "http://" + IP + ":" + PORT + "/telemachus/datalink?"
-DISPLAY_UPDATE_INTERVAL = 500
-COMP_ACTY_FLASH_DURATION = 100
-LOOP_TIMER_INTERVAL = 100
-SLOW_LOOP_TIMER_INTERVAL = 2000
-ENABLE_COMP_ACTY_FLASH = True
-KSP_INTERFACE = "krpc"
 KRPC_PORT = 50000
+COMP_ACTY_FLASH_DURATION = 100  # in milliseconds
+LOOP_TIMER_INTERVAL = 100  # in milliseconds
+SLOW_LOOP_TIMER_INTERVAL = 2000  # in milliseconds
+
+###############################################################################
+# PROGRAM OPTIONS - OK TO EDIT
+###############################################################################
+
+ENABLE_COMP_ACTY_FLASH = True
+LAUNCH_LEAD_TIME = 20  # countdown starts at T-20s
+DISPLAY_UPDATE_INTERVAL = 500  # in milliseconds
+
+###############################################################################
+# PROGRAM CONSTANTS - DO NOT EDIT
+###############################################################################
 
 LOG_LEVELS = [
     "DEBUG",
@@ -32,7 +43,9 @@ LOG_LEVELS = [
     "CRITICAL",
 ]
 
-current_log_level = "INFO"
+
+
+CURRENT_LOG_LEVEL = "INFO"
 
 REFSSMAT = {
     "planet_non_rotating": "non_rotating_reference_frame",
@@ -73,6 +86,10 @@ _UNSORTED_ALARM_CODES = {
 
 ALARM_CODES = OrderedDict(sorted(_UNSORTED_ALARM_CODES.items()))
 
+###############################################################################
+# PROGRAM META - DO NOT EDIT
+###############################################################################
+
 PROGRAM_DESCRIPTION = "basaGC is a implementation of the Apollo Guidance Computer (AGC) for Kerbal Space Program." + (
                       "\n\nbasaGC includes code and images from the Virtual AGC Project ") + (
                       "(http://www.ibiblio.org/apollo/index.html) by Ronald S. Burkey <info@sandroid.org>")
@@ -93,7 +110,7 @@ SHORT_LICENCE = "basaGC is free software; you can redistribute it and/or modify 
 COPYRIGHT = "(C) 2014-2016 Tim Buchanan (cashelcomputers@gmail.com)"
 WEBSITE = "https://github.com/cashelcomputers/basaGC/"
 DEVELOPERS = "Tim Buchanan"
-ICON = os.path.join(BASE_DIR, "icon.png")
+
 
 
 
