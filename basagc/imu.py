@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """This module contains a class to model the IMU found on Apollo spacecraft."""
 
-from basagc import utils, config, krpc_interface
+from basagc import utils, config, ksp
 from basagc import vector
-from basagc import krpc_interface
+from basagc import ksp
 
 if config.DEBUG:
     pass
@@ -22,7 +22,7 @@ class IMU:
         
         self.vessel = vessel
         self.computer = vessel.computer
-        self.krpc_connection = krpc_interface.get_connection()
+        self.krpc_connection = ksp.get_connection()
         self._is_on = False
         self.is_coarse_aligned = False
         self.is_fine_aligned = False
@@ -40,7 +40,7 @@ class IMU:
         :returns: True if successful, False otherwise
         """
         self._is_on = True
-        if krpc_interface.get_connection().check_connection():
+        if ksp.get_connection().check_connection():
             self.computer.add_to_mainloop(self._update_state_vector)
         return True
 
@@ -60,7 +60,7 @@ class IMU:
         """
 
         # if we have lost connection to KSP, terminate state vector updates
-        if not krpc_interface.get_connection().check_connection():
+        if not ksp.get_connection().check_connection():
             self.computer.remove_from_mainloop(self._update_state_vector)
         vessel_direction = self.krpc_connection.vessel.direction(self.krpc_connection.vessel.surface_reference_frame)
 
