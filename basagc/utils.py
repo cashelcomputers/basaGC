@@ -4,6 +4,7 @@
 import logging
 import time
 import math
+import os
 
 from basagc import config
 if config.DEBUG:
@@ -14,7 +15,7 @@ LOG_VIEWER = None
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                     datefmt='%d/%m/%y %H:%M',
-                    filename='../gc.log',
+                    filename=os.path.join(config.BASE_DIR, "basagc.log"),
                     filemode='a')
 
 gc_log = logging.getLogger()
