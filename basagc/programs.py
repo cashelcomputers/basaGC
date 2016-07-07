@@ -189,129 +189,129 @@ class Program11(Program):
         self.computer.execute_verb(verb="16", noun="62")
 
 
-class Program15(Program):
-
-    """ Calculates TMI burn
-    :return: None
-    """
-
-    def __init__(self):
-
-        """ Class constructor.
-        :return: None
-        """
-
-        super().__init__(description="TMI Calculate", number="15")
-        self.maneuver = None
-
-    def execute(self):
-
-        """ Entry point for the program
-        :return: None
-        """
-
-        super().execute()
-        
-        # if no connection to KSP, do P00DOO abort
-        if not ksp.check_connection():
-            self.computer.poodoo_abort(111)
-            self.terminate()
-            return
-        #
-        ## check that orbital parameters are within range to conduct burn
-        #is_orbit_ok = maneuver.HohmannTransfer.check_orbital_parameters()
-        #if is_orbit_ok == False:
-            #self.computer.poodoo_abort(is_orbit_ok[1])
-            #return
-        
-        # get mass
-        get_mass = ksp.get_telemetry("vessel", "mass")
-        self.computer.memory["mass"] = get_mass() / 1000  # in tons
-        
-        # get thrust
-        get_max_stage_thrust = ksp.get_telemetry("vessel", "max_thrust")
-        self.computer.memory["max_stage_thrust"] = get_max_stage_thrust() / 1000  # in kN
-
-        # get isp
-        get_isp = ksp.get_telemetry("vessel", "specific_impulse")
-        self.computer.memory["stage_vacuum_isp"] = get_isp()
-
-        # do it!
-        self.maneuver = maneuver.HohmannTransfer()
-        self.maneuver.execute()
-        # display burn parameters and go to poo
-        self.computer.execute_verb(verb="06", noun="95")
-        self.computer.go_to_poo()
-
-
-class Program31(Program):
-    """
-    Mun Orbital Insertion (MOI) burn calculator
-    """
-    def __init__(self):
-        
-        """ Class constructor.
-        :return: None
-        """
-        super().__init__(description="MOI Burn Calculator", number="31")
-        self.delta_v = Program.vessel.moi_burn_delta_v
-        self.time_of_node = ksp.get_telemetry("timeOfPeriapsisPassage")
-        self.time_of_ignition = None
-
-    def update_parameters(self):
-        
-        self.delta_v = Program.vessel.moi_burn_delta_v
-        self.time_of_node = ksp.get_telemetry("timeOfPeriapsisPassage")
-
-        initial_mass = float(self.computer.noun_data["25"][0] + "." + self.computer.noun_data["25"][1])
-        thrust = float(self.computer.noun_data["31"][0] + "." + self.computer.noun_data["31"][1])
-        specific_impulse = float(self.computer.noun_data["38"][0])
-        self.duration_of_burn = maneuver.calc_burn_duration(initial_mass, thrust, specific_impulse, self.delta_v)
-        self.time_of_ignition = self.time_of_node - (self.duration_of_burn / 2)
-        
-    def execute(self):  # FIXME: this needs to be refactored into something better, just trying to get it working now
-        
-        self.computer.execute_verb(verb="21", noun="25")
-        self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_whole_part, display_location="data_1")
-        
-    def _accept_initial_mass_whole_part(self, mass):
-        Program.vessel.noun_data["25"][0] = mass
-        self.computer.execute_verb(verb="22", noun="25")
-        self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_fractional_part, display_location="data_2")
-        
-    def _accept_initial_mass_fractional_part(self, mass):
-        Program.vessel.noun_data["25"][1] = mass
-        self.computer.execute_verb(verb="21", noun="31")
-        self.computer.dsky.request_data(requesting_object=self._accept_thrust_whole_part, display_location="data_1")
-
-    def _accept_thrust_whole_part(self, thrust):
-        Program.vessel.noun_data["31"][0] = thrust
-        self.computer.execute_verb(verb="22", noun="31")
-        self.computer.dsky.request_data(requesting_object=self._accept_thrust_fractional_part, display_location="data_2")
-
-    def _accept_thrust_fractional_part(self, thrust):
-        Program.vessel.noun_data["31"][1] = thrust
-        self.computer.execute_verb(verb="21", noun="38")
-        self.computer.dsky.request_data(requesting_object=self._accept_isp, display_location="data_1")
-
-    def _accept_isp(self, isp):
-        Program.vessel.noun_data["38"][0] = isp
-        self.calculate_maneuver()
-
-    def calculate_maneuver(self):
-        self.update_parameters()
-        self.burn = Burn(delta_v=self.delta_v,
-                         direction="retrograde",
-                         time_of_ignition=self.time_of_of_ignition,
-                         time_of_node=self.time_of_node,
-                         calling_program=self)
-
-        # load the Burn object into computer
-        self.computer.add_burn_to_queue(self.burn, execute=False)
-
-        ## display burn parameters and go to poo
-        self.computer.execute_verb(verb="06", noun="95")
-        self.computer.go_to_poo()
+# class Program15(Program):
+#
+#     """ Calculates TMI burn
+#     :return: None
+#     """
+#
+#     def __init__(self):
+#
+#         """ Class constructor.
+#         :return: None
+#         """
+#
+#         super().__init__(description="TMI Calculate", number="15")
+#         self.maneuver = None
+#
+#     def execute(self):
+#
+#         """ Entry point for the program
+#         :return: None
+#         """
+#
+#         super().execute()
+#
+#         # if no connection to KSP, do P00DOO abort
+#         if not ksp.check_connection():
+#             self.computer.poodoo_abort(111)
+#             self.terminate()
+#             return
+#         #
+#         ## check that orbital parameters are within range to conduct burn
+#         #is_orbit_ok = maneuver.HohmannTransfer.check_orbital_parameters()
+#         #if is_orbit_ok == False:
+#             #self.computer.poodoo_abort(is_orbit_ok[1])
+#             #return
+#
+#         # get mass
+#         get_mass = ksp.get_telemetry("vessel", "mass")
+#         self.computer.memory["mass"] = get_mass() / 1000  # in tons
+#
+#         # get thrust
+#         get_max_stage_thrust = ksp.get_telemetry("vessel", "max_thrust")
+#         self.computer.memory["max_stage_thrust"] = get_max_stage_thrust() / 1000  # in kN
+#
+#         # get isp
+#         get_isp = ksp.get_telemetry("vessel", "specific_impulse")
+#         self.computer.memory["stage_vacuum_isp"] = get_isp()
+#
+#         # do it!
+#         self.maneuver = maneuver.HohmannTransfer()
+#         self.maneuver.execute()
+#         # display burn parameters and go to poo
+#         self.computer.execute_verb(verb="06", noun="95")
+#         self.computer.go_to_poo()
+#
+#
+# class Program31(Program):
+#     """
+#     Mun Orbital Insertion (MOI) burn calculator
+#     """
+#     def __init__(self):
+#
+#         """ Class constructor.
+#         :return: None
+#         """
+#         super().__init__(description="MOI Burn Calculator", number="31")
+#         self.delta_v = Program.vessel.moi_burn_delta_v
+#         self.time_of_node = ksp.get_telemetry("timeOfPeriapsisPassage")
+#         self.time_of_ignition = None
+#
+#     def update_parameters(self):
+#
+#         self.delta_v = Program.vessel.moi_burn_delta_v
+#         self.time_of_node = ksp.get_telemetry("timeOfPeriapsisPassage")
+#
+#         initial_mass = float(self.computer.noun_data["25"][0] + "." + self.computer.noun_data["25"][1])
+#         thrust = float(self.computer.noun_data["31"][0] + "." + self.computer.noun_data["31"][1])
+#         specific_impulse = float(self.computer.noun_data["38"][0])
+#         self.duration_of_burn = maneuver.calc_burn_duration(initial_mass, thrust, specific_impulse, self.delta_v)
+#         self.time_of_ignition = self.time_of_node - (self.duration_of_burn / 2)
+#
+#     def execute(self):  # FIXME: this needs to be refactored into something better, just trying to get it working now
+#
+#         self.computer.execute_verb(verb="21", noun="25")
+#         self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_whole_part, display_location="data_1")
+#
+#     def _accept_initial_mass_whole_part(self, mass):
+#         Program.vessel.noun_data["25"][0] = mass
+#         self.computer.execute_verb(verb="22", noun="25")
+#         self.computer.dsky.request_data(requesting_object=self._accept_initial_mass_fractional_part, display_location="data_2")
+#
+#     def _accept_initial_mass_fractional_part(self, mass):
+#         Program.vessel.noun_data["25"][1] = mass
+#         self.computer.execute_verb(verb="21", noun="31")
+#         self.computer.dsky.request_data(requesting_object=self._accept_thrust_whole_part, display_location="data_1")
+#
+#     def _accept_thrust_whole_part(self, thrust):
+#         Program.vessel.noun_data["31"][0] = thrust
+#         self.computer.execute_verb(verb="22", noun="31")
+#         self.computer.dsky.request_data(requesting_object=self._accept_thrust_fractional_part, display_location="data_2")
+#
+#     def _accept_thrust_fractional_part(self, thrust):
+#         Program.vessel.noun_data["31"][1] = thrust
+#         self.computer.execute_verb(verb="21", noun="38")
+#         self.computer.dsky.request_data(requesting_object=self._accept_isp, display_location="data_1")
+#
+#     def _accept_isp(self, isp):
+#         Program.vessel.noun_data["38"][0] = isp
+#         self.calculate_maneuver()
+#
+#     def calculate_maneuver(self):
+#         self.update_parameters()
+#         self.burn = Burn(delta_v=self.delta_v,
+#                          direction="retrograde",
+#                          time_of_ignition=self.time_of_of_ignition,
+#                          time_of_node=self.time_of_node,
+#                          calling_program=self)
+#
+#         # load the Burn object into computer
+#         self.computer.add_burn_to_queue(self.burn, execute=False)
+#
+#         ## display burn parameters and go to poo
+#         self.computer.execute_verb(verb="06", noun="95")
+#         self.computer.go_to_poo()
 
 class Program40(Program):
 
